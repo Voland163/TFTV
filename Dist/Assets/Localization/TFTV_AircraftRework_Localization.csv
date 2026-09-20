@@ -1,7 +1,7 @@
 ﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 TFTV_CAPTURE_DRONES_MODULE_NAME,Text,,Salvage Drones,,Drones de récupération,Bergungsdrohnen,,Drony odzysku,Грузовые Дроны,Drones de Salvamento,
 TFTV_CAPTURE_DRONES_MODULE_DESCRIPTION,Text,,"A pack of autonomous retrieval drones that scour the battlefield, securing all items even when the area remains contested. All items left on the ground are collected on mission end.",,"Un groupe de drones de récupération autonomes qui parcourent le champ de bataille, récupérant tous les objets même si la zone reste contestée. Tous les objets laissés au sol sont collectés à la fin de la mission.","Ein Schwarm autonomer Bergungsdrohnen, der das Schlachtfeld absucht und alle Gegenstände sichert – auch in umkämpften Gebieten.
-<b>Alle am Boden verbliebenen Gegenstände werden am Missionsende eingesammelt.</b>",,"Pakiet autonomicznych dronów odzyskujących, które przeczesują pole walki i zabezpieczają wszystkie przedmioty nawet wtedy, gdy obszar pozostaje sporny. Wszystkie przedmioty pozostawione na ziemi są zbierane po zakończeniu misji.","Несколько дронов с захватами для сбора трофеев с боля боя, даже с незачищенной территории. В конце миссии все, что лежит на земле, будет подобрано!","Una bandada de drones autónomos que registran el campo de batalla, asegurando todos los objetos incluso cuando el área aún está en conflicto. Todos los objetos no asegurados se recogen al final de la misión.",
+<b>Alle am Boden verbliebenen Gegenstände werden am Missionsende eingesammelt.</b>",,"Pakiet autonomicznych dronów odzyskujących, które przeczesują pole walki i zabezpieczają wszystkie przedmioty nawet wtedy, gdy obszar pozostaje sporny. Wszystkie przedmioty pozostawione na ziemi są zbierane po zakończeniu misji.","Рой дронов с захватами для сбора трофеев с поля боя, даже с незачищенной территории. В конце миссии все, что лежит на земле, будет подобрано!","Una bandada de drones autónomos que registran el campo de batalla, asegurando todos los objetos incluso cuando el área aún está en conflicto. Todos los objetos no asegurados se recogen al final de la misión.",
 TFTV_VEHICLE_HARNESS_MODULE_NAME,Text,,Ezekiel's Dream,,Le Rêve d’Ézéchiel,Ezechiels Traum,,Sen Ezechiela,Модуль «Мечта Иезекииля»,El Sueño de Ezekiel,
 TFTV_VEHICLE_HARNESS_MODULE_DESCRIPTION,Text,,A reinforced hard-point harness that lets any aircraft carry a ground vehicle as external cargo. Aircraft can carry a vehicle for 1 space less (Thunderbird can carry 2 vehicles for 1 space each).,,Un harnais renforcé à point d’ancrage rigide permettant à n’importe quel apareil de transporter un véhicule terrestre en tant que cargaison externe. Les apareils peuvent transporter un véhicule pour 1 case de moins (le Thunderbird peut transporter 2 véhicules pour 1 case chacun).,"Verstärkte Außenlast-Aufhängung, die es Fluggeräten erlaubt, Bodenfahrzeuge extern zu transportieren.
 <b>Fahrzeuge benötigen 1 Platz weniger</b> (Thunderbird kann <b>2 Fahrzeuge zu je 1 Platz</b> transportieren).",,"Wzmocniona uprząż z twardymi punktami podwieszeń, która pozwala każdemu statkowi powietrznemu przewozić pojazd jako ładunek zewnętrzny. Pojazdy zajmują o 1 miejsce mniej (Thunderbird może przewozić 2 pojazdy po 1 miejscu każdy).","Усиленный грузовой захват для машин. Позволяет самолету нести машину снаружи корпуса. Машина занимает на 1 пассажиро-место меньше. (Гром-птица может нести 2 машины, по 1-му месту на каждую).",Un arnés reforzado que permite a cualquier nave aérea cargar un vehículo terrestre como carga externa. La nave puede cargar un vehículo por 1 espacio menos (El Thunderbird puede cargar 2 vehículos sin coste adicional).,
@@ -11,10 +11,11 @@ Aircraft cannot move during scan.",,"Un amas d'antennes permettant d'intercepter
 L'appareil ne peut pas se déplacer pendant le scan.","Ein Antennenwirrwarr, welches das verzweifelte Rauschen der Welt auffängt. Erhöht die Chance, noch nicht ganz verlorene Orte zu finden.
 <b>Fähigkeit „Scannen“ mit 50% Chance, einen POI zu entdecken.</b>
 
-<color=#E0E0E0>[BENNU]: Der Scan-Vorgang erfordert eine 12-stündige stationäre Positionierung des Fluggerätes. Dieses Verfahren ermöglicht die Aufklärung entlegener Gebiete ohne die vorherige Aktivierung lokaler Stützpunkte.</color>",,"Plątanina anten nasłuchowych do podsłuchiwania cudzych rozmów. Zapewnia umiejętność SKAN: poświęć 12 godzin oraz 5 tech i 30 mat, aby wykryć Punkty Zainteresowania na Geosferze w promieniu 2000 KM (50% szans powodzenia). Statek nie może poruszać się w trakcie skanu.",Блок из нескольких направленных микрофонов. Дает способность Сканировать с 50% шансом обнаружить неизвестную локацию.,"Un conjunto de antenas para escuchar conversaciones ajenas. Proporciona capacidad de escaneo, con un 50 % de probabilidad de detectar Puntos De Interés.",
+<color=#E0E0E0>[BENNU]: Der Scan-Vorgang erfordert eine 12-stündige stationäre Positionierung des Fluggerätes. Dieses Verfahren ermöglicht die Aufklärung entlegener Gebiete ohne die vorherige Aktivierung lokaler Stützpunkte.</color>",,"Plątanina anten nasłuchowych do podsłuchiwania cudzych rozmów. Zapewnia umiejętność SKAN: poświęć 12 godzin oraz 5 tech i 30 mat, aby wykryć Punkty Zainteresowania na Geosferze w promieniu 2000 KM (50% szans powodzenia). Statek nie może poruszać się w trakcie skanu.","Блок из нескольких направленных микрофонов, позволяющий подслушивать чужие переговоры. Дает способность Сканировать с 50% шансом обнаружить неразведанные локации на Геоскейпе в радиусе 2000 км. Затраты: 12 часов, 5 технологий и 30 материалов.
+Самолет не может двигаться во время Сканирования.","Un conjunto de antenas para escuchar conversaciones ajenas. Proporciona capacidad de escaneo, con un 50 % de probabilidad de detectar Puntos De Interés.",
 TFTV_PASSENGER_MODULE_NAME,Text,,Barracuda Berths,,Lits Barracuda,Barracuda-Kojen,,Koje Barracudy,Подвесная гондола «Барракуда»,Amarres Barracuda,
 TFTV_PASSENGER_MODULE_DESCRIPTION,Text,,"Reconfigures the Manticore’s hold into two extra passenger pods, at the cost of some speed. Adds 2 passenger seats, –200 Speed",,"Reconfigure la soute du Manticore en deux modules passagers supplémentaires, au prix d’une certaine vitesse. Ajoute 2 places passagers, –200 en Vitesse","Rüstet den Laderaum des Manticore mit zwei zusätzlichen Truppmodulen um – auf Kosten der Geschwindigkeit.
-<b>+2 Truppplätze, -200 Geschwindigkeit</b>",,"Przebudowuje ładownię Mantikory w dwa dodatkowe kapsuły pasażerskie kosztem części prędkości. Dodaje 2 miejsca pasażerskie, -200 prędkości.","Добавляет Мантикоре +2 пассажиро-места, но отнимает -200 скорости","Reconfigura la bodega del Manticore en 2 cápsulas adicionales para pasajeros, a costa de algo de Velocidad. Añade 2 asientos para pasajeros, -200 de Velocidad.",
+<b>+2 Truppplätze, -200 Geschwindigkeit</b>",,"Przebudowuje ładownię Mantikory w dwa dodatkowe kapsuły pasażerskie kosztem części prędkości. Dodaje 2 miejsca pasażerskie, -200 prędkości.","Расширяет салон Мантикоры с некоторой потерей в скорости: +2 пассажиро-места, но -200 Скорости","Reconfigura la bodega del Manticore en 2 cápsulas adicionales para pasajeros, a costa de algo de Velocidad. Añade 2 asientos para pasajeros, -200 de Velocidad.",
 TFTV_CLINIC_MODULE_NAME,Text,,Neurorest Hammocks,,Hamacs Neurorepos,Neurorest,,Hamak neuroodpoczynku,Модуль «Нейро-гамаки»,Hamacas Neurorest,
 TFTV_CLINIC_MODULE_DESCRIPTION,Text,,"A set of mesh slings with IV drips and brain-wave modulators, because we all deserve a natural rest. Operatives on board recover a small amount of Stamina.",,"n ensemble de hamacs en filet équipés de perfusions et de modulateurs d’ondes cérébrales, parce que nous méritons tous un repos naturel. Les unités à bord récupèrent une petite quantité d’Endurance.","Netzhängematten mit Infusionen und Hirnwellenmodulatoren – denn natürliche Erholung steht allen zu.
 <b>Einheiten an Bord regenerieren langsam Ausdauer.</b>",,"Zestaw siatkowych hamaków z kroplówkami i modulatorami fal mózgowych, bo każdemu należy się naturalny odpoczynek. Operatorzy na pokładzie odzyskują niewielką ilość wytrzymałości.","Гамаки, оборудованные капельницами и нейро-модуляторами мозговых волн, идеально для спокойного отдыха! Бойцы на борту медленно восстанавливают Выносливость.","Un juego de hamacas de malla con sueros intravenosos y moduladores de ondas cerebrales, porque todos merecemos un descanso natural. Los operativos a bordo recuperan algo de energía.",
@@ -29,7 +30,7 @@ TFTV_THUNDERBIRD_RANGE_MODULE_NAME,Text,,Daedalus Overdrive Suite,,Module de sur
 TFTV_THUNDERBIRD_RANGE_MODULE_DESCRIPTION,Text,,"An automation-driven overdrive package that installs redundant subsystems and precision diagnostics, leveraging advanced automation to maximize range, speed, and airframe resilience.",,"Un ensemble de suralimentation piloté par automatisation qui installe des sous-systèmes redondants et des diagnostics de précision, exploitant l'automatisation avancée pour maximiser la portée, la vitesse et la résilience de la cellule de l'appareil.","Automatisiertes Überlastungspaket mit redundanten Subsystemen und Präzisionsdiagnostik.
 <b>Maximiert Reichweite, Geschwindigkeit und Strukturstabilität des Fluggeräts.</b>",,"Pakiet dopalaczy oparty na automatyzacji, instalujący redundantne podsystemy i precyzyjną diagnostykę, aby zmaksymalizować zasięg, prędkość i wytrzymałość płatowca.","Комплекс автоматизированных резервных и диагностических систем для максимального увеличения дальности, скорости и прочности самолета.","Un sistema de impulso automatizado que incorpora subsistemas redundantes y diagnósticos de alta precisión, empleando automatización avanzada para maximizar alcance operativo, velocidad y robustez estructural de la aeronave.",
 TFTV_HELIOS_MISTREPELLER_MODULE_NAME,Text,,Boreas Purger,,Purificateur Boreas,Boreas-Reiniger,,Czyściciel Boreasza,Модуль «Дыхание Борея»,Purgador Boreal,
-TFTV_HELIOS_MISTREPELLER_MODULE_DESCRIPTION,Text,,"A variant of the Mist Repeller designed to be aircraft mounted. During tactical missions, every turn 50% of Mist on the map dissipates and no automatic +1 Delirium for starting mission in a Delirium Area.",,Une variante du Répulseur de brume conçue pour être montée sur apareil.,Eine für Fluggeräte angepasste Variante des Nebelabweisers.,,Wariant Odpędzacza Mgły zaprojektowany do montażu na statku powietrznym.,Авиационный анти-Туманный модуль,Una variante del Repelente de Niebla diseñado para acoplarse a la nave.,
+TFTV_HELIOS_MISTREPELLER_MODULE_DESCRIPTION,Text,,"A variant of the Mist Repeller designed to be aircraft mounted. During tactical missions, every turn 50% of Mist on the map dissipates and no automatic +1 Delirium for starting mission in a Delirium Area.",,Une variante du Répulseur de brume conçue pour être montée sur apareil.,Eine für Fluggeräte angepasste Variante des Nebelabweisers.,,Wariant Odpędzacza Mgły zaprojektowany do montażu na statku powietrznym.,Авиационный анти-Туманный модуль. Во время боя каждый ход 50% Тумана на карте рассеивается. При начале миссии юниты не получают автоматическое +1 Сонное Безумие.,Una variante del Repelente de Niebla diseñado para acoplarse a la nave.,
 TFTV_HELIOS_STEALTH_MODULE_NAME,Text,,Proteus Matrix,,Matrice Proteus,Proteus-Matrix,,Matryca Proteusza,Модуль «Матрица Протея»,Matriz de Proteo,
 TFTV_HELIOS_STEALTH_MODULE_DESCRIPTION,Text,,"An AI that forecasts optimal concealment tactics and likely threat vectors to guide operatives. Its predictive accuracy naturally degrades over time, capping its benefits to the mission’s opening phase.",,"Une IA qui prévoit les tactiques de camouflage optimales et les vecteurs de menace probables pour guider les agents. Sa précision prédictive se dégrade naturellement avec le temps, limitant ses avantages à la phase initiale de la mission.","KI zur Prognose von Tarnmanövern und feindlichen Bewegungen.
 Die Präzision nimmt stetig ab und der Nutzen ist auf die Anfangsphase begrenzt.",,"SI przewidująca optymalne taktyki skrytości i prawdopodobne wektory zagrożeń, by wspierać operatorów. Jej trafność predykcji naturalnie spada z czasem, ograniczając korzyści do początkowej fazy misji.","ИИ, который обеспечивает маскировку и прогнозирует вероятные направления угроз, помогая бойцам на начальном этапе миссии. В дальнейшем точность его прогнозов естественным образом снижается.","Una IA que pronostica las tácticas de ocultación óptimas y las amenazas más probables para guiar a los operativos. Su capacidad predictiva se degrada con el tiempo, limitando sus beneficios a la fase de apertura de la misión.",
@@ -82,21 +83,16 @@ TFTV_BLIMP_SPEED_MODULE_BENEFIT_2_SINGLE,Text,,"• Aircraft speed through Mist 
 TFTV_BLIMP_SPEED_MODULE_BENEFIT_3_SINGLE,Text,,"• Aircraft speed through Mist increased by 450, aircraft maintenance loss reduced by 75% (TIER 3).",,"• Vitesse des appareils dans la Brume augmentée de 450, coûts d'entretien réduits de 75% (NIVEAU 3).","• Fluggerätgeschwindigkeit im Nebel um 450 erhöht, Wartungsverlust um 75% reduziert (STUFE 3).",,"• Prędkość statku w Mgle zwiększona o 450, utrata sprawności przez eksploatację zmniejszona o 75% (POZIOM 3).","• Скорость самолета сквозь Туман увеличена на 450, стоимость обслуживания самолета снижена на 75% (УРОВЕНЬ 3).",,
 TFTV_BLIMP_SPEED_MODULE_BENEFIT_4_SINGLE,Text,,"• Aircraft speed through Mist increased by 600, aircraft maintenance loss reduced by 100% (TIER 4).",,"• Vitesse des appareils dans la Brume augmentée de 600, coûts d'entretien réduits de 100% (NIVEAU 4).","• Fluggerätgeschwindigkeit im Nebel um 600 erhöht, Wartungsverlust um 100% reduziert (STUFE 4).",,"• Prędkość statku w Mgle zwiększona o 600, utrata sprawności przez eksploatację zmniejszona o 100% (POZIOM 4).","• Скорость самолета сквозь Туман увеличена на 600, стоимость обслуживания самолета снижена на 100% (УРОВЕНЬ 4).",,
 TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech,Text,,• Ward of Resolve: Characters with at least one mutation no longer lose WP in the Mist.,,• Sceau de Volonté : Les personnages ayant au moins une mutation ne perdent plus de PVol dans la Brume.,• Schutz der Entschlossenheit: Einheiten mit mindestens einer Mutation verlieren im Nebel keine Willenspunkte mehr.,,• Osłona Determinacji: postacie z co najmniej jedną mutacją nie tracą już PW we Mgle.,• Оберег Решимости: персонажи с хотя бы 1-й мутацией больше не теряют Очки Воли в Тумане.,,
-TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech2,Text,,• Blessing of Clarity: Characters with at least one mutation regain WP in the Mist and suffer reduced sight penalties.,,• Bénédiction de Clarté : Les personnages ayant au moins une mutation récupèrent des PVol dans la Brume et subissent des malus de vision réduits.,• Segen der Klarheit: Einheiten mit mindestens einer Mutation regenerieren im Nebel Willenspunkte und erleiden geringere Sicht-Mali.,,• Błogosławieństwo Jasności: postacie z co najmniej jedną mutacją odzyskują PW we Mgle i cierpią na mniejsze kary do widzenia.,• Благословление Ясности: персонажи с хотя бы 1-й мутацией восстанавливают Очки Воли в Тумане и получают уменьшенные штрафы обзора.,,
+TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech2,Text,,• Blessing of Clarity: Characters with at least one mutation regain WP in the Mist and suffer reduced sight penalties.,,• Bénédiction de Clarté : Les personnages ayant au moins une mutation récupèrent des PVol dans la Brume et subissent des malus de vision réduits.,• Segen der Klarheit: Einheiten mit mindestens einer Mutation regenerieren im Nebel Willenspunkte und erleiden geringere Sicht-Mali.,,• Błogosławieństwo Jasności: postacie z co najmniej jedną mutacją odzyskują PW we Mgle i cierpią na mniejsze kary do widzenia.,• Благословение Ясности: персонажи с хотя бы 1-й мутацией восстанавливают Очки Воли в Тумане и получают уменьшенные штрафы обзора.,,
 TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech3,Text,,• Eye of Anu: Characters with at least one mutation can see through the Mist like Pandorans.,,• Oeil d'Anu : Les personnages ayant au moins une mutation peuvent voir à travers la Brume comme les Pandoriens.,• Auge des Anu: Einheiten mit mindestens einer Mutation können durch den Nebel sehen wie Pandoraner.,,• Oko Anu: postacie z co najmniej jedną mutacją widzą przez Mgłę jak Pandoranie.,• Глаз Ану: персонажи с хотя бы 1-й мутацией видят сквозь Туман как Пандораны.,,
 TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_AnuPriest,Text,,• Shroud of Paradox: Non-Pandorans that touch Mist become revealed,,• Voile du Paradoxe : Les non-Pandoriens qui entrent en contact avec la Brume sont révélés.,"• Schleier des Paradoxons: Nicht-Pandoraner, die den Nebel berühren, werden aufgedeckt.",,"• Zasłona Paradoksu: nie-Pandoranie, którzy dotkną Mgły, zostają ujawnieni","• Пелена Парадокса: не-Пандораны, коснувшиеся Тумана, становятся обнаруженными.",,
 TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT_1_SINGLE,Text,,"• Heals operatives with at least one mutation, Mutoids, and Mutogs, and recovers their Stamina (TIER 1).",,"• Soigne les agents ayant au moins une mutation, les Mutogènes et les Mutogs, et restaure leur Endurance (NIVEAU 1).","• Heilt Einheiten mit mindestens einer Mutation, Mutoide und Mutogs und stellt ihre Ausdauer wieder her (STUFE 1).",,"• Leczy operatorów z co najmniej jedną mutacją, Mutoidów i Mutogi oraz przywraca im wytrzymałość (POZIOM 1).","• Лечит бойцов с хотя бы 1-й мутацией, Мутоидов и Мутогов, и восстанавливает их Выносливость (УРОВЕНЬ 1).",,
 TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT_2_SINGLE,Text,,"• Heals operatives with at least one mutation, Mutoids, and Mutogs, and recovers their Stamina faster (TIER 2).",,"• Soigne les agents ayant au moins une mutation, les Mutogènes et les Mutogs, et restaure leur Endurance plus rapidement (NIVEAU 2).","• Heilt Einheiten mit mindestens einer Mutation, Mutoide und Mutogs und stellt ihre Ausdauer schneller wieder her (STUFE 2).",,"• Leczy operatorów z co najmniej jedną mutacją, Mutoidów i Mutogi oraz szybciej przywraca im wytrzymałość (POZIOM 2).","• Лечит бойцов с хотя бы 1-й мутацией, Мутоидов и Мутогов, и быстро восстанавливает их Выносливость (УРОВЕНЬ 2).",,
-TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT_3_SINGLE,Text,,"• Heals operatives with at least one mutation, Mutoids, and Mutogs, and recovers their Stamina fastest (TIER 3).
-• Operatives with at least one mutation, Mutoids and Mutogs start the mission frenzied.",,"• Soigne les agents ayant au moins une mutation, les Mutoïdes et les Mutogs, et restaure leur Endurance encore plus rapidement (NIVEAU 3).
-• Les agents ayant au moins une mutation, les Mutoïdes et les Mutogs commencent la mission en état de Frénésie.","• Heilt Einheiten mit mindestens einer Mutation, Mutoide und Mutogs und stellt ihre Ausdauer am schnellsten wieder her (STUFE 3).
-• Einheiten mit mindestens einer Mutation, Mutoide und Mutogs beginnen die Mission in Raserei.",,"• Leczy operatorów z co najmniej jedną mutacją, Mutoidów i Mutogi oraz najszybciej przywraca im wytrzymałość (POZIOM 3).
-• Operatorzy z co najmniej jedną mutacją, Mutoidzi i Mutogi rozpoczynają misję w szałowym stanie.","• Лечит бойцов с хотя бы 1-й мутацией, Мутоидов и Мутогов, и очень быстро восстанавливает их Выносливость (УРОВЕНЬ 3).
-• Бойцы с хотя бы 1-й мутацией, Мутоиды и Мутоги начинают миссии в состоянии Иссупления.",,
-TFTV_HELIOS_STEALTH_MODULE_BENEFIT_1_SINGLE,Text,,• Operatives gain +10% Stealth and +5 Perception during the first 3 turns of the mission (TIER 1).,,• Les agents gagnent +10 % de Discrétion et +5 de Perception durant les 3 premiers tours de la mission (NIVEAU 1).,• Einheiten erhalten in den ersten 3 Missionsrunden +10% Tarnung und +5 Wahrnehmung (STUFE 1).,,• Operatorzy zyskują +10% skrytości i +5 percepcji przez pierwsze 3 tury misji (POZIOM 1).,• Бойцы получают +10% к Силе и +5 к Восприятию первые 3 хода миссии (УРОВЕНЬ 1).,,
-TFTV_HELIOS_STEALTH_MODULE_BENEFIT_2_SINGLE,Text,,• Operatives gain +30% Stealth and +5 Perception during the first 3 turns of the mission (TIER 2).,,• Les agents gagnent +30 % de Discrétion et +5 de Perception durant les 3 premiers tours de la mission (NIVEAU 2).,• Einheiten erhalten in den ersten 3 Missionsrunden +30% Tarnung und +5 Wahrnehmung (STUFE 2).,,• Operatorzy zyskują +30% skrytości i +5 percepcji przez pierwsze 3 tury misji (POZIOM 2).,• Бойцы получают +30% к Силе и +5 к Восприятию первые 3 хода миссии (УРОВЕНЬ 2).,,
-TFTV_HELIOS_STEALTH_MODULE_BENEFIT_3_SINGLE,Text,,• Operatives gain +30% Stealth and +15 Perception during the first 3 turns of the mission (TIER 3).,,• Les agents gagnent +30 % de Discrétion et +15 de Perception durant les 3 premiers tours de la mission (NIVEAU 3).,• Einheiten erhalten in den ersten 3 Missionsrunden +30% Tarnung und +15 Wahrnehmung (STUFE 3).,,• Operatorzy zyskują +30% skrytości i +15 percepcji przez pierwsze 3 tury misji (POZIOM 3).,• Бойцы получают +30% к Силе и +15 к Восприятию первые 3 хода миссии (УРОВЕНЬ 3).,,
-TFTV_HELIOS_STEALTH_MODULE_BENEFIT_4_SINGLE,Text,,• Operatives gain +50% Stealth and +15 Perception during the first 3 turns of the mission (TIER 4).,,• Les agents gagnent +50 % de Discrétion et +15 de Perception durant les 3 premiers tours de la mission (NIVEAU 4).,• Einheiten erhalten in den ersten 3 Missionsrunden +50% Tarnung und +15 Wahrnehmung (STUFE 4).,,• Operatorzy zyskują +50% skrytości i +15 percepcji przez pierwsze 3 tury misji (POZIOM 4).,• Бойцы получают +50% к Силе и +15 к Восприятию первые 3 хода миссии (УРОВЕНЬ 4).,,
+TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT_3_SINGLE,Text,,"• Heals operatives with at least one mutation, Mutoids, and Mutogs, and recovers their Stamina fastest (TIER 3).",,,,,,"• Лечит бойцов с хотя бы 1-й мутацией, Мутоидов и Мутогов, и очень быстро восстанавливает их Выносливость (УРОВЕНЬ 3).",,
+TFTV_HELIOS_STEALTH_MODULE_BENEFIT_1_SINGLE,Text,,• Operatives gain +10% Stealth and +5 Perception during the first 3 turns of the mission (TIER 1).,,• Les agents gagnent +10 % de Discrétion et +5 de Perception durant les 3 premiers tours de la mission (NIVEAU 1).,• Einheiten erhalten in den ersten 3 Missionsrunden +10% Tarnung und +5 Wahrnehmung (STUFE 1).,,• Operatorzy zyskują +10% skrytości i +5 percepcji przez pierwsze 3 tury misji (POZIOM 1).,• Бойцы получают +10% к Скрытности и +5 к Восприятию первые 3 хода миссии (УРОВЕНЬ 1).,,
+TFTV_HELIOS_STEALTH_MODULE_BENEFIT_2_SINGLE,Text,,• Operatives gain +30% Stealth and +5 Perception during the first 3 turns of the mission (TIER 2).,,• Les agents gagnent +30 % de Discrétion et +5 de Perception durant les 3 premiers tours de la mission (NIVEAU 2).,• Einheiten erhalten in den ersten 3 Missionsrunden +30% Tarnung und +5 Wahrnehmung (STUFE 2).,,• Operatorzy zyskują +30% skrytości i +5 percepcji przez pierwsze 3 tury misji (POZIOM 2).,• Бойцы получают +30% к Скрытности и +5 к Восприятию первые 3 хода миссии (УРОВЕНЬ 2).,,
+TFTV_HELIOS_STEALTH_MODULE_BENEFIT_3_SINGLE,Text,,• Operatives gain +30% Stealth and +15 Perception during the first 3 turns of the mission (TIER 3).,,• Les agents gagnent +30 % de Discrétion et +15 de Perception durant les 3 premiers tours de la mission (NIVEAU 3).,• Einheiten erhalten in den ersten 3 Missionsrunden +30% Tarnung und +15 Wahrnehmung (STUFE 3).,,• Operatorzy zyskują +30% skrytości i +15 percepcji przez pierwsze 3 tury misji (POZIOM 3).,• Бойцы получают +30% к Скрытности и +15 к Восприятию первые 3 хода миссии (УРОВЕНЬ 3).,,
+TFTV_HELIOS_STEALTH_MODULE_BENEFIT_4_SINGLE,Text,,• Operatives gain +50% Stealth and +15 Perception during the first 3 turns of the mission (TIER 4).,,• Les agents gagnent +50 % de Discrétion et +15 de Perception durant les 3 premiers tours de la mission (NIVEAU 4).,• Einheiten erhalten in den ersten 3 Missionsrunden +50% Tarnung und +15 Wahrnehmung (STUFE 4).,,• Operatorzy zyskują +50% skrytości i +15 percepcji przez pierwsze 3 tury misji (POZIOM 4).,• Бойцы получают +50% к Скрытности и +15 к Восприятию первые 3 хода миссии (УРОВЕНЬ 4).,,
 TFTV_HELIOS_HEALING_MODULE_BENEFIT_1_SINGLE,Text,,• Operatives heal and recover Stamina (TIER 1).,,• Les agents se soignent et récupèrent de l'Endurance (NIVEAU 1).,• Einheiten heilen und regenerieren Ausdauer (STUFE 1).,,• Operatorzy leczą się i odzyskują wytrzymałość (POZIOM 1).,• Бойцы лечатся и восстанавливают Выносливость (УРОВЕНЬ 1).,,
 TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_Rover,Text,,"• Provides Nanotech Resistance (negates first application of Fire, Acid, Poison, or Virus).",,"• Offre une Résistance Nanotechnologique (annule la première application de Feu, d'Acide, de Poison ou de Virus).","• Gewährt Nanotechnik-Resistenz (negiert die erste Anwendung von Feuer, Säure, Gift oder Virus).",,"• Zapewnia odporność nanotechnologiczną (niweluje pierwsze nałożenie ognia, kwasu, trucizny lub wirusa).","• Покрывает нано-пленкой (блокирует первое воздействие Огня, Кислоты, Яда или Вируса).",,
 TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_VenomBolt,Text,,• Vest effects increased by 50%.,,• Les effets des gilets sont augmentés de 50 %.,• Westen-Effekte um 50% erhöht.,,• Efekty kamizelek zwiększone o 50%.,• Эффективность бронежилетов больше на 50%.,,
@@ -104,152 +100,145 @@ TFTV_HELIOS_HEALING_MODULE_BENEFIT_2_SINGLE,Text,,• Faster healing and Stamina
 TFTV_THUNDERBIRD_GROUNDATTACK_MODULE_BENEFIT_1_SINGLE,Text,,• One precision-guided strike (single explosion) (TIER 1).,,• Une frappe de précision guidée (explosion unique) (NIVEAU 1).,• Ein präzisionsgelenkter Schlag (eine Explosion) (STUFE 1).,,• Jedno precyzyjnie naprowadzane uderzenie (pojedyncza eksplozja) (POZIOM 1).,• Один высокоточный удар (одиночный взрыв) (УРОВЕНЬ 1).,,
 TFTV_THUNDERBIRD_GROUNDATTACK_MODULE_BENEFIT_2_SINGLE,Text,,• One precision-guided strike (two sequential explosions) (TIER 2).,,• Une frappe de précision guidée (deux explosions successives) (NIVEAU 2).,• Ein präzisionsgelenkter Schlag (zwei aufeinanderfolgende Explosionen) (STUFE 2).,,• Jedno precyzyjnie naprowadzane uderzenie (dwie kolejne eksplozje) (POZIOM 2).,• Один высокоточный удар (два последовательных взрыва) (УРОВЕНЬ 2).,,
 TFTV_THUNDERBIRD_GROUNDATTACK_MODULE_BENEFIT_3_SINGLE,Text,,• One precision-guided strike (three sequential explosions) (TIER 3).,,• Une frappe de précision guidée (trois explosions successives) (NIVEAU 3).,• Ein präzisionsgelenkter Schlag (drei aufeinanderfolgende Explosionen) (STUFE 3).,,• Jedno precyzyjnie naprowadzane uderzenie (trzy kolejne eksplozje) (POZIOM 3).,• Один высокоточный удар (три последовательных взрыва) (УРОВЕНЬ 3).,,
-TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_1_SINGLE,Text,,"• Provides SCAN ABILITY: spend 12 hours, 5 tech and 30 mat to detect Points of Interest on the Geoscape within 2000 KM (75% success rate). Aircraft cannot move during scan (TIER 1).",,"• Offre la capacité SCAN : dépensez 12 heures, 5 de technologie et 30 de matériaux pour détecter les points d'intérêt sur le Géoscape dans un rayon de 2000 km (75 % de chances de réussite). L'appareil ne peut pas se déplacer pendant le scan (NIVEAU 1).","• Gewährt die FÄHIGKEIT SCAN: 12 Stunden, 5 Technik und 30 Material ausgeben, um auf der Geoscape innerhalb von 2000 KM interessante Orte zu entdecken (75% Erfolgsquote). Das Fluggerät kann sich während des Scans nicht bewegen (STUFE 1).",,"• Zapewnia umiejętność SKAN: poświęć 12 godzin, 5 tech i 30 mat, aby wykryć Punkty Zainteresowania na Geosferze w promieniu 2000 KM (75% szans powodzenia). Statek nie może poruszać się w trakcie skanu (POZIOM 1).","• Дает СКАНИРОВАНИЕ: потратить 12 часов, 5 технологий и 30 материалов, чтобы найти неразведанные локации на Геоскейпе в радиусе 2000 км (вероятность успех 75%). Самолет не сможет летать в это время (УРОВЕНЬ 1).",,
-TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_2_SINGLE,Text,,"• Provides SCAN ABILITY: spend 12 hours, 5 tech and 30 mat to detect Points of Interest on the Geoscape within 3000 KM (100% success rate). Aircraft cannot move during scan (TIER 2).
-• <b>Argus Eye:</b> operatives gain increased Perception during Return Fire and Overwatch attacks.",,"• Offre la capacité SCAN : dépensez 12 heures, 5 de technologie et 30 de matériaux pour détecter les points d'intérêt sur le Géoscape dans un rayon de 3000 km (100 % de chances de réussite). L'appareil ne peut pas se déplacer pendant le scan (NIVEAU 2).
-• Œil d'Argus : les agents gagnent un bonus de Perception lors des attaques de Riposte et de Vigilance.","• Gewährt die FÄHIGKEIT SCAN: 12 Stunden, 5 Technik und 30 Material ausgeben, um auf der Geoscape innerhalb von 3000 KM interessante Orte zu entdecken (100% Erfolgsquote). Das Fluggerät kann sich während des Scans nicht bewegen (STUFE 2).
-• <b>Argus-Auge:</b> Einheiten erhalten erhöhte Wahrnehmung bei Vergeltungsfeuer- und Überwachungsangriffen.",,"• Zapewnia umiejętność SKAN: poświęć 12 godzin, 5 tech i 30 mat, aby wykryć Punkty Zainteresowania na Geosferze w promieniu 3000 KM (100% szans powodzenia). Statek nie może poruszać się w trakcie skanu (POZIOM 2).
-• <b>Oko Argusa:</b> operatorzy zyskują zwiększoną percepcję podczas Ognia Zwrotnego i ataków w Nadzorze.","• Дает СКАНИРОВАНИЕ: потратить 12 часов, 5 технологий и 30 материалов, чтобы найти неразведанные локации на Геоскейпе в радиусе 3000 км (вероятность успех 100%). Самолет не сможет летать в это время (УРОВЕНЬ 2).
+TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_1_SINGLE,Text,,"• Provides SCAN ABILITY: spend 12 hours, 5 tech and 30 mat to detect Points of Interest on the Geoscape within 2000 KM (75% success rate). Aircraft cannot move during scan (TIER 1).",,"• Offre la capacité SCAN : dépensez 12 heures, 5 de technologie et 30 de matériaux pour détecter les points d'intérêt sur le Géoscape dans un rayon de 2000 km (75 % de chances de réussite). L'appareil ne peut pas se déplacer pendant le scan (NIVEAU 1).","• Gewährt die FÄHIGKEIT SCAN: 12 Stunden, 5 Technik und 30 Material ausgeben, um auf der Geoscape innerhalb von 2000 KM interessante Orte zu entdecken (75% Erfolgsquote). Das Fluggerät kann sich während des Scans nicht bewegen (STUFE 1).",,"• Zapewnia umiejętność SKAN: poświęć 12 godzin, 5 tech i 30 mat, aby wykryć Punkty Zainteresowania na Geosferze w promieniu 2000 KM (75% szans powodzenia). Statek nie może poruszać się w trakcie skanu (POZIOM 1).","• Дает СКАНИРОВАНИЕ: потратить 12 часов, 5 технологий и 30 материалов, чтобы найти неразведанные локации на Геоскейпе в радиусе 2000 км (вероятность успеха 75%). Самолет не сможет летать в это время (УРОВЕНЬ 1).",,
+TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_2_SINGLE,Text,,"• Provides SCAN ABILITY: spend 12 hours, 5 tech and 30 mat to detect Points of Interest on the Geoscape within 2000 KM (100% success rate). Aircraft cannot move during scan (TIER 2).
+• <b>Argus Eye:</b> operatives gain +10 Perception and +25% Accuracy on Return Fire and Overwatch attacks.",,,,,,"• Дает СКАНИРОВАНИЕ: потратить 12 часов, 5 технологий и 30 материалов, чтобы найти неразведанные локации на Геоскейпе в радиусе 2000 км (вероятность успеха 100%). Самолет не сможет летать в это время (УРОВЕНЬ 2).
 • <b>Глаз Аргуса:</b> бойцы получают увеличенное Восприятие при ответном огне и атаках при наблюдении.",,
-TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_ARGUS_EYE,Text,,• <b>Argus Eye:</b> operatives gain increased Perception during Return Fire and Overwatch attacks.,,,,,• <b>Oko Argusa:</b> operatorzy zyskują zwiększoną percepcję podczas Ognia Zwrotnego i ataków w Nadzorze.,• <b>Глаз Аргуса:</b> бойцы получают увеличенное Восприятие при ответном огне и атаках при наблюдении.,,
-TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_NJ_SateliteUplink,Text,,• SCAN ABILITY scan range incresed by 1000 and higher chance to detect Pandoran colonies after an attack on a Haven.,,• Portée de scan accrue et plus grandes chances de détecter les colonies Pandoriennes après une attaque sur un Refuge.,"• Größere Scan-Reichweite und höhere Chance, nach einem Angriff auf eine Zuflucht Pandorakolonien zu entdecken.",,• Zasięg umiejętności SKAN zwiększony o 1000 oraz większa szansa wykrycia kolonii Pandora po ataku na przystań.,"• СКАНЕР: радиус сканирования увеличивается на 1000, повышается шанс обнаружить колонию Пандоранов после атаки на Убежище.",,
-TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Citadel,Text,,• Detects Pandoran colonies on the Geoscape.,,• Détecte les colonies Pandoriennes sur le Géoscape.,• Entdeckt Pandorakolonien auf der Geoscape.,,• Wykrywa kolonie Pandora na Geosferze.,• Обнаруживает колонии Пандоранов на Геоскейпе.,,
+TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_ARGUS_EYE,Text,,• <b>Argus Eye:</b> operatives gain +10 Perception and +25% Accuracy on Return Fire and Overwatch attacks.,,,,,,,,
+TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_NJ_SateliteUplink,Text,,• SCAN ABILITY scan range increased by 1000 and higher chance to detect Pandoran colonies after an attack on a Haven.,,• Portée de scan accrue et plus grandes chances de détecter les colonies Pandoriennes après une attaque sur un Refuge.,"• Größere Scan-Reichweite und höhere Chance, nach einem Angriff auf eine Zuflucht Pandorakolonien zu entdecken.",,• Zasięg umiejętności SKAN zwiększony o 1000 oraz większa szansa wykrycia kolonii Pandora po ataku na przystań.,"• СКАНЕР: радиус сканирования увеличивается на 1000, повышается шанс обнаружить колонию Пандоранов после атаки на Убежище.",,
+TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Citadel,Text,,• Detects Pandoran colonies on the Geoscape (requires Satellite Uplink).,,,,,,,,
 TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Colony,Text,,• Reveals Hatching Sentinels in Nests on mission start.,,• Révèle les Sentinelles dans les Nids dès le début de la mission.,• Enthüllt Brutwächter in Nestern zu Missionsbeginn.,,• Ujawnia Sentinele Wylęgowe w Gniazdach na początku misji.,• Показывает Стражей-наседок в Гнездах при старте миссии.,,
 TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Lair,Text,,• Reveals Spawnery in Lairs on mission start.,,• Révèle l'Ecloserie dans les Repaires dès le début de la mission.,• Enthüllt Brutstätte in Schlupfwinkeln zu Missionsbeginn.,,• Ujawnia Wylęgarnię w Legowiskach na początku misji.,• Показывает Инкубаторы в Логовах при старте миссии.,,
 TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_1_SINGLE,Text,,"• Repairs vehicles, heals operatives with at least one Bionic and recovers their Stamina (TIER 1).",,"• Répare les véhicules, soigne les agents ayant au moins un module cybernétique et restaure leur Endurance (NIVEAU 1).","• Repariert Fahrzeuge, heilt Einheiten mit mindestens einer Bionik und stellt ihre Ausdauer wieder her (STUFE 1).",,"• Naprawia pojazdy, leczy operatorów z co najmniej jedną wszczepioną bioniką i przywraca im wytrzymałość (POZIOM 1).","• Ремонтирует машины, лечит бойцов с хотя бы 1-й аугментацией и восстанавливает их Выносливость (УРОВЕНЬ 1).",,
 TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_2_SINGLE,Text,,"• Repairs vehicles, heals operatives with at least one Bionic and recovers their Stamina faster (TIER 2).
-• Reduces bionics repair cost by 33%.",,"• Répare les véhicules, soigne les agents ayant au moins un module cybernétique et restaure leur Endurance plus rapidement (NIVEAU 2).
-• Réduit les coûts de réparation des modules cybernétiques de 33 %.","• Repariert Fahrzeuge, heilt Einheiten mit mindestens einer Bionik und stellt ihre Ausdauer schneller wieder her (STUFE 2).
-• Reduziert Reparaturkosten für Bionik um 33%.",,"• Naprawia pojazdy, leczy operatorów z co najmniej jedną wszczepioną bioniką i szybciej przywraca im wytrzymałość (POZIOM 2).
-• Zmniejsza koszt naprawy bioniki o 33%.","• Ремонтирует машины, лечит бойцов с хотя бы 1-й аугментацией и быстро восстанавливает их Выносливость (УРОВЕНЬ 2).
-• Уменьшает стоимость ремонта аугментов на 33%.",,
+• Reduces bionics repair cost by 33%.",,,,,,,,
 TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_3_SINGLE,Text,,"• Repairs vehicles, heals operatives with at least one Bionic and recovers their Stamina fastest (TIER 3).
-• Reduces bionics repair cost by 66%.",,"• Répare les véhicules, soigne les agents ayant au moins un module cybernétique et restaure leur Endurance encore plus rapidement (NIVEAU 3).
-• Réduit les coûts de réparation des modules cybernétiques de 66 %.","• Repariert Fahrzeuge, heilt Einheiten mit mindestens einer Bionik und stellt ihre Ausdauer am schnellsten wieder her (STUFE 3).
-• Reduziert Reparaturkosten für Bionik um 66%.",,"• Naprawia pojazdy, leczy operatorów z co najmniej jedną wszczepioną bioniką i najszybciej przywraca im wytrzymałość (POZIOM 3).
-• Zmniejsza koszt naprawy bioniki o 66%.","• Ремонтирует машины, лечит бойцов с хотя бы 1-й аугментацией и очень быстро восстанавливает их Выносливость (УРОВЕНЬ 3).
-• Уменьшает стоимость ремонта аугментов на 66%.",,
+• Reduces bionics repair cost by 66%.",,,,,,,,
 TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_PX_Alien_LiveAcheron,Text,,• Acid reduces 20 instead of 10 per turn on bionic bodyparts and vehicles.,,• L'acide réduit de 20 au lieu de 10 par tour sur les parties du corps cybernétiques et les véhicules.,• Reduziert Säure an bionischen Körperteilen und Fahrzeugen um 20 statt 10 pro Runde.,,• Kwas zmniejsza się o 20 zamiast o 10 na turę na bionicznych częściach ciała i pojazdach.,• Действие кислоты на аугменты и машины снижается на 20 вместо 10 за ход.,,
 TFTV_THUNDERBIRD_RANGE_MODULE_BENEFIT_1_SINGLE,Text,,"• Increases range by 1000, speed by 50 and aircraft maintenance loss reduced by 25% (TIER 1).",,"• Augmente la portée de 1000, la vitesse de 50 et réduit les coûts d'entretien de l'appareil de 25% (NIVEAU 1).","• Erhöht Reichweite um 1000, Geschwindigkeit um 50 und reduziert Wartungsverlust um 25% (STUFE 1).",,"• Zwiększa zasięg o 1000, prędkość o 50, a utrata sprawności przez eksploatację jest zmniejszona o 25% (POZIOM 1).","• Увеличивает дальность на 1000, скорость на 50 и снижает стоимость обслуживания самолета на 25% (УРОВЕНЬ 1).",,
 TFTV_THUNDERBIRD_RANGE_MODULE_BENEFIT_2_SINGLE,Text,,"• Increases range by 2000, speed by 100 and aircraft maintenance loss reduced by 50% (TIER 2).",,"• Augmente la portée de 2000, la vitesse de 100 et réduit les coûts d'entretien de l'appareil de 50% (NIVEAU 2).","• Erhöht Reichweite um 2000, Geschwindigkeit um 100 und reduziert Wartungsverlust um 50% (STUFE 2).",,"• Zwiększa zasięg o 2000, prędkość o 100, a utrata sprawności przez eksploatację jest zmniejszona o 50% (POZIOM 2).","• Увеличивает дальность на 2000, скорость на 100 и снижает стоимость обслуживания самолета на 50% (УРОВЕНЬ 2).",,
 TFTV_THUNDERBIRD_RANGE_MODULE_BENEFIT_3_SINGLE,Text,,"• Increases range by 3000, speed by 150 and aircraft maintenance loss reduced by 75% (TIER 3).",,"• Augmente la portée de 3000, la vitesse de 150 et réduit les coûts d'entretien de l'appareil de 75% (NIVEAU 3).","• Erhöht Reichweite um 3000, Geschwindigkeit um 150 und reduziert Wartungsverlust um 75% (STUFE 3).",,"• Zwiększa zasięg o 3000, prędkość o 150, a utrata sprawności przez eksploatację jest zmniejszona o 75% (POZIOM 3).","• Увеличивает дальность на 3000, скорость на 150 и снижает стоимость обслуживания самолета на 75% (УРОВЕНЬ 3).",,
 TFTV_THUNDERBIRD_RANGE_MODULE_BENEFIT_4_SINGLE,Text,,"• Increases range by 4000, speed by 200 and aircraft maintenance loss reduced by 100% (TIER 4).",,"• Augmente la portée de 4000, la vitesse de 200 et réduit les coûts d'entretien de l'appareil de 100% (NIVEAU 4).","• Erhöht Reichweite um 4000, Geschwindigkeit um 200 und reduziert Wartungsverlust um 100% (STUFE 4).",,"• Zwiększa zasięg o 4000, prędkość o 200, a utrata sprawności przez eksploatację jest zmniejszona o 100% (POZIOM 4).","• Увеличивает дальность на 4000, скорость на 200 и снижает стоимость обслуживания самолета на 100% (УРОВЕНЬ 4).",,
-KEY_AFFINITY_TITLE_PSYCHO_SOCIOLOGY_0,Text,,PSYCHO-SOCIOLOGY,,,,,,,,
-KEY_AFFINITY_TITLE_PSYCHO_SOCIOLOGY_1,Text,,PSYCHO-SOCIOLOGY 2,,,,,,,,
-KEY_AFFINITY_TITLE_PSYCHO_SOCIOLOGY_2,Text,,PSYCHO-SOCIOLOGY 3,,,,,,,,
-KEY_AFFINITY_DESC_PSYCHO_SOCIOLOGY_0,Text,,Resolve Incidents with PSYCHO-SOCIOLOGY approach x2 faster,,,,,,,,
-KEY_AFFINITY_DESC_PSYCHO_SOCIOLOGY_1,Text,,Resolve Incidents with PSYCHO-SOCIOLOGY approach x4 faster,,,,,,,,
-KEY_AFFINITY_DESC_PSYCHO_SOCIOLOGY_2,Text,,Resolve Incidents with PSYCHO-SOCIOLOGY approach x6 faster,,,,,,,,
-KEY_AFFINITY_TITLE_EXPLORATION_0,Text,,EXPLORATION,,,,,,,,
-KEY_AFFINITY_TITLE_EXPLORATION_1,Text,,EXPLORATION 2,,,,,,,,
-KEY_AFFINITY_TITLE_EXPLORATION_2,Text,,EXPLORATION 3,,,,,,,,
-KEY_AFFINITY_DESC_EXPLORATION_0,Text,,Resolve Incidents with EXPLORATION approach x2 faster,,,,,,,,
-KEY_AFFINITY_DESC_EXPLORATION_1,Text,,Resolve Incidents with EXPLORATION approach x4 faster,,,,,,,,
-KEY_AFFINITY_DESC_EXPLORATION_2,Text,,Resolve Incidents with EXPLORATION approach x6 faster,,,,,,,,
-KEY_AFFINITY_TITLE_OCCULT_0,Text,,OCCULT,,,,,,,,
-KEY_AFFINITY_TITLE_OCCULT_1,Text,,OCCULT 2,,,,,,,,
-KEY_AFFINITY_TITLE_OCCULT_2,Text,,OCCULT 3,,,,,,,,
-KEY_AFFINITY_DESC_OCCULT_0,Text,,Resolve Incidents with OCCULT approach x2 faster,,,,,,,,
-KEY_AFFINITY_DESC_OCCULT_1,Text,,Resolve Incidents with OCCULT approach x4 faster,,,,,,,,
-KEY_AFFINITY_DESC_OCCULT_2,Text,,Resolve Incidents with OCCULT approach x6 faster,,,,,,,,
-KEY_AFFINITY_TITLE_BIOTECH_0,Text,,BIOTECH,,,,,,,,
-KEY_AFFINITY_TITLE_BIOTECH_1,Text,,BIOTECH 2,,,,,,,,
-KEY_AFFINITY_TITLE_BIOTECH_2,Text,,BIOTECH 3,,,,,,,,
-KEY_AFFINITY_DESC_BIOTECH_0,Text,,Resolve Incidents with BIOTECH approach x2 faster,,,,,,,,
-KEY_AFFINITY_DESC_BIOTECH_1,Text,,Resolve Incidents with BIOTECH approach x4 faster,,,,,,,,
-KEY_AFFINITY_DESC_BIOTECH_2,Text,,Resolve Incidents with BIOTECH approach x6 faster,,,,,,,,
-KEY_AFFINITY_TITLE_MACHINERY_0,Text,,MACHINERY,,,,,,,,
-KEY_AFFINITY_TITLE_MACHINERY_1,Text,,MACHINERY 2,,,,,,,,
-KEY_AFFINITY_TITLE_MACHINERY_2,Text,,MACHINERY 3,,,,,,,,
-KEY_AFFINITY_DESC_MACHINERY_0,Text,,Resolve Incidents with MACHINERY approach x2 faster,,,,,,,,
-KEY_AFFINITY_DESC_MACHINERY_1,Text,,Resolve Incidents with MACHINERY approach x4 faster,,,,,,,,
-KEY_AFFINITY_DESC_MACHINERY_2,Text,,Resolve Incidents with MACHINERY approach x6 faster,,,,,,,,
-KEY_AFFINITY_TITLE_COMPUTE_0,Text,,COMPUTE,,,,,,,,
-KEY_AFFINITY_TITLE_COMPUTE_1,Text,,COMPUTE 2,,,,,,,,
-KEY_AFFINITY_TITLE_COMPUTE_2,Text,,COMPUTE 3,,,,,,,,
-KEY_AFFINITY_DESC_COMPUTE_0,Text,,Resolve Incidents with COMPUTE approach x2 faster,,,,,,,,
-KEY_AFFINITY_DESC_COMPUTE_1,Text,,Resolve Incidents with COMPUTE approach x4 faster,,,,,,,,
-KEY_AFFINITY_DESC_COMPUTE_2,Text,,Resolve Incidents with COMPUTE approach x6 faster,,,,,,,,
-KEY_BASE_ACTIVATE_DESCRIPTION,Text,,View inactive Phoenix Project base. Can be used remotely to initiate Scan to detect nearby Points of Interest. Visit with an Aircraft for more options.,,,,,,,,
-KEY_BASE_ACTIVATE_NAME,Text,,INACTIVE PHOENIX BASE,,,,,,,,
-KEY_BASE_ACTIVATE_NOTIFICATION_ACTIVATED,Text,,Phoenix Base is already operational.,,,,,,,,
-KEY_BASE_PING_SCAN_TOOLTIP,Text,,Perform a Scan to detects some of the Points of Interest on the Geoscape within 2000 KM of the base (50% success rate). Takes 12 hours to complete. Need to have an Aircraft within 4000Km of the base.,,,,,,,,
-KEY_BASE_PING_SCAN_OPTION,Text,,Initiate a Scan,,,,,,,,
-KEY_BASE_RANSACK_TOOLTIP,Text,,"Permanently destroys the Phoenix base; receive resources as from demolishing every facility at the base (and a little extra, amount depending on Difficulty).",,,,,,,,
-KEY_BASE_RANSACK_OPTION,Text,,Ransack,,,,,,,,
-KEY_BASE_OUTPOST_OPTION,Text,,Set up an Outpost,,,,,,,,
-KEY_BASE_OUTPOST_TOOLTIP,Text,,"You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Takes 24 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.",,,,,,,,
-KEY_BASE_OUTPOST_UPGRADE_OPTION,Text,,Upgrade to regular Base,,,,,,,,
-KEY_BASE_ACTIVATE_OPTION,Text,,Activate the Base,,,,,,,,
-KEY_BASE_OUTPOST_UPGRADE_TOOLTIP,Text,,Upgrade the Outpost to a regular Base. Takes 48 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.,,,,,,,,
-KEY_BASE_ACTIVATE_OPTION_TOOLTIP,Text,,Activate the Base. Any damaged Facilities will still need to be repaired after the activation. Takes 72 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.,,,,,,,,
-KEY_BASE_ALREADY_LOOTED,Text,,You have already looted this place!,,,,,,,,
-KEY_BASE_VISIT_TO_LOOT,Text,,Explore the base to get valuable loot!,,,,,,,,
-KEY_BASE_LOOT_YOU_FOUND,Text,,You found:,,,,,,,,
-KEY_OUTPOST_ACTIVATED_TITLE,Text,,Outpost operational,,,,,,,,
-KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.",,,,,,,,
-KEY_INCIDENT_START_OPTION,Text,,INITIATE INCIDENT RESOLUTION,,,,,,,,
-KEY_INCIDENT_START_OPTION_TOOLTIP,Text,,"Starts the Incident event. After choosing how to approach the Incident, Aircraft must stay at the Haven. Moving the Aircraft before the Incident is resolved will result in Failure. ",,,,,,,,
-KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit: Haven Defense rewards +{0}%.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Geoscape Benefit: All operatives in the aircraft recover {0} Stamina after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_1,Text,,Geoscape Benefit: Exploration is {0} hour(s) faster.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_2,Text,,Geoscape Benefit : Chances of detecting Pandoran Colonies after an attack increased by {0}%,,,,,,,,
-KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_1,Text,,Geoscape Benefit : Receive a {0}-hour warning before an attack on a Phoenix Base.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_2,Text,,Geoscape Benefit : {0}% less penalty and {0}% more buff from flying in Mist.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_1,Text,,Geoscape Benefit : Operatives recover {0} HP after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_2,Text,,Geoscape Benefit : Haven Leaders visited by this character gain +{0} Rep toward Phoenix Project.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_1,Text,,Geoscape Benefit : Vehicles recover {0} HP after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_2,Text,,Geoscape Benefit : {0}% less Aircraft maintenance loss.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_1,Text,,Geoscape Benefit : Aircraft speed increased by {0}%.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_2,Text,,Geoscape Benefit : Receive advance warning of possible attacks on Havens.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Tactical Benefit : Allies recover +{0} WP when activating Recovery.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Tactical Benefit : Increase friendly Haven deployment by {0}%.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_1,Text,,Tactical Benefit : Enemies are {0}% more likely to drop loot.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_2,Text,,"Tactical Benefit : Gain immediate control of {0} friendly Haven defender at mission start, and +{1} WP when extracting civilians.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_1,Text,,Tactical Benefit : Reduce TBTV chance by {0}%.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_2,Text,,"Tactical Benefit : For all allies, effect of Stamina on Delirium increased by {0}%.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_1,Text,,"Tactical Benefit : Gain passive ability: Using a Medkit or a Virophage Kit gives the target Ignore Pain status for {0} turn(s), allowing the target to ignore disabled limbs for that duration.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} WP that the target had lost to Delirium; lasts only for the duration of the mission.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_1,Text,,"Tactical Benefit : Gain active ability: Overdrive - restore {0} AP to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)",,,,,,,,
-KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} Armor on each body part of the target.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_1,Text,,Tactical Benefit : Gain passive ability: Ground vehicles with character inside gain +{0} movement and +{1}% accuracy.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_2,Text,,"Tactical Benefit : For all Allies, Perception vs Pandorans increased by {0}% of the total amount of Delirium in the squad, up to +{1}.",,,,,,,,
-KEY_AFFINITY_CHOICE_UI_HEADER,Text,,Affinity Benefits,,,,,,,,
-KEY_AFFINITY_CHOICE_UI_GRANTED,Text,,{0} rank {1} granted.,,,,,,,,
-KEY_AFFINITY_CHOICE_UI_TRACK_GEOSCAPE,Text,,Geoscape,,,,,,,,
-KEY_AFFINITY_CHOICE_UI_TRACK_TACTICAL,Text,,Tactical,,,,,,,,
-KEY_AFFINITY_CHOICE_UI_SELECTED,Text,,Selected: {0},,,,,,,,
-KEY_AFFINITY_CHOICE_UI_OPTION_A,Text,,Option A: {0},,,,,,,,
-KEY_AFFINITY_CHOICE_UI_OPTION_B,Text,,Option B: {0},,,,,,,,
-KEY_AFFINITY_OCCULT_BASE_ATTACK_WARNING,Text,,Occult warning: {0} is expected to be attacked in approximately {1} hour(s),,,,,,,,
-TFTV_KEY_MACHINERY_REPAIR_NAME,Text,,Machinery Repair,,,,,,,,
-TFTV_KEY_MACHINERY_REPAIR_OPTION1_DESC,Text,,Restore up to {bodyparthealamount} hit points to each damaged metallic body part. Cannot affect organic targets.,,,,,,,,
-TFTV_KEY_MACHINERY_REPAIR_OPTION2_DESC,Text,,Restore up to {bodyparthealamount} armor on each body part.,,,,,,,,
-KEY_BASE_REWORK_JUST_A_GRUNT_NAME,Text,,Just a grunt,,,,,,,,
-KEY_BASE_REWORK_JUST_A_GRUNT_DESCRIPTION,Text,,"This character can't develop Affinities, contribute to Incident resolution, or be assigned to Research or Manufacturing.",,,,,,,,
-KEY_FIELD_OPERATIVES,Text,,FIELD OPERATIVES,,,,,,,,
-KEY_BASE_RECRUITS_ROSTER_DESCRIPTION,Text,,"Assign personnel to Research, Manufacturing, or Training, or Deploy them",,,,,,,,
-Danforth/KEY_BASE_RECRUITS_ROSTER_NAME,Text,,ASSIGNMENTS,,,,,,,,
-KEY_BASE_DISMISS_PERSON,Text,,"Dismiss operative from field duty, allowing them to be assigned to Research or Manufacturing, or Redeployed (cost 10 SP per level above 1). All equipment will be put in storage.",,,,,,,,
-KEY_BASE_DISMISS_PERSON_PROMPT,Text,,"Are you sure you want to dismiss {0} from field duty? If you do their equipment will be placed in storage. They can then be assigned to Research or Manufacturing, or Redeployed (cost 10 SP per level above 1).",,,,,,,,
-KEY_GEOSCAPE_SOLDIERS_TT,Text,,Phoenix operatives on active field duty,,,,,,,,
-KEY_SOLDIERS_COUNT_TT,Text,,PERSONNEL - recruited / living quarters capacity,,,,,,,,
+KEY_AFFINITY_TITLE_PSYCHO_SOCIOLOGY_0,Text,,PSYCHO-SOCIOLOGY,,,,,,ПСИХО-СОЦИОЛОГИЯ,,
+KEY_AFFINITY_TITLE_PSYCHO_SOCIOLOGY_1,Text,,PSYCHO-SOCIOLOGY 2,,,,,,ПСИХО-СОЦИОЛОГИЯ 2,,
+KEY_AFFINITY_TITLE_PSYCHO_SOCIOLOGY_2,Text,,PSYCHO-SOCIOLOGY 3,,,,,,ПСИХО-СОЦИОЛОГИЯ 3,,
+KEY_AFFINITY_DESC_PSYCHO_SOCIOLOGY_0,Text,,Resolve Incidents with PSYCHO-SOCIOLOGY approach x2 faster,,,,,,"Устраняйте Инциденты в 2 раза быстрее, применяя способности к ПСИХО-СОЦИОЛОГИИ.",,
+KEY_AFFINITY_DESC_PSYCHO_SOCIOLOGY_1,Text,,Resolve Incidents with PSYCHO-SOCIOLOGY approach x4 faster,,,,,,"Устраняйте Инциденты в 4 раза быстрее, применяя способности к ПСИХО-СОЦИОЛОГИИ.",,
+KEY_AFFINITY_DESC_PSYCHO_SOCIOLOGY_2,Text,,Resolve Incidents with PSYCHO-SOCIOLOGY approach x6 faster,,,,,,"Устраняйте Инциденты в 6 раз быстрее, применяя способности к ПСИХО-СОЦИОЛОГИИ.",,
+KEY_AFFINITY_TITLE_EXPLORATION_0,Text,,EXPLORATION,,,,,,РАЗВЕДКА,,
+KEY_AFFINITY_TITLE_EXPLORATION_1,Text,,EXPLORATION 2,,,,,,РАЗВЕДКА 2,,
+KEY_AFFINITY_TITLE_EXPLORATION_2,Text,,EXPLORATION 3,,,,,,РАЗВЕДКА 3,,
+KEY_AFFINITY_DESC_EXPLORATION_0,Text,,Resolve Incidents with EXPLORATION approach x2 faster,,,,,,"Устраняйте Инциденты в 2 раза быстрее, применяя способности к РАЗВЕДКЕ.",,
+KEY_AFFINITY_DESC_EXPLORATION_1,Text,,Resolve Incidents with EXPLORATION approach x4 faster,,,,,,"Устраняйте Инциденты в 4 раза быстрее, применяя способности к РАЗВЕДКЕ.",,
+KEY_AFFINITY_DESC_EXPLORATION_2,Text,,Resolve Incidents with EXPLORATION approach x6 faster,,,,,,"Устраняйте Инциденты в 6 раз быстрее, применяя способности к РАЗВЕДКЕ.",,
+KEY_AFFINITY_TITLE_OCCULT_0,Text,,OCCULT,,,,,,МИСТИКА,,
+KEY_AFFINITY_TITLE_OCCULT_1,Text,,OCCULT 2,,,,,,МИСТИКА 2,,
+KEY_AFFINITY_TITLE_OCCULT_2,Text,,OCCULT 3,,,,,,МИСТИКА 3,,
+KEY_AFFINITY_DESC_OCCULT_0,Text,,Resolve Incidents with OCCULT approach x2 faster,,,,,,"Устраняйте Инциденты в 2 раза быстрее, применяя способности к МИСТИКЕ.",,
+KEY_AFFINITY_DESC_OCCULT_1,Text,,Resolve Incidents with OCCULT approach x4 faster,,,,,,"Устраняйте Инциденты в 4 раза быстрее, применяя способности к МИСТИКЕ.",,
+KEY_AFFINITY_DESC_OCCULT_2,Text,,Resolve Incidents with OCCULT approach x6 faster,,,,,,"Устраняйте Инциденты в 6 раз быстрее, применяя способности к МИСТИКЕ.",,
+KEY_AFFINITY_TITLE_BIOTECH_0,Text,,BIOTECH,,,,,,БИОТЕХНОЛОГИИ,,
+KEY_AFFINITY_TITLE_BIOTECH_1,Text,,BIOTECH 2,,,,,,БИОТЕХНОЛОГИИ 2,,
+KEY_AFFINITY_TITLE_BIOTECH_2,Text,,BIOTECH 3,,,,,,БИОТЕХНОЛОГИИ 3,,
+KEY_AFFINITY_DESC_BIOTECH_0,Text,,Resolve Incidents with BIOTECH approach x2 faster,,,,,,"Устраняйте Инциденты в 2 раза быстрее, применяя способности к БИОТЕХНОЛОГИЯМ.",,
+KEY_AFFINITY_DESC_BIOTECH_1,Text,,Resolve Incidents with BIOTECH approach x4 faster,,,,,,"Устраняйте Инциденты в 4 раза быстрее, применяя способности к БИОТЕХНОЛОГИЯМ.",,
+KEY_AFFINITY_DESC_BIOTECH_2,Text,,Resolve Incidents with BIOTECH approach x6 faster,,,,,,"Устраняйте Инциденты в 6 раз быстрее, применяя способности к БИОТЕХНОЛОГИЯМ.",,
+KEY_AFFINITY_TITLE_MACHINERY_0,Text,,MACHINERY,,,,,,МЕХАНИКА,,
+KEY_AFFINITY_TITLE_MACHINERY_1,Text,,MACHINERY 2,,,,,,МЕХАНИКА 2,,
+KEY_AFFINITY_TITLE_MACHINERY_2,Text,,MACHINERY 3,,,,,,МЕХАНИКА 3,,
+KEY_AFFINITY_DESC_MACHINERY_0,Text,,Resolve Incidents with MACHINERY approach x2 faster,,,,,,"Устраняйте Инциденты в 2 раза быстрее, применяя способности к МЕХАНИКЕ.",,
+KEY_AFFINITY_DESC_MACHINERY_1,Text,,Resolve Incidents with MACHINERY approach x4 faster,,,,,,"Устраняйте Инциденты в 4 раза быстрее, применяя способности к МЕХАНИКЕ.",,
+KEY_AFFINITY_DESC_MACHINERY_2,Text,,Resolve Incidents with MACHINERY approach x6 faster,,,,,,"Устраняйте Инциденты в 6 раз быстрее, применяя способности к МЕХАНИКЕ.",,
+KEY_AFFINITY_TITLE_COMPUTE_0,Text,,COMPUTE,,,,,,АНАЛИТИКА,,
+KEY_AFFINITY_TITLE_COMPUTE_1,Text,,COMPUTE 2,,,,,,АНАЛИТИКА 2,,
+KEY_AFFINITY_TITLE_COMPUTE_2,Text,,COMPUTE 3,,,,,,АНАЛИТИКА 3,,
+KEY_AFFINITY_DESC_COMPUTE_0,Text,,Resolve Incidents with COMPUTE approach x2 faster,,,,,,"Устраняйте Инциденты в 2 раза быстрее, применяя способности к АНАЛИТИКЕ.",,
+KEY_AFFINITY_DESC_COMPUTE_1,Text,,Resolve Incidents with COMPUTE approach x4 faster,,,,,,"Устраняйте Инциденты в 4 раза быстрее, применяя способности к АНАЛИТИКЕ.",,
+KEY_AFFINITY_DESC_COMPUTE_2,Text,,Resolve Incidents with COMPUTE approach x6 faster,,,,,,"Устраняйте Инциденты в 6 раз быстрее, применяя способности к АНАЛИТИКЕ.",,
+KEY_BASE_ACTIVATE_DESCRIPTION,Text,,View inactive Phoenix Project base. Can be used remotely to initiate Scan to detect nearby Points of Interest. Visit with an Aircraft for more options.,,,,,,"Просмотр заброшенной базы Проекта Феникс. Можно использовать дистанционно для запуска Сканирования и обнаружения близлежащих неразведанных локаций. Посетите базу на самолете, чтобы получить доступ к дополнительным возможностям.",,
+KEY_BASE_ACTIVATE_NAME,Text,,INACTIVE PHOENIX BASE,,,,,,ЗАБРОШЕННАЯ БАЗА ФЕНИКСА,,
+KEY_BASE_ACTIVATE_NOTIFICATION_ACTIVATED,Text,,Phoenix Base is already operational.,,,,,,База Феникса уже активирована,,
+KEY_BASE_PING_SCAN_TOOLTIP,Text,,Perform a Scan to detects some of the Points of Interest on the Geoscape within 2000 KM of the base (50% success rate). Takes 12 hours to complete. Need to have an Aircraft within 4000Km of the base.,,,,,,"Выполните Сканирование, чтобы обнаружить на Геоскейпе неразведанные локации в радиусе 2000 км от базы (вероятность успеха 50%). Процесс занимает 12 часов. Требуется наличие самолета в радиусе 4000 км от базы.",,
+KEY_BASE_PING_SCAN_OPTION,Text,,Initiate a Scan,,,,,,Начать Сканирование,,
+KEY_BASE_RANSACK_TOOLTIP,Text,,"Permanently destroys the Phoenix base; receive resources as from demolishing every facility at the base (and a little extra, amount depending on Difficulty).",,,,,,"Навсегда уничтожает базу Феникса - вы получите ресурсы, как при сносе всех строений на базе (а также небольшой бонус, размер которого зависит от уровня сложности).",,
+KEY_BASE_RANSACK_OPTION,Text,,Ransack,,,,,,Грабеж,,
+KEY_BASE_OUTPOST_OPTION,Text,,Set up an Outpost,,,,,,Построить Аванпост,,
+KEY_BASE_OUTPOST_TOOLTIP,Text,,"You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Takes 24 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.",,,,,,"На Аванпосте нельзя создавать строения, а также получать доход или иные преимущества от имеющихся. Восстановление здоровья, ремонт и восстановление выносливости находящихся там самолетов и юнитов происходят вдвое медленнее, чем на обычной базе с соответствующими строениями. Кроме того, Аванпосты помогают обнаруживать расположенные поблизости колонии Пандоранов после нападения на убежище. Аванпосты неуязвимы для атак. Впоследствии их можно перестроить в полноценную базу, затратив на это вдвое меньше ресурсов и 3 единицы персонала. Процесс занимает 24 часа.",,
+KEY_BASE_OUTPOST_UPGRADE_OPTION,Text,,Upgrade to regular Base,,,,,,Перестроить в обычную Базу,,
+KEY_BASE_ACTIVATE_OPTION,Text,,Activate the Base,,,,,,Активировать Базу,,
+KEY_BASE_OUTPOST_UPGRADE_TOOLTIP,Text,,Upgrade the Outpost to a regular Base. Takes 48 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.,,,,,,Перестроить Аванпост в обычную Базу. Процесс займет 48 часов.,,
+KEY_BASE_ACTIVATE_OPTION_TOOLTIP,Text,,Activate the Base. Any damaged Facilities will still need to be repaired after the activation. Takes 72 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.,,,,,,Активировать Базу. Поврежденные объекты все равно потребуется отремонтировать после активации. Процесс занимает 72 часа.,,
+KEY_BASE_ALREADY_LOOTED,Text,,You have already looted this place!,,,,,,Вы уже обчистили это место!,,
+KEY_BASE_VISIT_TO_LOOT,Text,,Explore the base to get valuable loot!,,,,,,"Разведайте базу, чтобы получить ценную добычу!",,
+KEY_BASE_LOOT_YOU_FOUND,Text,,You found:,,,,,,Вы нашли:,,
+KEY_OUTPOST_ACTIVATED_TITLE,Text,,Outpost operational,,,,,,Аванпост активирован,,
+KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.",,,,,,"Строительство Аванпоста завершено. На Аванпосте нельзя возводить строения, а также получать доход или иные преимущества от уже имеющихся. Находящиеся на Аванпосте самолеты и юниты восстанавливают здоровье, ремонтируются и восполняют выносливость вдвое медленнее, чем на обычной базе с соответствующими строениями. Кроме того, Аванпосты помогают обнаруживать расположенные поблизости колонии Пандоранов после нападения на убежище. Аванпосты неуязвимы для атак. Впоследствии их можно перестроить в обычную Базу, затратив на это вдвое меньше ресурсов и 3 единицы персонала.",,
+KEY_INCIDENT_START_OPTION,Text,,INITIATE INCIDENT RESOLUTION,,,,,,РАССЛЕДОВАТЬ ИНЦИДЕНТ,,
+KEY_INCIDENT_START_OPTION_TOOLTIP,Text,,"Starts the Incident event. After choosing how to approach the Incident, Aircraft must stay at the Haven. Moving the Aircraft before the Incident is resolved will result in Failure. ",,,,,,Запускает событие «Инцидент». После выбора способа действий в отношении Инцидента самолет должен оставаться в Убежище. Перемещение самолета до завершения Инцидента приведет к провалу.,,
+KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit: Haven Defense rewards +{0}%.,,,,,,Бонус Геоскейпа: Награда за защиту Убежища +{0}%,,
+KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Geoscape Benefit: All operatives in the aircraft recover {0} Stamina after mission.,,,,,,Бонус Геоскейпа: Все бойцы в самолете после миссии восстановят Выносливость: {0},,
+KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_1,Text,,Geoscape Benefit: Exploration is {0} hour(s) faster.,,,,,,Бонус Геоскейпа: Разведка локаций быстрее на несколько часов: {0},,
+KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_2,Text,,Geoscape Benefit : Chances of detecting Pandoran Colonies after an attack increased by {0}%,,,,,,Бонус Геоскейпа: Шанс обнаружить колонию Пандоранов после атаки выше на {0}%,,
+KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_1,Text,,Geoscape Benefit : Receive a {0}-hour warning before an attack on a Phoenix Base.,,,,,,Бонус Геоскейпа: Получение предупреждения об атаке на Базу Феникса за несколько часов: {0},,
+KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_2,Text,,Geoscape Benefit : {0}% less penalty and {0}% more buff from flying in Mist.,,,,,,"Бонус Геоскейпа: При полетах сквозь Туман штраф меньше на {0}%, бонус больше на {0}%",,
+KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_1,Text,,Geoscape Benefit : Operatives recover {0} HP after mission.,,,,,,Бонус Геоскейпа: Бойцы восстановят несколько Хитов после миссии: {0},,
+KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_2,Text,,Geoscape Benefit : Haven Leaders visited by this character gain +{0} Rep toward Phoenix Project.,,,,,,Бонус Геоскейпа: посещение Убежища этим персонажем даст прирост репутации Проекта Феникс в глазах лидера Убежища: +{0},,
+KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_1,Text,,Geoscape Benefit : Vehicles recover {0} HP after mission.,,,,,,Бонус Геоскейпа: Машины восстановят несколько Хитов после миссии: {0},,
+KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_2,Text,,Geoscape Benefit : {0}% less Aircraft maintenance loss.,,,,,,Бонус Геоскейпа: Стоимость обслуживания самолета снижена на {0}%,,
+KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_1,Text,,Geoscape Benefit : Aircraft speed increased by {0}%.,,,,,,Бонус Геоскейпа: Скорость самолета увеличена на {0}%,,
+KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_2,Text,,Geoscape Benefit : Receive advance warning of possible attacks on Havens.,,,,,,Бонус Геоскейпа: Получение заблаговременных предупреждений о возможных нападениях на Убежища,,
+KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Tactical Benefit : Allies recover +{0} WP when activating Recovery.,,,,,,Тактический бонус: Союзники при активации Восстановления получат дополнительные Очки Воли: +{0},,
+KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Tactical Benefit : Increase friendly Haven deployment by {0}%.,,,,,,Тактический бонус: Увеличение сил дружественных Убежищ на {0}%,,
+KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_1,Text,,Tactical Benefit : Enemies are {0}% more likely to drop loot.,,,,,,Тактический бонус: Шанс выпадения из врагов предметов больше на {0}%,,
+KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_2,Text,,"Tactical Benefit : Gain immediate control of {0} friendly Haven defender at mission start, and +{1} WP when extracting civilians.",,,,,,"Тактический бонус: к вашему отряду при старте миссии присоединится несколько местных бойцов: {0}, а при эвакуации гражданского восстановится несколько Очков Воли: +{1}",,
+KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_1,Text,,Tactical Benefit : Reduce TBTV chance by {0}%.,,,,,,Тактический бонус: Шанс появления Благословленных Пустотой меньше на {0}%,,
+KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_2,Text,,"Tactical Benefit : For all allies, effect of Stamina on Delirium increased by {0}%.",,,,,,Тактический бонус: Для всех союзников влияние Выносливости на Сонное Безумие больше на {0}%,,
+KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_1,Text,,"Tactical Benefit : Gain passive ability: Using a Medkit or a Virophage Kit gives the target Ignore Pain status for {0} turn(s), allowing the target to ignore disabled limbs for that duration.",,,,,,Тактический бонус: Пассивный навык: Использование на юните Аптечки (в том числе Вирофаговой) дает статус «Не так уж и больно» и возможность использовать выбитые конечности на несколько ходов: {0},,
+KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} WP that the target had lost to Delirium; lasts only for the duration of the mission.,,,,,,Тактический бонус: Пассивный навык: при лечении (аптечками или навыками) до конца миссии востанавливаются потерянные из-за Сонного Безумия Очки Воли: {0},,
+KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_1,Text,,"Tactical Benefit : Gain active ability: Overdrive - restore {0} AP to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)",,,,,,"Тактический бонус: Активный навык: Перезагрузка - восстанавливает Очки Действия машины или юнита с аугментом: {0}. Но уязвимость ко всем типам урона становится больше на 50% до конца следующего хода (стоимость 1 Очко Действия, 3 Очка Воли)",,
+KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} Armor on each body part of the target.,,,,,,Тактический бонус: Пассивный навык: при лечении (аптечками или навыками) восстановится Броня на каждой части тела юнита: {0},,
+KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_1,Text,,Tactical Benefit : Gain passive ability: Ground vehicles with character inside gain +{0} movement and +{1}% accuracy.,,,,,,Тактический бонус: Пассивный навык: машины с юнитом внутри получают прибавку к перемещению +{0} и точности +{1}%,,
+KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_2,Text,,"Tactical Benefit : For all Allies, Perception vs Pandorans increased by {0}% of the total amount of Delirium in the squad, up to +{1}.",,,,,,"Тактический бонус: У всех союзников Восприятие против Пандоранов увеличено на {0}% от общего количества Сонного Безумия на отряд, но не более чем на +{1}.",,
+KEY_AFFINITY_CHOICE_UI_HEADER,Text,,Affinity Benefits,,,,,,Бонусы Способностей,,
+KEY_AFFINITY_CHOICE_UI_GRANTED,Text,,{0} rank {1} granted.,,,,,,{1}: получен уровень {0},,
+KEY_AFFINITY_CHOICE_UI_TRACK_GEOSCAPE,Text,,Geoscape,,,,,,Геоскейп,,
+KEY_AFFINITY_CHOICE_UI_TRACK_TACTICAL,Text,,Tactical,,,,,,Тактика,,
+KEY_AFFINITY_CHOICE_UI_SELECTED,Text,,Selected: {0},,,,,,Выбрано: {0},,
+KEY_AFFINITY_CHOICE_UI_OPTION_A,Text,,Option A: {0},,,,,,Опция А: {0},,
+KEY_AFFINITY_CHOICE_UI_OPTION_B,Text,,Option B: {0},,,,,,Опция Б: {0},,
+KEY_AFFINITY_OCCULT_BASE_ATTACK_WARNING,Text,,Occult warning: {0} is expected to be attacked in approximately {1} hour(s),,,,,,Мистическое видение: ожидается атака на {0} через несколько часов: {1},,
+TFTV_KEY_MACHINERY_REPAIR_NAME,Text,,Machinery Repair,,,,,,Ремонт механизмов,,
+TFTV_KEY_MACHINERY_REPAIR_OPTION1_DESC,Text,,Restore up to {bodyparthealamount} hit points to each damaged metallic body part. Cannot affect organic targets.,,,,,,Восстановить несколько Хитов у каждой поврежденной металлической части тела: {bodyparthealamount}. Не действует на органику.,,
+TFTV_KEY_MACHINERY_REPAIR_OPTION2_DESC,Text,,Restore up to {bodyparthealamount} armor on each body part.,,,,,,Восстановить немного Брони у каждой части тела: {bodyparthealamount}.,,
+KEY_BASE_REWORK_JUST_A_GRUNT_NAME,Text,,Just a grunt,,,,,,Простой работяга,,
+KEY_BASE_REWORK_JUST_A_GRUNT_DESCRIPTION,Text,,"This character can't develop Affinities, contribute to Incident resolution, or be assigned to Research or Manufacturing.",,,,,,"Этот персонаж не может заключать партнерские соглашения, договора на урегулирование Инцидентов, заниматься Исследованиями или Производством.",,
+KEY_FIELD_OPERATIVES,Text,,FIELD OPERATIVES,,,,,,Бойцы,,
+KEY_BASE_RECRUITS_ROSTER_DESCRIPTION,Text,,"Assign personnel to Research, Manufacturing, or Training, or Deploy them",,,,,,"Назначайте персонал на Исследования, Производство, Обучение, либо отправляйте их на Миссии.",,
+Danforth/KEY_BASE_RECRUITS_ROSTER_NAME,Text,,ASSIGNMENTS,,,,,,НАЗНАЧЕНИЯ,,
+KEY_BASE_DISMISS_PERSON,Text,,"Dismiss operative from field duty, allowing them to be assigned to Research or Manufacturing, or Redeployed (cost 10 SP per level above 1). All equipment will be put in storage.",,,,,,"Перевести бойца из боевого отряда в резерв, что позволяет назначать на Исследования, Производство или Переводить обратно в боевой отряд (стоит 10 Очков Умений за каждый уровень больше 1-ого). Все снаряжение отправится на склад.",,
+KEY_BASE_DISMISS_PERSON_PROMPT,Text,,"Are you sure you want to dismiss {0} from field duty? If you do their equipment will be placed in storage. They can then be assigned to Research or Manufacturing, or Redeployed (cost 10 SP per level above 1).",,,,,,"Вы уверены, что хотите снять с боевого дежурства {0}? Если да, все снаряжение будет отправлено на склад. Станет доступно назначение на Исследования, Производство или Перевод обратно в боевой отряд (стоит 10 Очков Умений за каждый уровень больше 1-ого).",,
+KEY_GEOSCAPE_SOLDIERS_TT,Text,,Phoenix operatives on active field duty,,,,,,Бойцы Феникса на боевом дежурстве,,
+KEY_SOLDIERS_COUNT_TT,Text,,PERSONNEL - recruited / living quarters capacity,,,,,,ПЕРСОНАЛ - всего людей/объем жилых помещений,,
 KEY_RESEARCH_TOTAL_TT,Text,,"Research per hour generated (+ Research from personnel assigned to Research)
 (Research slots used/Research slots available). Each Research Lab generates 2 Research and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Research generates 2 Research, or more if they have an Affinity: 6 for Biotech, 4 for Compute, Occult and Psycho-Sociology. 
-The higher the number, the faster Technologies will be researched.",,,,,,,,
+The higher the number, the faster Technologies will be researched.",,,,,,"Получаемый бонус от Ученых в час (+ к Исследованиям за назначенный на Исследования персонал)
+(Занято слотов Ученых/Всего слотов Ученых). Каждая Лаборатория дает +2 к Исследованиям и имеет 1 слот для назначения персонала, не занятого на боевом дежурстве. Каждый назначенный Ученый дает +4 к Исследованиям. 
+Чем больше число, тем быстрее Технологии будут исследованы.",,
 KEY_PRODUCTION_TOTAL_TT,Text,,"Manufacturing per hour generated (+ Manufacturing from personnel assigned to Manufacturing)
 (Manufacturing slots used/Manufacturing slots available). Each Manufacturing Plant generates 2 Manufacturing and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Manufacturing generates 2 Manufacturing, or more if they have an Affinity: 6 for Machinery, 4 for Compute, Occult and Psycho-Sociology. 
-The higher the number, the faster the production of Equipment, Armor, Ground Vehicles and Aircraft.",,,,,,,,
-TFTV_TBTV_OCCULT_AFFINITY_REDUCTION,Text,,Occult affinity: {0} reduces Touched by the Void chance by {1}.,,,,,,,,
-KEY_BASE_RECRUITS_SPAWNED,Text,,"New personnel has arrived. Can be assigned to Manufacturing or Research, or deployed.",,,,,,,,
-TFTV_KEY_MACHINERY_OVERDRIVE_NAME,Text,,Overdrive,,,,,,,,
-TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R1,Text,,"Restore 1 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,,,
-TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R2,Text,,"Restore 2 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,,,
-TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R3,Text,,"Restore 3 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,,,
-TFTV_KEY_MACHINERY_OVERDRIVE_VULNERABILITY_NAME,Text,,Overdrive Vulnerability,,,,,,,,
-TFTV_KEY_MACHINERY_OVERDRIVE_VULNERABILITY_DESC,Text,,This unit is 50% more vulnerable to all types of Damage,,,,,,,,
-KEY_AFFINITY_INHERITANCE_TRANSFER_TO_RECIPIENT,Text,,Affinity Passed On: {0} -> {1},,,,,,,,
-KEY_AFFINITY_INHERITANCE_TRANSFER_BANKED,Text,,Affinity Passed On: {0} banked,,,,,,,,
+The higher the number, the faster the production of Equipment, Armor, Ground Vehicles and Aircraft.",,,,,,"Получаемый бонус от Инженеров в час (+ к Производству от персонала, назначенного на Производство)
+(Занято слотов Инженеров/Всего слотов Инженеров). Каждый Завод дает +2 к Производству и имеет 1 слот для назначения персонала, не занятого на боевом дежурстве. Каждый назначенный Инженер дает +4 к Производству.
+Чем больше число, тем быстрее производство Снаряжения, Брони, Машин и Самолетов.",,
+TFTV_TBTV_OCCULT_AFFINITY_REDUCTION,Text,,Occult affinity: {0} reduces Touched by the Void chance by {1}.,,,,,,Способности к Мистике: благодаря {0} снижается вероятность появления Благославленных Пустотой на {1}.,,
+KEY_BASE_RECRUITS_SPAWNED,Text,,"New personnel has arrived. Can be assigned to Manufacturing or Research, or deployed.",,,,,,"Новый персонал прибыл. Доступно назначение Ученым, Инженером или в боевой отряд.",,
+TFTV_KEY_MACHINERY_OVERDRIVE_NAME,Text,,Overdrive,,,,,,Перезагрузка,,
+TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R1,Text,,"Restore 1 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,"Восстановить 1 Очко Действия Машине или Бойцу с аугментом, но уязвимость ко всем типам урона станет больше на 50% до конца их следующего хода (стоимость 1 Очко Действия и 3 Очка Воли).",,
+TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R2,Text,,"Restore 2 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,"Восстановить 2 Очка Действия Машине или Бойцу с аугментом, но уязвимость ко всем типам урона станет больше на 50% до конца их следующего хода (стоимость 1 Очко Действия и 3 Очка Воли).",,
+TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R3,Text,,"Restore 3 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,"Восстановить 3 Очка Действия Машине или Бойцу с аугментом, но уязвимость ко всем типам урона станет больше на 50% до конца их следующего хода (стоимость 1 Очко Действия и 3 Очка Воли).",,
+TFTV_KEY_MACHINERY_OVERDRIVE_VULNERABILITY_NAME,Text,,Overdrive Vulnerability,,,,,,Уязвимость при Перезагрузке,,
+TFTV_KEY_MACHINERY_OVERDRIVE_VULNERABILITY_DESC,Text,,This unit is 50% more vulnerable to all types of Damage,,,,,,Этот юнит имеет уязвимость ко всем типам урона больше на 50%,,
+KEY_AFFINITY_INHERITANCE_TRANSFER_TO_RECIPIENT,Text,,Affinity Passed On: {0} -> {1},,,,,,Способности переданы: {0} -> {1},,
+KEY_AFFINITY_INHERITANCE_TRANSFER_BANKED,Text,,Affinity Passed On: {0} banked,,,,,,Способности сохранены: {0},,
 KEY_AFFINITY_PSYCHO_SOCIOLOGY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Haven Defense rewards +15% per Affinity Rank
@@ -265,7 +254,17 @@ OR
 Base Duty Benefits (always active, do not scale with rank):
 
 - Generates 4 Research or 4 Manufacturing when assigned to a worker slot.
-- Counts as 3 Personnel when spent to set up an Outpost or to activate a Base.",,,,,,,,
+- Counts as 3 Personnel when spent to set up an Outpost or to activate a Base.",,,,,,"Бонусы Геоскейпа (выберите один общий):
+
+- Награда за защиту Убежища +15% за каждый уровень Способностей.
+ИЛИ
+- Все бойцы в самолете после миссии восстанавливают 3 Выносливости за каждый уровень Способностей.
+
+Тактические Бонусы (выберите один общий):
+
+- Союзники при активации Восстановления восстанавливают +2 Очка Воли за каждый уровень Способностей.
+ИЛИ
+- Повысить количество защитников дружественных Убежищ на 50% за каждый уровень Способностей.",,
 KEY_AFFINITY_EXPLORATION_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Exploration is 1 hour faster per Affinity Rank.
@@ -280,7 +279,17 @@ OR
 
 Base Duty Benefits (always active, do not scale with rank):
 
-- Can be trained up to Level 6.",,,,,,,,
+- Can be trained up to Level 6.",,,,,,"Бонусы Геоскейпа (выберите один общий):
+
+- Разведка локаций на 1 час быстрее за каждый уровень Способностей.
+ИЛИ
+- Шансы обнаружить Колонии Пандоранов после атаки повышаются на 15% за каждый уровень Способностей.
+
+Тактические Бонусы (выберите один общий):
+
+- Вероятность выпадения из врагов предметов повышается на 15% за каждый уровень Способностей.
+ИЛИ
+- Немедленно брать под контроль защитников дружественного Убежища в начале миссии, восстанавливать Очки Воли при эвакуации гражданских (1 за каждый уровень Способностей).",,
 KEY_AFFINITY_OCCULT_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Receive a 1 day per Affinity Rank warning before an attack on a Phoenix Base.
@@ -296,7 +305,17 @@ OR
 Base Duty Benefits (always active, do not scale with rank):
 
 - Generates 4 Research or 4 Manufacturing when assigned to a worker slot.
-- Can be trained up to Level 5.",,,,,,,,
+- Can be trained up to Level 5.",,,,,,"Бонусы Геоскейпа (выберите один общий):
+
+- Получать предупреждения об атаках на базы Феникса заранее (+1 день за каждый уровень Способностей).
+ИЛИ
+- Меньше штраф/больше бонус при полете через Туман на 15% за каждый уровень Способностей.
+
+Тактические Бонусы (выберите один общий):
+
+- Уменьшить шанс появления Благославленных Пустотой на 5% за каждый уровень Способностей.
+ИЛИ
+- Влияние Выносливости на Сонное Безумие для всех союзников повышается на 50% за каждый уровень Способностей.",,
 KEY_AFFINITY_BIOTECH_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Operatives recover 30 HP per Affinity Rank after mission.
@@ -311,7 +330,17 @@ OR
 
 Base Duty Benefits (always active, do not scale with rank):
 
-- Generates 6 Research when assigned to a Research slot (2 Manufacturing on a Manufacturing slot).",,,,,,,,
+- Generates 6 Research when assigned to a Research slot (2 Manufacturing on a Manufacturing slot).",,,,,,"Бонусы Геоскейпа (выберите один общий):
+
+- Бойцы после миссии восстанавливают 30 Хитов за каждый уровень Способностей.
+ИЛИ
+- Лидеры Убежищ, посещенные данным персонажем, улучшат свое отношение к проекту Феникс на 15 за каждый уровень Способностей.
+
+Тактические Бонусы (выберите один общий):
+
+- Получить пассивный Навык: Использование на юните Аптечки (в том числе Вирофаговой) дает статус «Не так уж и больно» и возможность использовать выбитые конечности некоторое время (+1 ход за каждый уровень Способностей).
+ИЛИ
+- Получить пассивный Навык: При лечении (аптечками или навыками) восстановится до конца миссии до 3-х Очков Воли, потерянных из-за Сонного Безумия, за каждый уровень Способностей.",,
 KEY_AFFINITY_MACHINERY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Vehicles recover 150 HP per Affinity Rank after mission.
@@ -326,7 +355,17 @@ OR
 
 Base Duty Benefits (always active, do not scale with rank):
 
-- Generates 6 Manufacturing when assigned to a Manufacturing slot (2 Research on a Research slot).",,,,,,,,
+- Generates 6 Manufacturing when assigned to a Manufacturing slot (2 Research on a Research slot).",,,,,,"Бонусы Геоскейпа (выберите один общий):
+
+- Машины после миссии восстанавливают 150 Хитов за каждый уровень Способностей.
+ИЛИ
+- Стоимость обслуживания самолета снижена на 25% за каждый уровень Способностей.
+
+Тактические Бонусы (выберите один общий):
+
+- Получить активный Навык: Перезагрузка - восстанавить Очки Действия машины или юнита с аугментом (1 за каждый уровень Способностей). Но получить уязвимость ко всем типам урона больше на 50% до конца следующего хода (стоимость 1 Очко Действия, 3 Очка Воли).
+ИЛИ
+- Получить пассивный Навык: при лечении (аптечками или навыками) восстановится 4 Брони на каждой части тела юнита за каждый уровень Способностей.",,
 KEY_AFFINITY_COMPUTE_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Aircraft speed increased by 10% per Affinity Rank.
@@ -342,12 +381,22 @@ OR
 Base Duty Benefits (always active, do not scale with rank):
 
 - Generates 4 Research or 4 Manufacturing when assigned to a worker slot.
-- Can be trained up to Level 5.",,,,,,,,
-ALISTAIR_ON_INCIDENTS_0_TITLE,Text,,Incident,,,,,,,,
-ALISTAIR_ON_INCIDENTS_0_TEXT,Text,,"Director, we just learned of an incident taking place at a haven that we have visited previously. If we resolve it, perhaps we will learn something valuable, and it can't hurt to show the havens and the factions that we are trying to help.",,,,,,,,
-ALISTAIR_ON_INCIDENTS_1_TITLE,Text,,Human Resources,,,,,,,,
-ALISTAIR_ON_INCIDENTS_1_TEXT,Text,,"Director, we desperately need additional personnel, individuals who have what it takes to be in the Phoenix Project: ingenuity, intellectual curiosity and courage. It turns out that resolving incidents like this one might be the best way to attract new members; wanting to join up after seeing us at work attracts exactly the kind of people we are looking for.",,,,,,,,
-TUTORIAL_PERSONNEL_TITLE0,Text,,Personnel Management,,,,,,,,
+- Can be trained up to Level 5.",,,,,,"Бонусы Геоскейпа (выберите один общий):
+
+- Скорость самолета больше на 10% за каждый уровень Способностей.
+ИЛИ
+- Предупреждение об возможной атаке на Убежище придет заранее (+4 часа за каждый уровень Способностей).
+
+Тактические Бонусы (выберите один общий):
+
+- Получить пассивный Навык: Машины с персонажем на борту получают +3 к перемещению и +10% к точности за каждый уровень Способностей.
+ИЛИ
+- У всех союзников Восприятие против Пандоранов увеличено на 1 за каждый уровень Способностей за каждые 3ед. общего количества Сонного Безумия на отряд, но не более чем на +10 за каждый уровень Способностей.",,
+ALISTAIR_ON_INCIDENTS_0_TITLE,Text,,Incident,,,,,,Инцидент,,
+ALISTAIR_ON_INCIDENTS_0_TEXT,Text,,"Director, we just learned of an incident taking place at a haven that we have visited previously. If we resolve it, perhaps we will learn something valuable, and it can't hurt to show the havens and the factions that we are trying to help.",,,,,,"Директор, мы только что узнали об Инциденте, произошедшем в Убежище, которое мы уже посещали. Если мы его разрешим, возможно, мы узнаем что-то ценное, к тому же не помешает показать Убежищам и Фракциям, что мы стараемся им помочь.",,
+ALISTAIR_ON_INCIDENTS_1_TITLE,Text,,Human Resources,,,,,,Человеческий Ресурс,,
+ALISTAIR_ON_INCIDENTS_1_TEXT,Text,,"Director, we desperately need additional personnel, individuals who have what it takes to be in the Phoenix Project: ingenuity, intellectual curiosity and courage. It turns out that resolving incidents like this one might be the best way to attract new members; wanting to join up after seeing us at work attracts exactly the kind of people we are looking for.",,,,,,"Директор, нам крайне необходимы дополнительные сотрудники, люди, обладающие качествами, необходимыми для участия в Проекте Феникс: изобретательностью, интеллектуальной любознательностью и смелостью. Оказывается, разрешение подобных Инцидентов может быть лучшим способом привлечения новых членов. Желание присоединиться к нам после демонстрации нашей работы появится именно у таких людей.",,
+TUTORIAL_PERSONNEL_TITLE0,Text,,Personnel Management,,,,,,Управление Персоналом,,
 TUTORIAL_PERSONNEL_TEXT0,Text,,"Personnel can be assigned to generate additional Research or Manufacturing. Each Research Lab or Manufacturing Plant generates 2 Research or 2 Manufacturing and provides 1 worker slot. Each Personnel assigned to a worker slot generates 2 Research or 2 Manufacturing. 
 
 Personnel who have an Affinity may be better at this kind of work:
@@ -363,8 +412,22 @@ Psycho-Sociology Personnel are trained administrators: they count as 3 Personnel
 
 Personnel can also be deployed as regular Level 1 Operatives of the Class of your choosing. 
 
-If you have a Training Facility you can train Personnel up to Level 4 before deploying them. Compute and Occult Personnel can be trained up to Level 5, and Exploration Personnel up to Level 6. They will gain +2 Strength, + 1 Willpower and + 1 Speed per level trained. Training costs 10 Faction SP per final level trained. Training takes time, which can be shortened by acquiring certain Technologies, and can be terminated early, in which case you will be refunded the corresponding SP. ",,,,,,,,
-TUTORIAL_PERSONNEL_TITLE1,Text,,Acquiring New Personnel,,,,,,,,
+If you have a Training Facility you can train Personnel up to Level 4 before deploying them. Compute and Occult Personnel can be trained up to Level 5, and Exploration Personnel up to Level 6. They will gain +2 Strength, + 1 Willpower and + 1 Speed per level trained. Training costs 10 Faction SP per final level trained. Training takes time, which can be shortened by acquiring certain Technologies, and can be terminated early, in which case you will be refunded the corresponding SP. ",,,,,,"Персонал может быть назначен для ускорения Исследований или Производства. Каждая Исследовательская Лаборатория или Завод генерирует 2 единицы исследований или 2 единицы производства и предоставляет 1 слот для персонала. Каждый сотрудник, назначенный на слот для персонала, генерирует 4 единицы исследований или 4 единицы производства.
+
+Персонал также может быть использован в качестве обычных бойцов 1-го уровня выбранного вами класса.
+
+Если у вас есть Центр Подготовки, вы можете обучить бойцов до 4-го уровня перед его включением в боевой отряд. За каждый уровень они получат +2 к Силе, +1 к Силе Воли и +1 к Скорости. Обучение стоит 10 фракционных (общих) Очков Умений за каждый уровень. Обучение занимает время, которое можно сократить, приобретя определенные Технологии, и может быть прекращено досрочно, в этом случае вам будет возвращено соответствующее количество Очков Умений.
+
+Вы начинаете игру с определенным количеством персонала, число которого зависит от сложности (2 на уровне «Легенда», 6 на уровне «Новичок»).
+
+Вы получаете новых сотрудников, разрешая Инциденты: специальные временные события, которые происходят время от времени в ранее посещенных Убежищах.
+
+На уровне сложности «Герой» и ниже вы также периодически получаете новых сотрудников (1 на уровне «Герой», 3 на уровне «Новичок»). Вы можете изменить эту настройку при начале новой игры.
+
+Вы также можете снять бойцов с боевого дежурства, чтобы добавить их в пул персонала. Ранее уволенных бойцов можно повторно отправить на поле боя, но вам придется заплатить 10 фракционных Очков Умений за каждый уровень персонажа выше 1. Также перед этим их можно обучить.
+
+Некоторые уволенные бойцы с перком «Простой работяга», как и наемники, не могут быть назначены на Исследования или Производство.",,
+TUTORIAL_PERSONNEL_TITLE1,Text,,Acquiring New Personnel,,,,,,Набор нового персонала,,
 TUTORIAL_PERSONNEL_TEXT1,Text,,"You start the game with some Personnel, the number depending on difficulty (2 on Legend, 6 on Rookie). 
 
 You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. If the Operative leading the Incident has Rank 2 in an Affinity, one of the Personnel gained will have that same Affinity at Rank 1; if the leader has Rank 3, a second Personnel will also gain a different, randomly chosen Affinity at Rank 1. 
@@ -373,8 +436,16 @@ On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero
 
 You can also dismiss Operatives to add them to the Personnel pool. Previously Dismissed Operatives can be redeployed to the field, but you have to pay 10 Faction SP for each level of the Character above 1. They can also be trained before redeploying. 
 
-Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries, can't be assigned to Research or Manufacturing.",,,,,,,,
-TUTORIAL_ADDITIONAL_BASES_TITLE0,Text,,Additional Phoenix Bases,,,,,,,,
+Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries, can't be assigned to Research or Manufacturing.",,,,,,"Вы начинаете игру с определенным количеством персонала, число которого зависит от сложности (2 на уровне «Легенда», 6 на уровне «Новичок»).
+
+Вы получаете новых сотрудников, разрешая Инциденты: специальные временные события, которые происходят время от времени в ранее посещенных Убежищах.
+
+На уровне сложности «Герой» и ниже вы также периодически получаете новых сотрудников (1 на уровне «Герой», 3 на уровне «Новичок»). Вы можете изменить эту настройку при начале новой игры.
+
+Вы также можете снять бойцов с боевого дежурства, чтобы добавить их в пул персонала. Ранее уволенных бойцов можно повторно отправить на поле боя, но вам придется заплатить 10 фракционных Очков Умений за каждый уровень персонажа выше 1. Также перед этим их можно обучить.
+
+Некоторые уволенные бойцы с перком «Простой работяга», как и наемники, не могут быть назначены на Исследования или Производство.",,
+TUTORIAL_ADDITIONAL_BASES_TITLE0,Text,,Additional Phoenix Bases,,,,,,Дополнительные Базы Феникса,,
 TUTORIAL_ADDITIONAL_BASES_TEXT0,Text,,"Bases can no longer be remotely activated. However, you can pay 30 mat and 5 tech to initiate remotely a low-quality Scan (same as the one with the Aircraft Marketplace Module, with each POI in range having a 50% of being revealed) from any Phoenix base that hasn’t been fully activated, provided you have an Aircraft that is no further than 4000Km from the base. The cost of each subsequent scan, even from a different base, will be increased by 30 mat and 5 tech. 
 
 Once you arrive at a Phoenix Base for the first time, you can Explore it. There is a chance (10% or 20%, depending on whether the base is inside the Mist) that the base might be infested, forcing you to fight a mission to clear. Upon completing the exploration you will receive some loot, the type and amount depending on difficulty level. You can override these settings on New Game start. 
@@ -385,21 +456,39 @@ You then have the following options:
 2) Establish an Outpost (pay 200 mat, 50 tech and 1 Personnel, takes 24 hours). Outposts provide some repair and healing, cannot be attacked, and can help detect nearby Pandoran Colonies after an attack on a Haven, but their facilities don't generate anything and you can't build or demolish facilities at them. Outposts can be upgraded to Bases. 
 3) Activate Base (pay 400 mat, 100 tech, 4 personnel, takes 72 hours, cost reduced by price of setting up an Outpost if upgrading from it). Get the regular Phoenix base. 
 
-Personnel with the Psycho-Sociology Affinity are trained administrators and count as 3 Personnel toward the Personnel cost of setting up an Outpost or activating a Base. ",,,,,,,,
-TUTORIAL_INCIDENTS_TITLE0,Text,,Incidents,,,,,,,,
+Personnel with the Psycho-Sociology Affinity are trained administrators and count as 3 Personnel toward the Personnel cost of setting up an Outpost or activating a Base. ",,,,,,"Базы больше нельзя активировать удалённо. Однако вы можете заплатить 30 материалов и 5 технологий, чтобы удалённо запустить Сканирование низкого разрешения (аналогично Сканированию с модулем для самолётов с Рынка, при этом вероятность обнаружения каждой неразведанной локации в зоне действия составляет 50%) с любой базы Феникса, которая ещё не полностью активирована, при условии, что у вас есть самолёт, находящийся не дальше 4000 км от базы. Стоимость каждого последующего Сканирования, даже с другой базы, будет увеличена на 30 материалов и 5 технологий. 
+
+Впервые прибыв на Базу Феникса, вы сможете её Разведать. Существует вероятность (15% или 30%, в зависимости от того, находится ли База в Тумане), что База может быть заражена, и вам придётся выполнить миссию по её зачистке. После завершения Разведки вы получите добычу, тип и количество которой зависят от уровня сложности. Вы можете изменить эти настройки при начале новой игры. 
+
+Затем у вас есть следующие варианты:
+
+1) Разграбить Базу: уничтожить, снеся все строения на Базе, включая те, которые нельзя снести. Количество ресурсов зависит от уровня сложности и может быть изменено при начале новой игры. 
+2) Создать Аванпост (за 200 материалов, 50 технологий и 1 персонал, занимает 24 часа). Аванпосты обеспечивают некоторый ремонт и лечение, не могут быть атакованы и могут помочь обнаружить находящиеся поблизости колонии Пандоранов после нападений на Убежища, но их строения ничего не дают, и вы не можете строить или сносить эти строения. Аванпосты можно перестроить в Базы. 
+3) Активировать Базу (за 400 материалов, 100 технологий, 4 персонала, занимает 72 часа, стоимость уменьшается на стоимость создания Аванпоста, если производится его перестройка). Получите обычную Базу Феникса.",,
+TUTORIAL_INCIDENTS_TITLE0,Text,,Incidents,,,,,,Инциденты,,
 TUTORIAL_INCIDENTS_TEXT0,Text,,"Incidents are Geoscape Events that take time to resolve and are the primary way of securing new Personnel. You will get at least 2 Personnel for resolving an Incident successfully (among other rewards, such as Resources, Characters, Improved attitude from Faction and/or Haven Leader), and 1 Personnel if you attempt it but then move the Aircraft away before it is completed. 
 
 Every 4-6 days, an Incident will occur at a previously visited haven, inviting you to resolve it within the next 5 days.
 
-To initiate the Incident, you must travel to the haven with an Aircraft with at least one Operative without the “Just a Grunt” perk.",,,,,,,,
+To initiate the Incident, you must travel to the haven with an Aircraft with at least one Operative without the “Just a Grunt” perk.",,,,,,"Инциденты — это события на Геоскейпе, на разрешение которых требуется время, и они являются основным способом получения нового персонала. За успешное разрешение Инцидента вы получите как минимум 2-х новых сотрудников (помимо других наград, таких как ресурсы, персонажи, улучшенное отношения с Фракцией и/или Лидером Убежища), или 1-ого сотрудника, если попытаетесь это сделать, но затем переместите самолет до завершения инцидента. 
+
+Каждые 4-6 дней в ранее посещенном Убежище будет происходить Инцидент, предлагающий вам разрешить его в течение следующих 5 дней.
+
+Чтобы разрешить Инцидент, вы должны отправиться в Убежище на самолете, имея при себе хотя бы одного бойца без перка «Простой работяга».",,
 TUTORIAL_INCIDENTS_TEXT1,Text,,"Each Incident can be resolved two ways: one choice uses a single Approach, the other lets you pick between two.
 
 Choose an Operative to lead. On success they gain that Approach’s Affinity, or rise a Rank in it.
 
 A leader at Rank 2 passes their Affinity to one of the Personnel you gain; at Rank 3 a second gains a different one at random.
 
-Resolution time depends on whether the leader already has one of the chosen Approaches, and on how many Operatives are aboard. Cancel returns you to the Incident later.",,,,,,,,
-TUTORIAL_AFFINITIES_TITLE0,Text,,Affinities,,,,,,,,
+Resolution time depends on whether the leader already has one of the chosen Approaches, and on how many Operatives are aboard. Cancel returns you to the Incident later.",,,,,,"Каждый Инцидент можно разрешить двумя разными способами. Один из вариантов будет соответствовать одному подходу, а другой позволит использовать два разных подхода. Вам нужно выбрать один из них. 
+
+Вы также должны выбрать бойца, который возглавит команду. Успешное завершение Инцидента даст ведущему бойцу 1-й уровень Способностей, соответствующих выбранному подходу, или повысит его уровень этих Способностей. 
+
+Вы также можете отказаться продолжать, чтобы вернуться к Инциденту позже. 
+
+Время, необходимое для разрешения Инцидента, зависит от 1) наличия у ведущего бойца Способностей, соответствующих одному из выбранных подходов и 2) количества бойцов в самолете.",,
+TUTORIAL_AFFINITIES_TITLE0,Text,,Affinities,,,,,,Способности,,
 TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by resolving Incidents or inherited from a dead operative with an Affinity. 
 - There are three ranks.
 - They grant Geoscape and Tactical benefits, and increase Incident resolution efficiency by 2 × rank when the Affinity matches the Approach taken to resolving the Incident.
@@ -409,8 +498,15 @@ TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by
 - Geoscape benefits apply to the Aircraft on which the Character is currently a passenger, Benefits in Tactical grant an ability to the Character with the Affinity.
 - Each Character can have only one Affinity.
 - Affinities also decide how useful a Personnel is on base duty; the ASSIGNMENTS screen explains that in full.
-- Resolving an Incident with a leader of Rank 2 gives one of the Personnel gained the leader’s Affinity at Rank 1; with a leader of Rank 3, a second Personnel gains a different, randomly chosen Affinity at Rank 1.",,,,,,,,
-KEY_BASE_EXPLORE_FIRST,Text,,Explore the base first to unlock these options.,,,,,,,,
+- Resolving an Incident with a leader of Rank 2 gives one of the Personnel gained the leader’s Affinity at Rank 1; with a leader of Rank 3, a second Personnel gains a different, randomly chosen Affinity at Rank 1.",,,,,,"- Способности получаются и усиливаются при расследовании Инцидентов или наследуются от погибшего бойца со Способностью. 
+- Всего существует 3 уровня.
+- Они дают бонусы Геоскейпа или Тактические бонусы, и повышают эффективность расследования Инцидентов на 2 за каждый уровень, когда Способность соответствует выбранному Способу расследования Инцидента.
+- Каждая способность дает доступ к 1 бонусу Геоскейпа и 1 Тактическому бонусу, из двух возможных в момент получения Способности или при ее усилении до следующего уровня. Выбор влияет на всех Персонажей с данной Способностью.
+- Все бонусы умножаются на уровень Способности.
+- Бонусы Способностей не складываются — применяется один от самого высокоуровневого специалиста.
+- Бонусы Геоскейпа применяются к самолету, в котором летит соответствующий персонаж, Тактические Бонусы дают соответствующие Навыки своим персонажам.
+- Каждый персонаж может иметь только 1 Способность.",,
+KEY_BASE_EXPLORE_FIRST,Text,,Explore the base first to unlock these options.,,,,,,"Сначала Разведайте Базу, чтобы эти опции стали доступны.",,
 KEY_BASE_PERSONNEL_SELECT_TITLE,Text,,ASSIGN PERSONNEL,,,,,,,,
 KEY_BASE_PERSONNEL_SELECT_REQUIRED,Text,,{0} requires {1} Personnel. Pick who is posted to the site.,,,,,,,,
 KEY_BASE_PERSONNEL_SELECT_WARNING,Text,,Personnel posted to a site stay there for good. They leave the Phoenix Project roster and cannot normally be recovered.,,,,,,,,
@@ -419,7 +515,7 @@ KEY_BASE_PERSONNEL_SELECT_COUNTS_AS,Text,,"Administrator, counts as {0}",,,,,,,,
 KEY_BASE_PERSONNEL_SELECT_CONFIRM,Text,,CONFIRM,,,,,,,,
 KEY_BASE_PERSONNEL_SELECT_CANCEL,Text,,CANCEL,,,,,,,,
 TFTV_KEY_AIRCRAFT_MAINTENANCE_LOW,Text,,{0} Maintenance has fallen to 50% or below. Speed halved! Geoscape paused.,,,,,,,,
-TFTV_KEY_AIRCRAFT_MODULE_FRENZY_BENEFIT,Text,,• Instills Frenzy on mutated operatives at mission start.,,,,,,,,
+TFTV_KEY_AIRCRAFT_MODULE_FRENZY_BENEFIT,Text,,• Instills Frenzy on mutated operatives at mission start.,,,,,,"• Бойцы с хотя бы 1-й мутацией, Мутоиды и Мутоги начинают миссию в состоянии Иссупления.",,
 TFTV_KEY_AIRCRAFT_NO_MODULES,Text,,No aircraft modules in play.,,,,,,,,
 TFTV_KEY_AIRCRAFT_NO_TACTICAL_EFFECTS,Text,,No active tactical effects.,,,,,,,,
 TFTV_KEY_SCAN_COLONY_ALREADY_DETECTED,Text,,Pandoran Colony already detected.,,,,,,,,
@@ -441,3 +537,147 @@ TFTV_KEY_SCAN_AFFINITY_NONE,Text,,  - Exploration affinity: no operative,,,,,,,,
 TFTV_KEY_SCAN_OPERATIVE_UNKNOWN,Text,,Unknown,,,,,,,,
 TFTV_KEY_SCAN_TRACING_SOME,Text,,  + Previous tracing: {0} attempt(s) (+{1}%),,,,,,,,
 TFTV_KEY_SCAN_TRACING_NONE,Text,,  - Previous tracing: none,,,,,,,,
+TFTV_HELIOS_STEALTH_MODULE_STATUS_NAME,Text,,Proteus Matrix,,,,,,,,
+TFTV_HELIOS_STEALTH_MODULE_STATUS_DESCRIPTION,Text,,Concealment and threat predictions relayed from the Helios. Grants bonus Stealth and Perception for the first 3 turns of the mission.,,,,,,,,
+TFTV_VANILLA_AIRCRAFT_STATS_DURABILITY,Text,,DURABILITY,,,,,,,,
+TFTV_VANILLA_DLC3_HULL_POINTS,Text,,HULL POINTS,,,,,,,,
+TFTV_VANILLA_GEO_SCANNER_UNAVAILABLE,Text,,You don't have any Area Scan Uses remaining,,,,,,,,
+TFTV_VANILLA_GEOSCAPE_SOLDIERS_TT,Text,,Phoenix soldiers on active duty,,,,,,,,
+TFTV_VANILLA_SOLDIERS_COUNT_TT,Text,,SOLDIERS - recruited / living quarters capacity,,,,,,,,
+TFTV_VANILLA_RESEARCH_TOTAL_TT,Text,,Research labs in all bases - build more to decrease research time,,,,,,,,
+TFTV_VANILLA_PRODUCTION_TOTAL_TT,Text,,"Production capacity in all bases - for manufacturing equipment, armor and vehicles",,,,,,,,
+TFTV_VANILLA_BASE_RECRUITS_ROSTER_NAME,Text,,RECRUITS,,,,,,,,
+TFTV_VANILLA_BASE_RECRUITS_ROSTER_DESCRIPTION,Text,,All volunteers available for recruiting at your base,,,,,,,,
+TFTV_VANILLA_BASE_RECRUITS_SPAWNED,Text,,New recruits available.,,,,,,,,
+ANU_BLIMP_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"While appearing to be a piece of technology, the Anu dirigible is part machine and part living organism. Based on the design of a pre-plague airship, the Disciples of Anu have enhanced their version, making it more durable and efficient. The ship can sustain heavy damage, while transporting a squad of 8 soldiers to any desired location. Speed and maneuverability are considerably lacking, though the craft makes up for it with its storage capacity and range.
+
+Our Vehicle Bays can now restore a Tiamat's OPS HOURS at full speed. We can also manufacture the Bioflux Assimilator, a living engine graft that metabolizes Mist-borne organics: the Tiamat flies faster the deeper into the Mist it goes, and loses OPS HOURS more slowly.",,,,,,,,
+NJ_AIRCRAFT_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"The New Jericho Thunderbird is a third-generation quad-rotor VTOL transporter, designed specifically for the current battlefield and atmospheric conditions. Covered with reinforced external armor and coated with anti-corrosive material, it offers protection from enemy fire and organic attacks alike.
+ 
+Despite its considerable weight, thanks to its four Vimana-2 engines the Thunderbird is capable of speeds exceeding 320 kph. At present the Thunderbird has a capacity of 7 people, but the design incorporates potential for improving this.
+
+With the airframe fully documented, our Vehicle Bays can restore a Thunderbird's OPS HOURS at full speed. We can also manufacture the Argus Array, a sensor mast that scans the Geoscape for Points of Interest and sharpens our operatives' Return Fire and Overwatch.",,,,,,,,
+NJ_NEURALTECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"After an extensive testing program, direct control of weapons and mounted equipment is now possible with cranial input hubs. The cranial implant procedure has proven to be relatively painless, and allows an individual to co-ordinate weapon systems by sight and thought.
+
+The same hub lets a Thunderbird crew paint a target for the aircraft's own ordnance. We can now manufacture the Lightning Strike Precision Ordnance, which calls down one guided explosive strike per mission onto open ground, and the Argus Array's sweeps no longer come back empty.",,,,,,,,
+NJ_TECHNICIAN_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"A new soldier class has been created based on the development of neural implants. Technicians are highly trained support specialists with the ability to control powerful robotic arms though their cranial input hub. Their armor is combined with an exoskeleton framework with mount points for the robotic arms and support for heavy lifting. Technicians are trained in deployment of automated turrets and they are skilled with Personal Defence Weapons.
+
+The same tooling fits an airframe. We can now manufacture the Hephaestus Workshop, a Thunderbird bay that repairs ground vehicles and bionic limbs in flight and restores the Stamina of the operatives wearing them.",,,,,,,,
+NJ_VEHICLETECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"A new all-terrain Armored Personnel Carrier that utilizes hybrid electric charging and bio-fuels has been developed. It is fully AI controlled, heavily armored, and capable of carrying 4 fully loaded soldiers. A new automated gauss gun turret has been mounted to help with combat operations. The new APC, codenamed Armadillo, is set for production.
+
+The Armadillo's drivetrain diagnostics scale up to an airframe. We can now manufacture the Daedalus Overdrive Suite, a Thunderbird package that adds range and speed and slows the aircraft's loss of OPS HOURS.",,,,,,,,
+PX_ALIEN_SPAWNERY_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Although the exact method of mutation remains unknown, it has been confirmed that the Spawnery is capable of producing more advanced Pandoran creatures. What we have learned is that the specimen determines the exact nature of the batch it breeds, creating the mutations best suited for its needs. At this point, it remains unknown where the Spawnery receives the biomass needed to create such vast amounts of mutations. Analyses of Spawnery samples have revealed the presence of hundreds of strands of DNA, including human, though not all of them appear to be used in the creation of its progeny.
+
+ADDITIONAL FINDINGS: Field reports have confirmed that destroying a Spawnery effectively renders the Lair inoperable, causing the structure to be abandoned.
+
+The drone swarms the Spawnery uses to shift biomass have been reverse-engineered into Salvage Drones, an aircraft module that recovers everything left on the ground even when we have to withdraw from a field we do not hold.",,,,,,,,
+SYN_AIRCRAFT_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Synedrion aircraft are based on fourth-generation hovercrafts modified for air travel. Powered by fusion cell technology, the aircraft can carry a squad of 5, or a land vehicle with 2 soldiers. The vehicle's relatively small capacity is compensated for by its high acceleration and maximum velocity.
+
+With the airframe fully documented, our Vehicle Bays can restore a Helios' OPS HOURS at full speed. Synedrion's engine designs also make our Helios craft faster.",,,,,,,,
+SYN_MISTREPELLERS_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Mist Repellers are based on a complex set of interconnected technologies, including nanite swarms capable of advanced molecular recognition and powerful magnetic field generators, making it finally possible to slow the encroachment of the mist.
+
+Mist Repellers constructed within Synedrion havens will begin the process of reclaiming the earth, and are a key part of Synedrion strategy. Deployment of this technology will make bases and settlements considerably more safe, but does not by itself constitute a long-term solution to the Pandoran threat, as only the mist itself is affected. Furthermore, any repeller construction will certainly antagonize other factions and potentially result in conflict.
+
+We can use the technology for building repellers in our own bases, and do our bit for the future of humanity.
+
+The emitters can be mounted on an airframe. We can now manufacture the Boreas Purger, a Helios module that disperses half the Mist on a battlefield every turn and spares the squad the Delirium that comes of landing in a Delirium Area.",,,,,,,,
+SYN_MOONMISSION_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"The designs and calculations for the proposed Moon mission are finally complete. A manned mission is impossible under these circumstances, and the history of the Phoenix Project shows that interacting with the Pandoravirus in space is just as risky as on Earth, so an unmanned probe has been constructed, partially re-using elements of existing Synedrion vehicles.
+
+With the first part of the project finished, it is now time to build the actual launch site.
+
+The probe's airframe work feeds straight back into our own. Every Helios gains two further passenger seats and another increase in speed.",,,,,,,,
+SYN_ROVER_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Adapting aircraft technology, the Aspida is capable of hover movement — 45 centimeters from the ground — carrying 1 occupant at virtually infinite distances using existing fusion cell technology. In addition, the Aspida is equipped with automated field surgery robotics, usable anywhere in the field.
+
+The Aspida's field surgery robotics miniaturize into the Panacea Nexus, a Helios module that bathes everyone on board in regenerative nanites, though the swarms only become therapeutic once Advanced Nanotechnology is complete. A Helios can also stow an Aspida in a single passenger space.",,,,,,,,
+SYN_SENTIENTAITECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Research into artificial intelligence was a controversial subject in the early days of Synedrion, but scientific freedom meant that inevitably, artificial sentient lifeforms were eventually developed. 
+
+The AI developed by Dr. Marco Matterani and his team, known as Barnabas, has produced several copies and versions of itself, and these in turn have created further offspring. All of these entities are recognized as full citizens of Synedrion, participating in political and social life much like a human being would. Many of them are active in research, which they find stimulating, but others work as artists, entertainers, or even (in one case) psychologists.
+
+One of Barnabas' descendants has volunteered for field work. We can now manufacture the Proteus Matrix, a Helios module that forecasts concealment and threat vectors for the squad's opening moves. The work on Synedrion's engines also bears fruit, and our Helios craft gain speed.",,,,,,,,
+TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"<i>""Those that partake of the Waters of Life say that, as their dreams become more vivid, their waking life becomes more dreamlike, till they know not when they are asleep and when they are awake. And always they feel most capable of incredible feats of arms and of vanquishing their enemies. I'm exhilarated by their confidence, yet I also fear their brutality.""</i>
+
+- Neophyte Ryodik, Disciples of Anu 
+
+This technology represents a first step towards mastering the mutation mechanics of the Pandoravirus. Test subjects have been injected with modified strains of the infection under carefully-controlled conditions, and with the additional of a chemical cocktail intended to keep the virus from asserting control over the subject. 
+
+The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.
+
+A Tiamat can be fitted out for the same work. Two modules are now available for manufacture: the Sanctum of the Veil, which prepares the Anointed for symbiosis with the Mist, and the Conservatory of Transmutation, which heals mutated operatives, Mutoids and Mutogs in flight and restores their Stamina.",,,,,,,,
+TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE_W_HARVESTING_AIRCRAFT_REWORK,Text,,"<i>“Those that partake of the Waters of Life say that, as their dreams become more vivid, their waking life becomes more dreamlike, until they know not when they are asleep and when they are awake. And always they feel more capable of incredible feats of arms, and of vanquishing their enemies. I’m exhilarated by their confidence, yet I also fear their brutality.”</i>
+
+- Neophyte Ryodik, Disciples of Anu 
+
+<i>""Now I understand why they were keeping those worms around...""</i> 
+
+- Alistair Ashby
+
+The Disciples of Anu use genetic material derived from Pandorans in their rituals to “evolve closer to the Exalted”; in essence, a process of controlled mutation. We have learned both how to extract mutagens from Pandorans and to replicate some of their mutation techniques, naturally without all the superfluous elements of liturgy. We can synthesize a limited amount of mutagens in each of our mutation labs, but to scale the production we need live Pandoran subjects in captivity.
+
+A Tiamat can be fitted out for the same work. Two modules are now available for manufacture: the Sanctum of the Veil, which prepares the Anointed for symbiosis with the Mist, and the Conservatory of Transmutation, which heals mutated operatives, Mutoids and Mutogs in flight and restores their Stamina.",,,,,,,,
+PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV_AIRCRAFT_REWORK,Text,,"Specialized Pandoran Containment facilities have been designed and successfully tested, allowing us to safely keep Pandorans in a state of constant paralysis.
+
+In addition, we have equipped all our aircraft with the Skyhook Retrieval and Transportation System (SRTS), which allows us to retrieve fully paralyzed Pandorans from the battlefield after a successful mission.
+
+The SRTS uses micro drones to attach tethers to the immobilized Pandoran organism. The volume of transportable matter is fixed by the airframe that carried the squad: 5 for a Helios, 6 for a Manticore, 7 for a Thunderbird, 8 for a Tiamat. For reference, an Arthron or a Triton takes up 2.
+
+We have also fitted the Manticore's hold with the Barracuda Berths, adding two passenger seats at the cost of some speed.
+
+This represents a step forward in our struggle to understand their biology.",,,,,,,,
+SYN_AIRCRAFT_RESEARCHDEF_UNLOCK_AIRCRAFT_REWORK,Text,,"Synedrion aircraft are powered by fusion cell technology and carry a squad of 5. They are optimized for speed over carrying capacity, and they take Synedrion modules as well as the common ones.",,,,,,,,
+SYN_MOONMISSION_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Helios aircraft gain 2 passenger seats and additional speed.,,,,,,,,
+NJ_TRAINING_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Personnel train 25% faster at the Training Facility.,,,,,,,,
+PX_PROTOCIVILISATION1_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Operatives gain an additional 10% experience from missions, and Personnel train 25% faster at the Training Facility.",,,,,,,,
+PX_MOUNTAINSOFMADNESS_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Operatives gain an additional 10% experience from missions.,,,,,,,,
+SYN_SENTIENTAITECH_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Research Lab output is increased by 50%, but only for slots with no Personnel assigned to them: Personnel working a slot replace the upgrade rather than add to it. Proteus Matrix becomes available for manufacture, and Helios aircraft gain additional speed.",,,,,,,,
+NJ_AUTOMATEDFACTORIES_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Manufacturing Plant output is increased by 50%, but only for slots with no Personnel assigned to them: Personnel working a slot replace the upgrade rather than add to it. Daedalus Overdrive Suite raised to the next tier.",,,,,,,,
+NJ_CENTRALIZEDAI_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,All base facilities output is increased by 50%. On Research Labs and Manufacturing Plants this applies only to slots with no Personnel assigned to them: Personnel working a slot replace the upgrade rather than add to it. Daedalus Overdrive Suite raised to its final tier.,,,,,,,,
+ANU_ACIDTECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"This technology integrates the corrosive fluid produced by Acidworms into grenades and small caliber rounds. Although the process is entirely safe, a certain degree of caution in their use is nevertheless advised.
+
+The Bioflux Assimilator digests the new reagents too: our Tiamats gain a further 150 speed in the Mist and lose OPS HOURS more slowly still.",,,,,,,,
+ANU_MUTATIONTECH2_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Multiple new mutations have been developed, allowing humans to become faster, more agile, and have the power to stun enemies in battle. These new procedures are now available at the mutation laboratory.
+
+The Sanctum of the Veil deepens the communion: mutated operatives aboard now regain Willpower in the Mist and see through it better.",,,,,,,,
+ANU_MUTATIONTECH3_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Thanks to a breakthrough in genetic science, it is now possible to create biological weapons infused into an individual's physiology. Test subjects have demonstrated an ability to transform their own flesh into weapons and defenses, reducing the need for armor and ammunition. These new procedures are now available at the mutation laboratory.
+
+The Sanctum of the Veil reaches its final form. Mutated operatives aboard see through the Mist as the Pandorans do.",,,,,,,,
+ANU_STIMTECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"This stimulant pack, based on the mix of substances used during certain rituals by the Disciples of Anu, is capable of bringing a soldier into a state of frenzy, temporarily increasing their resolve
+
+The Conservatory of Transmutation heals and restores Stamina faster, and mutated operatives, Mutoids and Mutogs carried in one start their missions frenzied.",,,,,,,,
+NJ_EXPLOSIVETECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"A breakthrough in explosives technology has led to the development of a new rocket launcher design. Unlike conventional rockets, this weapon fires armor-piercing projectiles that deal massive damage to a single target. It is ideal for quickly crippling the biggest and toughest Pandoran creatures, as each rocket can inflict three times the normal damage to the limb it hits. The rockets are expensive to produce, but will be worth it if used strategically.
+
+The Lightning Strike Precision Ordnance now walks a third explosion across the target area.",,,,,,,,
+NJ_GUIDANCETECH_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"A new infantry missile launcher system has been developed, capable of hitting targets with pinpoint accuracy with devastating destructive power. The missiles are expensive to produce, but they could be decisive in critical missions. The AI guidance tech may prove useful in further weapons development.
+
+The Lightning Strike Precision Ordnance now walks a second explosion across the target area.",,,,,,,,
+NJ_PRCRTECHTURRET_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"This merging of technologies has proven a complete success. The new turrets have surpassed expectations, being potentially capable of bringing down even the larger Pandorans. The new PDW design combines high agility with extreme firepower for the first time.
+
+The Daedalus Overdrive Suite takes the new servo designs, adding a further 1000 range and 50 speed and slowing the aircraft's loss of OPS HOURS.",,,,,,,,
+PX_ALIEN_COLONY_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Pandoran Colonies are underground tunnel-like structures made of Pandoravirus-produced biomass. Following the ecological transformation of the sea, they appear to be the next step towards the total conquest of the Earth's ecosystems.
+Each colony produces its own specific mutations, which is why we see certain mutations predominant in different regions. The colonies seem to expand their area of operation over time, attacking any human settlements they find. Based on colony growth patterns, we suspect that there are multiple levels of development. The initial level has been classified as the Pandoran Nest.
+
+The Argus Array now knows what to listen for, and reveals Hatching Sentinels inside a Nest at the start of a mission.",,,,,,,,
+PX_ALIEN_LAIR_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Lairs represent larger and more complex Pandoran colonies. Based on our observations, when several Pandoran Nests come in contact with each other, a dominant Nest assumes control of the others, entering its second level of development. While Nests are only able to spawn lesser mutated creatures, Lairs produce specialised types known as Sirens and Chirons, as well as all Pandoran subtypes that the Nests within were previously creating.
+It is speculated that Lairs are capable of merging, leading to an even larger and more dangerous structure.
+
+The Argus Array now knows what to listen for, and reveals the Spawnery inside a Lair at the start of a mission.",,,,,,,,
+SYN_NIGHTVISION_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"This system translates a range of visual, thermal and motion data information into a color palette that the human eye can parse. The module is slick and elegant, easily integrated into any helmet and requires no external power supply for use.
+
+The Proteus Matrix reads the new sensor feeds, raising the Perception it grants the squad during a mission's opening turns.",,,,,,,,
+SYN_VENOMBOLT_RESEARCHDEF_COMPLETE_AIRCRAFT_REWORK,Text,,"Combining standard crossbow bolts with the new toxins has proven to be a more tedious task that originally suggested. After spending hours perfecting a bolthead dispersal mechanism, the research team decided it would be easier to create a new type of crossbow, using lightweight carbonfibre and an automated winch. The model has proven efficient in tests and is ready for mass production. No Synedrion animals or people have been fatally harmed during in the course of research.
+
+The Panacea Nexus borrows the delivery mechanism: vest effects are increased by 50% for everyone aboard a Helios carrying one.",,,,,,,,
+ANU_ADVANCEDBLIMP_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Anu Tiamat range has been increased by 25%. Bioflux Assimilator raised to the next tier.,,,,,,,,
+ANU_ANUFUNGUSFOOD_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Output of Food Production facilities increased by around 50%. Conservatory of Transmutation raised to the next tier.,,,,,,,,
+ANU_ANUPRIEST_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Priest soldier class now available. Sanctum of the Veil grants Shroud of Paradox: non-Pandorans that touch Mist become revealed.,,,,,,,,
+NJ_BIONICS2_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Cybernetics Lab facility and additional designs. Hephaestus Workshop raised to the next tier, and bionics repair costs fall by 33%.",,,,,,,,
+NJ_SATELITEUPLINK_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Scanning range of Phoenix Bases is increased by 25%. Argus Array scan range increased by 1000, and a higher chance to detect Pandoran colonies after an attack on a Haven.",,,,,,,,
+PX_ADVANCEDACIDTECH_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Acid weapons efficiency increased by 20%. Bioflux Assimilator raised to the next tier.,,,,,,,,
+PX_ALIEN_CITADEL_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Area Scans will now detect Pandoran colonies. The Argus Array detects them too, once Satellite Uplink Research is complete.",,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Damage inflicted on Acherons is increased by 10%.
+Improves Hazmat vest, +15% Resistance vs special damages and +2 Armor. Hephaestus Workshop reduces Acid by 20 instead of 10 per turn on bionic body parts and vehicles.",,,,,,,,
+SYN_BIONICS3_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Cybernetics Lab facility and additional designs. Hephaestus Workshop raised to the next tier, and bionics repair costs fall by 66%.",,,,,,,,
+SYN_FUSIONCELLTECH_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Power plant energy production is increased by 50%. Helios aircraft gain additional speed.,,,,,,,,
+SYN_INFILTRATORTECH_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Infiltrator soldier class now available. Proteus Matrix raised to the next tier, increasing the Stealth it grants.",,,,,,,,
+SYN_NANOHEALING_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Medical Bay healing at bases increased by 50% and +20 healing bonus in battle. Panacea Nexus heals and restores Stamina faster.,,,,,,,,
+SYN_NANOTECH_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,Allows manufacturing Nanotech Fieldkit. Panacea Nexus begins healing operatives and restoring their Stamina in flight.,,,,,,,,
+SYN_SAFEZONEPROJECT_RESEARCHDEF_BENEFITS_AIRCRAFT_REWORK,Text,,"Pandoran Colonies within range of Mist Repellers suffer a 20% reduction in global attack strength vs Havens, and Pandoran attacks vs Phoenix Bases within range of Mist Repellers take twice as long to be launched. Proteus Matrix raised to its final tier, increasing the Stealth it grants.",,,,,,,,

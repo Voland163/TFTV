@@ -27,10 +27,12 @@ namespace TFTV
                     if (geoCharacter.Faction.Vehicles.Any(v => v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdWorkshopModule)
                     && v.Units.Contains(geoCharacter)))
                     {
-                        int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs) - 1;
-                        float repairCostFactor = _workshopBuffBionicRepairCostReduction * buffLevel;
+                        // One buff research is the module's TIER 2 and reduces the cost by a third,
+                        // two are TIER 3 and reduce it by two thirds.
+                        int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs);
                         if (buffLevel > 0)
                         {
+                            float repairCostFactor = _workshopBuffBionicRepairCostReduction * buffLevel;
                             return (1 - repairCostFactor);
                         }
                     }

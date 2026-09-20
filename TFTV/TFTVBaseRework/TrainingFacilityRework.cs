@@ -26,7 +26,6 @@ namespace TFTV.TFTVBaseRework
 
         private const int SlotsPerFacility = 2;
         private const int BaseMaxTargetLevel = 4;
-        private const int UpgradedMaxTargetLevel = 5;
         private const int MinTargetLevel = 2;
 
         private const int SpCostPerLevel = 10;
@@ -44,8 +43,6 @@ namespace TFTV.TFTVBaseRework
             { "NJ_Training_ResearchDef", 0.25f },
             { "PX_ProtoCivilisation1_ResearchDef", 0.25f },
         };
-
-        private static readonly string AdvancedLevelResearchId = "PX_EliteTraining_ResearchDef";
 
         private const int ComputeOccultMaxTargetLevel = 5;
         private const int ExplorationMaxTargetLevel = 6;
@@ -96,18 +93,17 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
-        /// Returns the maximum target level the player may choose (4, or 5 with Elite Training research).
+        /// Returns the maximum target level the player may choose. Nothing raises it: the affinity
+        /// exceptions in the overload below are the only way past it.
         /// </summary>
         public static int GetMaxTargetLevel(GeoPhoenixFaction faction)
         {
-            return faction?.Research?.HasCompleted(AdvancedLevelResearchId) == true
-                ? UpgradedMaxTargetLevel
-                : BaseMaxTargetLevel;
+            return BaseMaxTargetLevel;
         }
 
         /// <summary>
         /// Character-aware max target level: Compute/Occult personnel can always train to 5,
-        /// Exploration personnel to 6, regardless of Elite Training research.
+        /// Exploration personnel to 6.
         /// </summary>
         public static int GetMaxTargetLevel(GeoPhoenixFaction faction, GeoCharacter character)
         {

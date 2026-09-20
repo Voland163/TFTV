@@ -196,6 +196,9 @@ namespace TFTV
                 {
                     AddSingleBenefit(keys, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT",
                         Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches)+1);
+                    // Frenzy comes with Stimulant Technology, which need not be the tier-3 research.
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_KEY_AIRCRAFT_MODULE_FRENZY_BENEFIT",
+                        "ANU_StimTech_ResearchDef");
                 }
                 else if (moduleDef == _heliosStealthModule)
                 {
@@ -461,29 +464,40 @@ namespace TFTV
                     }
                 }
 
+                /// <summary>
+                /// Proteus Matrix tier. The module's four tiers are a ladder, each unlocked by one
+                /// technology in order, so a tier is only reached once every tier below it is:
+                ///
+                /// I   Sentient AIs (the module's own unlock)  +10% Stealth, +5 Perception
+                /// II  Infiltrator Class                       Stealth +20% (30% total)
+                /// III Multi-sensor Threat Detection           Perception +10 (15 total)
+                /// IV  Project Domovoy                         Stealth +20% (50% total)
+                ///
+                /// Both the benefit text and the tactical stat modifications read this one number,
+                /// so what the tooltip promises is always what the module gives.
+                /// </summary>
                 internal static int GetStealthTierForUI()
                 {
                     try
                     {
-                        int buffLevel = 1;
                         Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
 
-                        if (phoenixResearch.HasCompleted("SYN_SafeZoneProject_ResearchDef"))
-                        {
-                            buffLevel += 1;
-                        }
+                        int buffLevel = 1;
 
                         if (phoenixResearch.HasCompleted("SYN_InfiltratorTech_ResearchDef"))
                         {
-                            buffLevel += 1;
+                            buffLevel = 2;
+
+                            if (phoenixResearch.HasCompleted("SYN_NightVision_ResearchDef"))
+                            {
+                                buffLevel = 3;
+
+                                if (phoenixResearch.HasCompleted("SYN_SafeZoneProject_ResearchDef"))
+                                {
+                                    buffLevel = 4;
+                                }
+                            }
                         }
-
-                        if (phoenixResearch.HasCompleted("SYN_NightVision_ResearchDef"))
-                        {
-                            buffLevel += 1;
-                        }
-
-
 
                         return buffLevel;
                     }
@@ -494,6 +508,16 @@ namespace TFTV
                     }
 
 
+                }
+
+                /// <summary>
+                /// Stealth and Perception the Proteus Matrix grants at <paramref name="tier"/>, as
+                /// <see cref="GetStealthTierForUI"/> documents it.
+                /// </summary>
+                internal static void GetStealthModuleBonuses(int tier, out float stealth, out float perception)
+                {
+                    stealth = tier >= 4 ? 0.5f : tier >= 2 ? 0.3f : 0.1f;
+                    perception = tier >= 3 ? 15f : 5f;
                 }
 
 
