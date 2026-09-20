@@ -1246,7 +1246,11 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("Flinching", _optionsBool, ConvertBoolToInt(config.Flinching), OnFlinchingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("SkipMovies", _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("HavenSOS", _optionsBool, ConvertBoolToInt(config.HavenSOS), OnHavenSOSValueChangedCallback, 0.5f, _anytimeOptionsSettings);
-                        HelperMethods.InstantiateArrowPickerController("StaminaRecuperation", _optionsBool, ConvertBoolToInt(config.StaminaRecuperation), OnStaminaRecuperationValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        // The FAR-M module this option governs only exists on the main branch.
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            HelperMethods.InstantiateArrowPickerController("StaminaRecuperation", _optionsBool, ConvertBoolToInt(config.StaminaRecuperation), OnStaminaRecuperationValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        }
                         HelperMethods.InstantiateArrowPickerController("LearnFirstSkill", _optionsBool, ConvertBoolToInt(config.LearnFirstSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("Trading", _optionsBool, ConvertBoolToInt(config.Trading), OnTradingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("MoreMistVO", _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f, _anytimeOptionsSettings);
@@ -1254,7 +1258,11 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("LimitedRaiding", _optionsBool, ConvertBoolToInt(config.LimitedRaiding), OnLimitedRaidingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("NoBarks", _optionsBool, ConvertBoolToInt(config.NoBarks), OnNoBarksValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("ShowAmbushExfil", _optionsBool, ConvertBoolToInt(config.ShowAmbushExfil), OnShowAmbushExfilValueChangedCallback, 0.5f, _anytimeOptionsSettings);
-                        HelperMethods.InstantiateArrowPickerController("SkipFSTutorial", _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        // The rework removes Festering Skies and with it the air combat tutorial.
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            HelperMethods.InstantiateArrowPickerController("SkipFSTutorial", _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        }
                         HelperMethods.InstantiateArrowPickerController("CustomPortraits", _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("HandGrenadeScatter", _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EquipBeforeAmbush", _optionsBool, ConvertBoolToInt(config.EquipBeforeAmbush), OnEquipBeforeAmbushValueChangedCallback, 0.5f, _anytimeOptionsSettings);
@@ -1275,8 +1283,12 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("MercsCanBeAugmented", _optionsBool, ConvertBoolToInt(config.MercsCanBeAugmented), OnMercsCanBeAugmentedValueChangedCallback, 0.5f, _cheatOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("VehicleAndMutogSize1", _optionsBool, ConvertBoolToInt(config.VehicleAndMutogSize1), OnVehicleAndMutogSize1ValueChangedCallback, 0.5f, _cheatOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("MultipleVehiclesInAircraftAllowed", _optionsBool, ConvertBoolToInt(config.MultipleVehiclesInAircraftAllowed), OnMultipleVehiclesInAircraftAllowedValueChangedCallback, 0.5f, _cheatOptionsSettings);
-                        HelperMethods.InstantiateArrowPickerController("EasyAirCombat", _optionsBool, ConvertBoolToInt(config.EasyAirCombat), OnEasyAirCombatValueChangedCallback, 0.5f, _cheatOptionsSettings);
-                        HelperMethods.InstantiateArrowPickerController("BehemothSubmergesForever", _optionsBool, ConvertBoolToInt(config.BehemothSubmergesForever), OnBehemothSubmergesForeverValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        // Both of these only affect air combat, which the rework removes.
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            HelperMethods.InstantiateArrowPickerController("EasyAirCombat", _optionsBool, ConvertBoolToInt(config.EasyAirCombat), OnEasyAirCombatValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("BehemothSubmergesForever", _optionsBool, ConvertBoolToInt(config.BehemothSubmergesForever), OnBehemothSubmergesForeverValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        }
 
                         
 

@@ -49,6 +49,7 @@ namespace TFTV
                 if (!AircraftReworkOn)
                 {
                     AircombatOption.AircraftAndAircombat();
+                    RestoreVanillaLocKeys();
                     return;
                 }
 
@@ -154,8 +155,18 @@ namespace TFTV
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_45" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_46" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_47" });
-                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_48" });
-                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_29" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_49" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_50" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_51" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_52" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_53" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_54" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_55" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_56" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_57" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_30" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_31" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_32" });
             }
             catch (Exception e)
             {
@@ -1146,6 +1157,79 @@ namespace TFTV
 
         }
 
+        /// <summary>
+        /// Researches whose text the rework has something to add to, either because the research now
+        /// unlocks an aircraft module or because what it says stopped being true. Each has a
+        /// <c>&lt;key&gt;_AIRCRAFT_REWORK</c> row in TFTV_AircraftRework_Localization.csv that
+        /// <see cref="ModifyLocKeys"/> swaps in; on the main branch the original text stands.
+        ///
+        /// These are the keys the ResearchViewElementDefs actually bind, which is not always the
+        /// vanilla one: PX_CaptureTech is rebound to ..._COMPLETE_TFTV, and ANU_MutationTech to one
+        /// of two TFTV keys depending on the Mutagen Harvesting setting, so both are listed.
+        /// </summary>
+        private static readonly string[] _researchKeysWithReworkVariant = new string[]
+        {
+            // Researches that now unlock an aircraft module, or whose airframe our Vehicle Bays can only
+            // service properly once they are done.
+            "NJ_NEURALTECH_RESEARCHDEF_COMPLETE",
+            "NJ_AIRCRAFT_RESEARCHDEF_COMPLETE",
+            "NJ_TECHNICIAN_RESEARCHDEF_COMPLETE",
+            "NJ_VEHICLETECH_RESEARCHDEF_COMPLETE",
+            "SYN_ROVER_RESEARCHDEF_COMPLETE",
+            "SYN_MISTREPELLERS_RESEARCHDEF_COMPLETE",
+            "SYN_SENTIENTAITECH_RESEARCHDEF_COMPLETE",
+            "SYN_MOONMISSION_RESEARCHDEF_COMPLETE",
+            "SYN_AIRCRAFT_RESEARCHDEF_COMPLETE",
+            "SYN_AIRCRAFT_RESEARCHDEF_UNLOCK",
+            "SYN_MOONMISSION_RESEARCHDEF_BENEFITS",
+            "ANU_BLIMP_RESEARCHDEF_COMPLETE",
+            "PX_ALIEN_SPAWNERY_RESEARCHDEF_COMPLETE",
+            "PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV",
+            "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE",
+            "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE_W_HARVESTING",
+
+            // The base rework re-purposes the Training Facility, so the researches that used to speed up
+            // its experience generation now shorten the training of Personnel instead.
+            "NJ_TRAINING_RESEARCHDEF_BENEFITS",
+            "PX_PROTOCIVILISATION1_RESEARCHDEF_BENEFITS",
+            "PX_MOUNTAINSOFMADNESS_RESEARCHDEF_BENEFITS",
+
+            // Workers.GeoFactionFacilityBuffCollection_GetValue_Patch strips researched upgrades from
+            // Research Labs and Manufacturing Plants and ResearchAndManufacturing hands them back to
+            // idle slots only, so a staffed slot gets nothing from these.
+            "SYN_SENTIENTAITECH_RESEARCHDEF_BENEFITS",
+            "NJ_AUTOMATEDFACTORIES_RESEARCHDEF_BENEFITS",
+            "NJ_CENTRALIZEDAI_RESEARCHDEF_BENEFITS",
+
+            // Researches that raise an aircraft module's tier, or add an effect to one, without
+            // saying so anywhere else.
+            "ANU_ACIDTECH_RESEARCHDEF_COMPLETE",
+            "ANU_MUTATIONTECH2_RESEARCHDEF_COMPLETE",
+            "ANU_MUTATIONTECH3_RESEARCHDEF_COMPLETE",
+            "ANU_STIMTECH_RESEARCHDEF_COMPLETE",
+            "NJ_EXPLOSIVETECH_RESEARCHDEF_COMPLETE",
+            "NJ_GUIDANCETECH_RESEARCHDEF_COMPLETE",
+            "NJ_PRCRTECHTURRET_RESEARCHDEF_COMPLETE",
+            "PX_ALIEN_COLONY_RESEARCHDEF_COMPLETE",
+            "PX_ALIEN_LAIR_RESEARCHDEF_COMPLETE",
+            "SYN_NIGHTVISION_RESEARCHDEF_COMPLETE",
+            "SYN_VENOMBOLT_RESEARCHDEF_COMPLETE",
+            "ANU_ADVANCEDBLIMP_RESEARCHDEF_BENEFITS",
+            "ANU_ANUFUNGUSFOOD_RESEARCHDEF_BENEFITS",
+            "ANU_ANUPRIEST_RESEARCHDEF_BENEFITS",
+            "NJ_BIONICS2_RESEARCHDEF_BENEFITS",
+            "NJ_SATELITEUPLINK_RESEARCHDEF_BENEFITS",
+            "PX_ADVANCEDACIDTECH_RESEARCHDEF_BENEFITS",
+            "PX_ALIEN_CITADEL_RESEARCHDEF_BENEFITS",
+            "PX_ALIEN_LIVEACHERON_RESEARCHDEF_BENEFITS",
+            "SYN_BIONICS3_RESEARCHDEF_BENEFITS",
+            "SYN_FUSIONCELLTECH_RESEARCHDEF_BENEFITS",
+            "SYN_INFILTRATORTECH_RESEARCHDEF_BENEFITS",
+            "SYN_NANOHEALING_RESEARCHDEF_BENEFITS",
+            "SYN_NANOTECH_RESEARCHDEF_BENEFITS",
+            "SYN_SAFEZONEPROJECT_RESEARCHDEF_BENEFITS",
+        };
+
         private static void ModifyLocKeys()
         {
             try
@@ -1158,35 +1242,87 @@ namespace TFTV
                     {
                         { "VOID_OMEN_TITLE_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_TITLE_7_ALT")},
                        { "VOID_OMEN_DESCRIPTION_TEXT_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_DESCRIPTION_TEXT_7_ALT")},
-                        {"VOID_OMEN_REMOVAL_TEXT_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_REMOVAL_TEXT_7_ALT") }
+                        {"VOID_OMEN_REMOVAL_TEXT_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_REMOVAL_TEXT_7_ALT") },
+
+                        // These two hints describe the passenger-module system of the main branch,
+                        // which the rework replaces wholesale; swap in the rework wording.
+                        { "KEY_GEO_HINT_MORE_AIRCRAFT_TITLE", TFTVCommonMethods.ConvertKeyToString("KEY_GEO_HINT_MORE_AIRCRAFT_TITLE_AIRCRAFT_REWORK") },
+                        { "KEY_GEO_HINT_MORE_AIRCRAFT_DESC", TFTVCommonMethods.ConvertKeyToString("KEY_GEO_HINT_MORE_AIRCRAFT_DESC_AIRCRAFT_REWORK") },
+                        { "KEY_TUTORIAL_RESOURCES_DESCRIPTION", TFTVCommonMethods.ConvertKeyToString("KEY_TUTORIAL_RESOURCES_DESCRIPTION_AIRCRAFT_REWORK") }
                     };
 
-                // Get the TermData for the key
+                foreach (string key in _researchKeysWithReworkVariant)
+                {
+                    keyReplacements.Add(key, TFTVCommonMethods.ConvertKeyToString($"{key}_AIRCRAFT_REWORK"));
+                }
 
+                ApplyKeyReplacements(keyReplacements);
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// The rework's localization file overrides a handful of vanilla keys (the aircraft
+        /// durability label, the personnel tooltips of the base rework, and so on). Those files are
+        /// loaded whatever <see cref="TFTVAircraftReworkMain.AircraftReworkOn"/> says, so with the
+        /// rework off the main branch would describe mechanics it does not have. Put the vanilla
+        /// wording back in that case.
+        /// </summary>
+        private static void RestoreVanillaLocKeys()
+        {
+            try
+            {
+                Dictionary<string, string> keyReplacements = new Dictionary<string, string>
+                    {
+                        { "Geoscape/KEY_AIRCRAFT_STATS_DURABILITY", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_AIRCRAFT_STATS_DURABILITY") },
+                        { "DLC 3 - Behemoth/KEY_DLC3_HULL_POINTS", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_DLC3_HULL_POINTS") },
+                        { "KEY_GEO_SCANNER_UNAVAILABLE", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_GEO_SCANNER_UNAVAILABLE") },
+                        { "KEY_GEOSCAPE_SOLDIERS_TT", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_GEOSCAPE_SOLDIERS_TT") },
+                        { "KEY_SOLDIERS_COUNT_TT", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_SOLDIERS_COUNT_TT") },
+                        { "KEY_RESEARCH_TOTAL_TT", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_RESEARCH_TOTAL_TT") },
+                        { "KEY_PRODUCTION_TOTAL_TT", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_PRODUCTION_TOTAL_TT") },
+                        { "Danforth/KEY_BASE_RECRUITS_ROSTER_NAME", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_BASE_RECRUITS_ROSTER_NAME") },
+                        { "KEY_BASE_RECRUITS_ROSTER_DESCRIPTION", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_BASE_RECRUITS_ROSTER_DESCRIPTION") },
+                        { "KEY_BASE_RECRUITS_SPAWNED", TFTVCommonMethods.ConvertKeyToString("TFTV_VANILLA_BASE_RECRUITS_SPAWNED") }
+                    };
+
+                ApplyKeyReplacements(keyReplacements);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ApplyKeyReplacements(Dictionary<string, string> keyReplacements)
+        {
+            try
+            {
                 foreach (string key in keyReplacements.Keys)
                 {
                     TermData termData = LocalizationManager.GetTermData(key);
-                    if (termData != null)
+                    if (termData == null)
                     {
-                        // Get the current language index
-                        int languageIndex = -1;
-                        foreach (var source in LocalizationManager.Sources)
+                        continue;
+                    }
+
+                    // Get the current language index
+                    foreach (var source in LocalizationManager.Sources)
+                    {
+                        int languageIndex = source.GetLanguageIndex(LocalizationManager.CurrentLanguage);
+                        if (languageIndex >= 0)
                         {
-                            languageIndex = source.GetLanguageIndex(LocalizationManager.CurrentLanguage);
-                            if (languageIndex >= 0)
-                            {
-                                // Set the new translation
-                                termData.SetTranslation(languageIndex, keyReplacements[key]);
-                                break;
-                            }
+                            // Set the new translation
+                            termData.SetTranslation(languageIndex, keyReplacements[key]);
+                            break;
                         }
                     }
                 }
-
-
-
             }
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);

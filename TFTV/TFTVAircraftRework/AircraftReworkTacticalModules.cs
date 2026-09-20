@@ -46,10 +46,18 @@ namespace TFTV
         private static int _blimpMutationLabFrenzyPresent = 0;
         private static int _blimpPriestResearch = 0;
         private static int _heliosVestBuff = 0;
-        private static int _heliosStealthModulePerceptionBuff = 0;
         private static int _thunderbirdWorkshopPresent = 0;
         private static int _nestResearched = 0;
         private static int _lairResearched = 0;
+
+        // The Geoscape tier of each module that has one, snapshotted on deployment. The tier
+        // helpers need the GeoLevelController, so tactical code cannot recompute these and has to
+        // read what the launch wrote; keeping them separate from the presence flags above is what
+        // stops the in-mission panel from printing a tier the module does not have.
+        private static int _blimpMutationLabPresent = 0;
+        private static int _blimpMutationLabTier = 0;
+        private static int _heliosPanaceaTier = 0;
+        private static int _thunderbirdWorkshopTier = 0;
 
         internal static string ReportModulesPresent()
         {
@@ -112,10 +120,6 @@ namespace TFTV
                     report += "Helios Vest Buff Present\n";
                 }
 
-                if (_heliosStealthModulePerceptionBuff > 0)
-                {
-                    report += $"Helios Stealth Module Perception Buff Present, level {_heliosStealthModulePerceptionBuff}\n";
-                }
                 if (_thunderbirdWorkshopPresent > 0)
                 {
                     report += "Thunderbird Workshop Present\n";
@@ -212,10 +216,10 @@ namespace TFTV
                     AddModuleTooltip(moduleBlocks, _blimpMistModule, mistBenefits);
                 }
 
-                if (_heliosNanotechPresent > 0 || _heliosVestBuff > 0)
+                if (_heliosNanotechPresent > 0 || _heliosVestBuff > 0 || _heliosPanaceaTier > 0)
                 {
                     List<string> panaceaBenefits = new List<string>();
-                    AddTieredBenefit(panaceaBenefits, "TFTV_HELIOS_HEALING_MODULE_BENEFIT", _heliosNanotechPresent);
+                    AddTieredBenefit(panaceaBenefits, "TFTV_HELIOS_HEALING_MODULE_BENEFIT", _heliosPanaceaTier);
                     if (_heliosNanotechPresent > 0)
                     {
                         panaceaBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_Rover"));
@@ -234,18 +238,21 @@ namespace TFTV
                     AddModuleTooltip(moduleBlocks, _thunderbirdGroundAttackModule, groundAttackBenefits);
                 }
 
-                if (_blimpMutationLabFrenzyPresent > 0)
+                if (_blimpMutationLabPresent > 0)
                 {
                     List<string> mutationBenefits = new List<string>();
-                    AddTieredBenefit(mutationBenefits, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT", _blimpMutationLabFrenzyPresent);
-                    mutationBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_AIRCRAFT_MODULE_FRENZY_BENEFIT"));
+                    AddTieredBenefit(mutationBenefits, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT", _blimpMutationLabTier);
+                    if (_blimpMutationLabFrenzyPresent > 0)
+                    {
+                        mutationBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_AIRCRAFT_MODULE_FRENZY_BENEFIT"));
+                    }
                     AddModuleTooltip(moduleBlocks, _blimpMutationLabModule, mutationBenefits);
                 }
 
                 if (_thunderbirdWorkshopPresent > 0)
                 {
                     List<string> workshopBenefits = new List<string>();
-                    AddTieredBenefit(workshopBenefits, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT", _thunderbirdWorkshopPresent);
+                    AddTieredBenefit(workshopBenefits, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT", _thunderbirdWorkshopTier);
                     if (_thunderbirdWorkshopPresent > 1)
                     {
                         workshopBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_PX_Alien_LiveAcheron"));
@@ -319,25 +326,57 @@ namespace TFTV
         }
 
 
+        /// <summary>
+        /// Reads one slot of the deployment snapshot. A save written by an earlier build carries a
+        /// shorter array (or, older still, none at all), so a slot it never knew about reads 0
+        /// rather than throwing and taking the whole tactical load down with it.
+        /// </summary>
+        private static int ReadModuleSlot(int slot)
+        {
+            int[] snapshot = InternalData.ModulesInTactical;
+
+            if (snapshot == null || slot < 0 || slot >= snapshot.Length)
+            {
+                return 0;
+            }
+
+            return snapshot[slot];
+        }
+
         internal static void LoadInternalDataForTactical()
         {
             try
             {
-                _thunderBirdScannerPresent = InternalData.ModulesInTactical[0];
-                _captureDronesPresent = InternalData.ModulesInTactical[1];
-                _mistRepellerPresent = InternalData.ModulesInTactical[2];
-                _heliosStealthPresent = InternalData.ModulesInTactical[3];
-                _blimpMistPresent = InternalData.ModulesInTactical[4];
-                _heliosPresent = InternalData.ModulesInTactical[5];
-                _heliosNanotechPresent = InternalData.ModulesInTactical[6];
-                _thunderbirdGroundAttackWeaponPresent = InternalData.ModulesInTactical[7];
-                _blimpMutationLabFrenzyPresent = InternalData.ModulesInTactical[8];
-                _blimpPriestResearch = InternalData.ModulesInTactical[9];
-                _heliosVestBuff = InternalData.ModulesInTactical[10];
-                _heliosStealthModulePerceptionBuff = InternalData.ModulesInTactical[11];
-                _thunderbirdWorkshopPresent = InternalData.ModulesInTactical[12];
-                _nestResearched = InternalData.ModulesInTactical[13];
-                _lairResearched = InternalData.ModulesInTactical[14];
+                if (InternalData.ModulesInTactical == null)
+                {
+                    TFTVLogger.Always("[LoadInternalDataForTactical] no aircraft module snapshot in this save; treating every module as absent");
+                }
+                else if (InternalData.ModulesInTactical.Length < InternalData.ModulesInTacticalSlots)
+                {
+                    TFTVLogger.Always($"[LoadInternalDataForTactical] aircraft module snapshot has {InternalData.ModulesInTactical.Length} " +
+                        $"slots, this build expects {InternalData.ModulesInTacticalSlots}; the missing ones read 0");
+                }
+
+                _thunderBirdScannerPresent = ReadModuleSlot(0);
+                _captureDronesPresent = ReadModuleSlot(1);
+                _mistRepellerPresent = ReadModuleSlot(2);
+                _heliosStealthPresent = ReadModuleSlot(3);
+                _blimpMistPresent = ReadModuleSlot(4);
+                _heliosPresent = ReadModuleSlot(5);
+                _heliosNanotechPresent = ReadModuleSlot(6);
+                _thunderbirdGroundAttackWeaponPresent = ReadModuleSlot(7);
+                _blimpMutationLabFrenzyPresent = ReadModuleSlot(8);
+                _blimpPriestResearch = ReadModuleSlot(9);
+                _heliosVestBuff = ReadModuleSlot(10);
+                // Slot 11 held the Proteus Matrix perception buff before its tiers were merged into
+                // _heliosStealthPresent. Retired rather than reused, so old saves cannot be misread.
+                _thunderbirdWorkshopPresent = ReadModuleSlot(12);
+                _nestResearched = ReadModuleSlot(13);
+                _lairResearched = ReadModuleSlot(14);
+                _blimpMutationLabPresent = ReadModuleSlot(15);
+                _blimpMutationLabTier = ReadModuleSlot(16);
+                _heliosPanaceaTier = ReadModuleSlot(17);
+                _thunderbirdWorkshopTier = ReadModuleSlot(18);
 
             }
             catch (Exception e)
@@ -351,6 +390,13 @@ namespace TFTV
         {
             try
             {
+                if (InternalData.ModulesInTactical == null || InternalData.ModulesInTactical.Length < InternalData.ModulesInTacticalSlots)
+                {
+                    int[] grown = new int[InternalData.ModulesInTacticalSlots];
+                    InternalData.ModulesInTactical?.CopyTo(grown, 0);
+                    InternalData.ModulesInTactical = grown;
+                }
+
                 InternalData.ModulesInTactical[0] = _thunderBirdScannerPresent;
                 InternalData.ModulesInTactical[1] = _captureDronesPresent;
                 InternalData.ModulesInTactical[2] = _mistRepellerPresent;
@@ -362,10 +408,14 @@ namespace TFTV
                 InternalData.ModulesInTactical[8] = _blimpMutationLabFrenzyPresent;
                 InternalData.ModulesInTactical[9] = _blimpPriestResearch;
                 InternalData.ModulesInTactical[10] = _heliosVestBuff;
-                InternalData.ModulesInTactical[11] = _heliosStealthModulePerceptionBuff;
+                // Slot 11 retired; see LoadInternalDataForTactical.
                 InternalData.ModulesInTactical[12] = _thunderbirdWorkshopPresent;
                 InternalData.ModulesInTactical[13] = _nestResearched;
                 InternalData.ModulesInTactical[14] = _lairResearched;
+                InternalData.ModulesInTactical[15] = _blimpMutationLabPresent;
+                InternalData.ModulesInTactical[16] = _blimpMutationLabTier;
+                InternalData.ModulesInTactical[17] = _heliosPanaceaTier;
+                InternalData.ModulesInTactical[18] = _thunderbirdWorkshopTier;
             }
             catch (Exception e)
             {
@@ -389,10 +439,13 @@ namespace TFTV
                 _blimpMutationLabFrenzyPresent = 0;
                 _blimpPriestResearch = 0;
                 _heliosVestBuff = 0;
-                _heliosStealthModulePerceptionBuff = 0;
                 _thunderbirdWorkshopPresent = 0;
                 _nestResearched = 0;
                 _lairResearched = 0;
+                _blimpMutationLabPresent = 0;
+                _blimpMutationLabTier = 0;
+                _heliosPanaceaTier = 0;
+                _thunderbirdWorkshopTier = 0;
 
             }
             catch (Exception e)
@@ -470,24 +523,9 @@ namespace TFTV
 
                 if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosStealthModule))
                 {
-                    _heliosStealthPresent = 1;
-                    _heliosStealthModulePerceptionBuff = 1;
-
-                    if (phoenixResearch.HasCompleted("SYN_SafeZoneProject_ResearchDef"))
-                    {
-                        _heliosStealthPresent += 1;
-                    }
-
-                    if (phoenixResearch.HasCompleted("SYN_InfiltratorTech_ResearchDef"))
-                    {
-                        _heliosStealthPresent += 1;
-                    }
-
-                    if (phoenixResearch.HasCompleted("SYN_NightVision_ResearchDef"))
-                    {
-                        _heliosStealthModulePerceptionBuff += 1;
-                    }
-
+                    // One tier drives both stats, so the tactical panel, the roster tooltip and the
+                    // status the operatives actually get can never disagree.
+                    _heliosStealthPresent = Tiers.GetStealthTierForUI();
                 }
 
                 if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMistModule))
@@ -497,6 +535,8 @@ namespace TFTV
 
                 if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosPanaceaModule))
                 {
+                    _heliosPanaceaTier = Tiers.GetBuffLevelFromResearchDefs(_heliosStatisChamberBuffResearchDefs);
+
                     if (phoenixResearch.HasCompleted("SYN_Rover_ResearchDef"))
                     {
                         _heliosNanotechPresent = 1;
@@ -538,9 +578,16 @@ namespace TFTV
 
                 }
 
-                if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutationLabModule) && phoenixResearch.HasCompleted("ANU_StimTech_ResearchDef"))
+                if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutationLabModule))
                 {
-                    _blimpMutationLabFrenzyPresent = 1;
+                    _blimpMutationLabPresent = 1;
+                    _blimpMutationLabTier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches) + 1;
+
+                    // Frenzy rides on Stimulant Technology alone, not on the module's tier.
+                    if (phoenixResearch.HasCompleted("ANU_StimTech_ResearchDef"))
+                    {
+                        _blimpMutationLabFrenzyPresent = 1;
+                    }
                 }
                 if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMistModule) && phoenixResearch.HasCompleted("ANU_AnuPriest_ResearchDef"))
                 {
@@ -551,6 +598,7 @@ namespace TFTV
                 {
                     //pending acid res implementation, + self-repair implementation
                     _thunderbirdWorkshopPresent = 1;
+                    _thunderbirdWorkshopTier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs) + 1;
 
                     if (phoenixResearch.HasCompleted("PX_Alien_LiveAcheron_ResearchDef"))
                     {
@@ -798,28 +846,9 @@ namespace TFTV
                         return;
                     }
 
-                    if (_heliosStealthPresent == 3)
-                    {
-                        _heliosStealthModuleStatus.StatModifications[0].Value = 0.5f;
-                    }
-                    else if (_heliosStealthPresent == 2)
-                    {
-                        _heliosStealthModuleStatus.StatModifications[0].Value = 0.3f;
-                    }
-                    else
-                    {
-                        _heliosStealthModuleStatus.StatModifications[0].Value = 0.1f;
-
-                    }
-
-                    if (_heliosStealthModulePerceptionBuff == 2)
-                    {
-                        _heliosStealthModuleStatus.StatModifications[1].Value = 15;
-                    }
-                    else
-                    {
-                        _heliosStealthModuleStatus.StatModifications[1].Value = 5;
-                    }
+                    Tiers.GetStealthModuleBonuses(_heliosStealthPresent, out float stealth, out float perception);
+                    _heliosStealthModuleStatus.StatModifications[0].Value = stealth;
+                    _heliosStealthModuleStatus.StatModifications[1].Value = perception;
 
                     foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                     {

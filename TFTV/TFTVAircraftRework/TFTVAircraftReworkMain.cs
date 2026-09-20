@@ -180,7 +180,20 @@ namespace TFTV
                 }
             }
 
-            public static int[] ModulesInTactical = new int[15];
+            /// <summary>
+            /// Tactical snapshot of the aircraft modules the squad deployed with, taken on
+            /// GeoMission.Launch and serialized into TFTVTacInstanceData. The tier helpers in
+            /// AircraftReworkHelpers.Tiers all reach for the GeoLevelController, which does not
+            /// exist during a mission, so anything tactical code needs about a module has to be
+            /// read on the Geoscape and carried across in here.
+            ///
+            /// Only ever append slots. Saves made by an earlier build hold a shorter array, which
+            /// AircraftReworkTacticalModules.LoadInternalDataForTactical reads through a
+            /// bounds-checked helper, so new slots simply come back 0 on those saves.
+            /// </summary>
+            public const int ModulesInTacticalSlots = 20;
+
+            public static int[] ModulesInTactical = new int[ModulesInTacticalSlots];
         }
         internal class MarketPlace
         {

@@ -609,6 +609,22 @@ namespace TFTV
             //  private static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
 
 
+            /// <summary>
+            /// A Revenant fighting on our side in the Palace mission. PhoenixRising switches them
+            /// to the Phoenix faction outright rather than mind-controlling them, so the
+            /// MindControlStatus check below does not catch them and the squad mourns a Pandoran
+            /// corpse. Scoped to the Phoenix faction so that Revenants dying on the Pandoran side,
+            /// which is where they normally fight, still cost their own side Willpower.
+            /// </summary>
+            private static bool IsRevenantFightingForPhoenix(TacticalActorBase actor)
+            {
+                return TFTVRevenant.AnyRevenantGameTag != null
+                    && actor != null
+                    && actor.HasGameTag(TFTVRevenant.AnyRevenantGameTag)
+                    && actor.TacticalFaction?.Faction?.FactionDef != null
+                    && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("px");
+            }
+
             public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
             {
                 __state = 0; //Set this to zero so that the method still works for other actors.
@@ -622,7 +638,8 @@ namespace TFTV
                 if ((__instance.HasGameTag(hopliteTag) || __instance.HasGameTag(cyclopsTag))
                     || (__instance.TacticalFaction == death.Actor.TacticalFaction
                     && (death.Actor.HasGameTags(RelevantTags, false)
-                    || death.Actor.Status != null && death.Actor.Status.HasStatus<MindControlStatus>())))
+                    || death.Actor.Status != null && death.Actor.Status.HasStatus<MindControlStatus>()
+                    || IsRevenantFightingForPhoenix(death.Actor))))
                 {
                     __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
                     death.Actor.TacticalActorBaseDef.WillPointWorth = 0;

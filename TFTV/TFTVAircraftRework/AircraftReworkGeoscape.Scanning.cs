@@ -576,6 +576,7 @@ namespace TFTV
                             }
 
 
+                            // Chance that this site IS revealed, as the module descriptions state it.
                             int chance = 50;
 
                             if (__instance.ScanDef == _thunderbirdScannerComponent)
@@ -585,7 +586,7 @@ namespace TFTV
 
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             int num = UnityEngine.Random.Range(0, 100);
-                            if (num < chance)
+                            if (num >= chance)
                             {
                                 // TFTVLogger.Always($"rolled {num} Not revealing {site?.name}");
                                 return false;

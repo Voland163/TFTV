@@ -62,11 +62,11 @@ Die Zerstörung eines Baus oder einer Zitadelle entfernt das früheste aktive <b
 
 Każda kolonia Pandora przyczynia się do ewolucji Pandoran: im więcej aktywnych kolonii istnieje, tym szybciej wróg wystawia bardziej zaawansowane jednostki i tym szybciej narasta Oniryczne Delirium.
 
-Dodatkowo zniszczenie bardziej zaawansowanej kolonii Pandora (Legowiska lub Cytadeli) usuwa najstarszy <b>Znak Pustki</b> aktualnie obecny w grze. (Na poziomie Rekrut zniszczenie Gniazda również usuwa Znaki Pustki).","В TFTV фракции не будут вас штрафовать из-за обнаруженных колоний Пандоранов, если вам не удастся их уничтожить. Однако лидеры близлежащих убежищ все же будут слегка недовольны.
+Dodatkowo zniszczenie bardziej zaawansowanej kolonii Pandora (Legowiska lub Cytadeli) usuwa najstarszy <b>Znak Pustki</b> aktualnie obecny w grze. (Na poziomie Rekrut zniszczenie Gniazda również usuwa Znaki Pustki).","В TFTV фракции <b>не</b> будут вас штрафовать из-за обнаруженных колоний Пандоранов, если вам не удастся их уничтожить. Однако лидеры близлежащих убежищ все же будут слегка недовольны.
 
 Каждая колония Пандоранов вносит свой вклад в эволюцию Пандоранов: чем активнее колонии Пандоранов, тем быстрее враг выставит более продвинутых юнитов и тем быстрее будет расти уровень Сонного Безумия.
 
-Кроме того, уничтожение более продвинутой колонии Пандоранов (Логова, Цитадели, а на уровне сложности Новичок - Гнезда) деактивирует самое раннее из действующих в этот момент Знамений Пустоты.
+Кроме того, уничтожение более продвинутой колонии Пандоранов (Логова, Цитадели, а на уровне сложности Новичок - Гнезда) деактивирует самое раннее из действующих в этот момент <b>Знамений Пустоты</b>.
 ","En TFTV, las Facciones <b>no</b> reaccionarán negativamente a las Colonias Pandoras descubiertas si no las has conseguido destruir. Sin embargo, sufrirás una mínima penalización con los líderesde los refugios cercanos.
 
 Cada colonia Pandora contribuye a la evolución Pandora: cuanto más tiempo estén activas, verás a unidades más avanzadas más a menudo y el Delirio Onírico crecerá con mayor rapidez.
@@ -142,9 +142,9 @@ Kehrt das umherirrende pandoranische Flugwesen zum Schwarm zurück, wird die Zuf
 
 Jeśli zbłąkany lotnik Pandora wróci do roju, przystań zostanie namierzona przez Behemota. Gdy przystań zostanie wyznaczona jako cel ataku, nie da się już temu zapobiec: kiedy Behemot do niej dotrze, uszkodzi wszystkie jej obiekty i zbierze około połowy populacji.
 
-Niszcz lotników Pandora, aby chronić przystanie, zdobywać nagrody od frakcji i zmuszać Behemota do zanurzenia.","Пандоранский летун отделился от ""Гнойного Неба"". Он может наткнуться на убежище и атаковать его. Если убежище еще не обнаружено, оно отправит сигнал SOS со своими координатами.
+Niszcz lotników Pandora, aby chronić przystanie, zdobywać nagrody od frakcji i zmuszać Behemota do zanurzenia.","Пандоранский летун отделился от «Гнойного Неба». Он может наткнуться на убежище и атаковать его. Если убежище еще не обнаружено, оно отправит сигнал SOS со своими координатами.
 
-Если заблудившийся летун Пандоранов вернется обратно в рой, к убежищу направится Бегемот. Предотвратить его нападение невозможно: как только Бегемот доберется до убежища, он повредит все его объекты и уничтожит около половины его населения.
+Если заблудившийся летун Пандоранов вернется обратно в рой, к убежищу направится Бегемот. Предотвратить его нападение невозможно: как только Бегемот доберется до убежища, он повредит все его строения и похитит около половины его населения.
 
 Уничтожайте летунов Пандоранов, чтобы защищать убежища, получать награды от фракций и заставить Бегемота уйти под воду пораньше.","Un Pandora volante se a separado del Festering Skies. Podría ir a un refugio y atacarlo. Si el refugio no ha sido descubierto, enviará una señal SOS revelando su posición. 
 
@@ -250,7 +250,7 @@ Una vez el límite de Interrupción se alcance, el Behemoth volverá al océano.
 KEY_DLC3_TUT_BEHEMOTH_DISRUPTION_NAME,Text,,BEHEMOTH BEHAVIOR,,COMPORTEMENT DU BEHEMOTH,VERHALTEN DES BEHEMOTH,,ZACHOWANIE BEHEMOTA,ПОВЕДЕНИЕ БЕГЕМОТА,COMPORTAMIENTO DEL BEHEMOTH,
 KEY_DLC3_TUT_BEHEMOTH_DESCRIPTION,Text,,"The Behemoth will inexorably attack any haven that has been visited by a Pandoran flyer that has successfully returned to the Festering Skies. Once the Behemoth reaches the haven, it will harvest about half of its population and severely damage all of its facilities. To prevent Behemoth's attacks on havens, destroy all Pandoran flyers.",,"Le Béhémoth attaquera inexorablement tout refuge qui a été visité par un pandorien volant qui a réussi à retourner dans l'essaim. Une fois que le Béhémoth aura atteint le refuge, il récoltera environ la moitié de sa population et endommagera gravement toutes ses installations. Pour empêcher les attaques du Béhémoth sur les refuges, détruisez tous les pandoriens volants.","Der Behemoth greift unausweichlich jede Zuflucht an, die von einem pandoranischen Flugwesen besucht wurde, das erfolgreich zu den Fauligen Himmeln zurückgekehrt ist. Sobald der Behemoth die Zuflucht erreicht, erntet er etwa die Hälfte ihrer Bevölkerung und beschädigt alle Einrichtungen schwer.
 <b>Zerstöre alle pandoranischen Flugwesen, um Angriffe des Behemoths auf Zufluchten zu verhindern.</b>",,"Behemot będzie nieubłaganie atakował każdą przystań odwiedzoną przez pandorańskiego lotnika, który z powodzeniem wrócił do Festering Skies. Gdy Behemot dotrze do przystani, zbierze około połowy jej populacji i poważnie uszkodzi wszystkie obiekty. Aby zapobiec atakom Behemota na przystanie, zniszcz wszystkich pandorańskich lotników.","Бегемот будет неумолимо атаковать любое убежище, которое посетил Пандоранский летун, успешно вернувшийся в ""Гнойное Небо"". Как только Бегемот достигнет убежища, он уничтожит около половины его населения и нанесет серьезный ущерб всем его объектам. Чтобы предотвратить нападения Бегемота на убежища, уничтожайте всех Пандоранских летунов.","El Behemoth atacará inexoráblemente cualquier refugio visitado por un Pandoran flyer que haya conseguido escapar. Una vez el Behemoth alcance el refugio, consumirá casi la mitad de su población y dañará severamente todas sus instalaciones. Para evitar el ataque del Behemoth a los refugios, destruye a todos los Pandoran flyers.",
-KEY_TUTORIAL_DLC2_ANCIENT_SITE_DESCRIPTION,Text,,"Send an aircraft to set up an Exploration operation at the site. Once Exploration starts, the presence of aircraft is no longer needed.",,"Envoyez un appareil pour établir une opération d'exploration sur le site. Une fois que l'exploration a commencé, la présence de l'appareil n'est plus nécessaire.","Entsende ein Fluggerät, um vor Ort eine Erkundungsmission zu starten. Sobald das Team mit der Erkundung begonnen hat, wird das Fluggerät nicht mehr benötigt.",,"Wyślij statek powietrzny, aby rozpoczął operację Eksploracji w tym miejscu. Gdy Eksploracja się rozpocznie, obecność statku nie będzie już potrzebna.","Пошлите самолет для исследования этих Руин. Как только исследование начнется, присутствие самолета больше не потребуется.","Manda una aeronave para coordinar una operación de Exploración en el lugar. Una vez comience la Exploración, la aeronave podrá retirarse.",
+KEY_TUTORIAL_DLC2_ANCIENT_SITE_DESCRIPTION,Text,,"Send an aircraft to set up an Exploration operation at the site. Once Exploration starts, the presence of aircraft is no longer needed.",,"Envoyez un appareil pour établir une opération d'exploration sur le site. Une fois que l'exploration a commencé, la présence de l'appareil n'est plus nécessaire.","Entsende ein Fluggerät, um vor Ort eine Erkundungsmission zu starten. Sobald das Team mit der Erkundung begonnen hat, wird das Fluggerät nicht mehr benötigt.",,"Wyślij statek powietrzny, aby rozpoczął operację Eksploracji w tym miejscu. Gdy Eksploracja się rozpocznie, obecność statku nie będzie już potrzebna.","Пошлите самолет для Разведки этих Руин. Как только Разведка начнется, присутствие самолета больше не потребуется.","Manda una aeronave para coordinar una operación de Exploración en el lugar. Una vez comience la Exploración, la aeronave podrá retirarse.",
 KEY_TUTORIAL_DLC2_EXCAVATION_DONE_NAME,Text,,We've completed our first ancient site Exploration!,,Nous avons terminé notre première exploration de site ancien !,Wir haben unsere erste Erkundung einer Uralten Stätte abgeschlossen!,,Ukończyliśmy pierwszą eksplorację starożytnego miejsca!,Мы завершили нашу первую разведку Руин Древних!,¡Hemos completado nuestra Exploración de nuestro primer lugar antiguo!,
 KEY_TUTORIAL_DLC2_HARVESITNG_DESCRIPTION,Text,,"In TFTV, you immediately gain some amount of an exotic resource when you take control of an ancient site from the Automata. The amount of resources depends on type of resource and difficulty level, or alternatively the manual setting used in the Mod config. ",,"Dans TFTV, vous obtenez immédiatement une certaine quantité d'une ressource exotique lorsque vous prenez le contrôle d'un site ancien aux mains des Automates. Le montant des ressources dépend du type de ressource et du niveau de difficulté, ou alternativement, du réglage manuel utilisé dans la configuration du Mod.","In TFTV erhält man sofort eine bestimmte Menge einer exotischen Ressource, sobald man eine Uralte Stätte von den Automaten erobert. Die Menge der Ressource hängt von der Art der Ressource und dem Schwierigkeitsgrad ab, alternativ auch von den manuellen Einstellungen in der Mod-Konfiguration.",,"W TFTV natychmiast zdobywasz pewną ilość egzotycznego surowca, gdy przejmujesz kontrolę nad starożytnym miejscem od Automatów. Ilość zasobów zależy od rodzaju surowca i poziomu trudności albo od ręcznego ustawienia użytego w konfiguracji moda.","В TFTV вы сразу же получаете некоторое количество Экзотических Материалов, когда забираете у Роботов контроль над Руинами Древних. Количество ресурсов зависит от типа ресурса и уровня сложности, или, в качестве альтернативы, от соответствующей настройки, используемой в конфигурации мода.","En TFTV, ganarás inmediatamente una cantidad de un recurso exótico cuando tomes control de un lugar antiguo de los Autómatas. La cantidad de recursos depende del tipo y el nivel de dificultad, o del ajuste manual usado en Mod config. ",
 KEY_TUTORIAL_DLC2_HARVESITNG_NAME,Text,,ANCIENT SITE,,SITE ANCIEN,URALTE STÄTTE,,STAROŻYTNE MIEJSCE,РУИНЫ ДРЕВНИХ,LUGAR ANTIGUO,
@@ -284,7 +284,7 @@ Zdobywaj PD, chroniąc struktury albo cywilów jak zwykle.
 
 Możesz łupić skrzynie z bronią frakcyjną, ale odzyskany zostanie tylko sprzęt znajdujący się w wyposażeniu twoich operatorów lub pojazdów.","<i>""Они пришли, чтобы спасти нас? Как бы не так! Они - это те, кто сначала натравил на нас этих чертовых тварей! Чертовы ублюдки...""</i>
 
-Пока действует это Знамение Пустоты, защитники убежища будут настроены враждебно по отношению к вам и нападут на ваших бойцов, как только увидят их, но для победы в миссии не обязательно их убивать.
+Пока действует это Знамение Пустоты, защитники убежища будут настроены враждебно по отношению к вам и нападут на ваших бойцов, как только увидят их, но <b>для победы в миссии не обязательно их убивать</b>.
 
 Получайте опыт, защищая строения или гражданских лиц, как обычно.
 
@@ -306,9 +306,9 @@ Junge, lag ich daneben.“</i>
 
 Einige Arthrons haben die Fähigkeit entwickelt, Feuer, mit dem sie in Kontakt kommen, augenblicklich zu löschen und durch Nebel zu ersetzen. Offenbar erreichen sie dies, indem sie eine biochemische Substanz aus ihren <b>Köpfen</b> versprühen. Wird der Kopf deaktiviert, verlieren sie sowohl ihre Feuerimmunität als auch ihre Fähigkeit, Flammen zu ersticken.",,"<i>""Nic szczególnego w nim nie było... Pomyślałem: no to zupa gotowa... Ale się myliłem.""</i>
 
-Niektóre Arthrony wyewoluowały zdolność natychmiastowego gaszenia ognia, z którym się stykają, zastępując go Mgłą. Najwyraźniej robią to, rozpylając jakiś związek biochemiczny ze swoich <b>głów</b>. Unieszkodliwienie ich głów powinno odebrać im zarówno odporność na ogień, jak i zdolność jego gaszenia.","<i>""В этой твари не было ничего особенного... Сейчас нафарширую, подумал я тогда. Боже, как же я ошибался...""</i>
+Niektóre Arthrony wyewoluowały zdolność natychmiastowego gaszenia ognia, z którym się stykają, zastępując go Mgłą. Najwyraźniej robią to, rozpylając jakiś związek biochemiczny ze swoich <b>głów</b>. Unieszkodliwienie ich głów powinno odebrać im zarówno odporność na ogień, jak i zdolność jego gaszenia.","<i>""В этой твари не было ничего особенного... Сейчас поджарю до хрустящей корочки, подумал я тогда. Боже, как же я ошибался...""</i>
 
-Некоторые Артроны развили способность мгновенно гасить огонь, с которым они соприкасаются, заменяя его Туманом. Очевидно, они делают это, распыляя какое-то биохимическое вещество из своих голов. Выбитая голова должна лишить их невосприимчивости к огню и способности гасить его.","<i>“No había nada de especial en este… Aquí viene el marico… Que euivocado estaba”.</i>
+Некоторые Артроны развили способность мгновенно гасить огонь, с которым они соприкасаются, заменяя его Туманом. Очевидно, они делают это, распыляя какое-то биохимическое вещество из своих <b>голов</b>. Выбитая голова должна лишить их невосприимчивости к огню и способности гасить его.","<i>“No había nada de especial en este… Aquí viene el marico… Que euivocado estaba”.</i>
 
 Algunos Arthrones han evolucionado para soportar el fuego, reemplazándolo con Niebla. Lo hacen rociando un compuesto bioquímico por sus <b>cabezas</b>. Incapacitando sus cabezas debería elimianr tanto su inmunidad al fuego como su habilidad.",
 KEY_GEO_HINT_AUGMENTATION_SCREEN_DESCRIPTION,Text,,"You are about to augment your first soldier. A character can only have UP TO 2 BODY PARTS replaced this way.
@@ -347,9 +347,9 @@ Augmentowanie postaci obniży jej Wytrzymałość do zera.","Вы собирае
 
 Аугментированные части тела невосприимчивы к кровотечениям и устойчивы к вирусным повреждениям, ядам и параличу. Поврежденные кибернетические части можно будет починить после боя за счет технологий и материалов.
 
-Кроме того, каждая бионическая аугментация уменьшает максимальное количество Сонного Безумия, которое может быть у персонажа, на 1/3 и тут же удаляет с бойца это количество Сонного Безумия.
+Кроме того, каждая бионическая аугментация уменьшает максимальное количество Сонного Безумия, которое может быть у персонажа, на 4 и удаляет у бойца лишнее Сонное Безумие.
 
-При аугментации бойца его выносливость тут же снижается до нуля.","Estás apunto de mejorar tu primer soldado. Un personaje solo puede sustituir HASTA 2 PARTES DEL CUERPO de esta manera.
+При аугментации бойца его Выносливость тут же снижается до нуля.","Estás apunto de mejorar tu primer soldado. Un personaje solo puede sustituir HASTA 2 PARTES DEL CUERPO de esta manera.
 
 Cuando esté instalada, el soldado no podrá recuperar sus miembros originales, pero sí SUSTITUIDAS por otros cibernéticos.
 
@@ -477,7 +477,7 @@ Delirium hat jedoch auch weitere Effekte, <b>die nicht durch hohe Ausdauer abges
 
 Delirium zmniejsza Siłę Woli o równą wartość. Im niższa Siła Woli żołnierza, tym bardziej jest podatny na panikę lub kontrolę umysłu i tym mniej może korzystać ze swoich umiejętności. <b>Każde 10 punktów Wytrzymałości niweluje efekt 1 punktu Delirium</b>.
 
-Delirium ma też inne efekty, <b>których większa Wytrzymałość nie neutralizuje</b>.","Ваши бойцы получили 1 очко Сонного Безумия, максимальный уровень которого в начале игры равен одной трети Силы Воли персонажа. Этот предел будет расти по ходу игры.
+Delirium ma też inne efekty, <b>których większa Wytrzymałość nie neutralizuje</b>.","Ваши бойцы получили 1 очко Сонного Безумия, максимальный уровень которого в начале игры равен 4. Этот предел будет расти по ходу игры.
 Сонное Безумие уменьшает Силу Воли на количество своих очков. Чем слабее Сила Воли бойца, тем более он подвержен панике и контролю разума и тем меньше у него Очков Воли для применения своих навыков. Хорошие новости: <b>Каждые 10 очков Выносливости компенсируют 1 очко Сонного Безумия</b>.
 У Сонного Безумия есть и другие эффекты, которые <b>никак не компенсируются высокой Выносливостью</b>.","Tus soldados tienen un punto de Delirio. Al empezar el juego, el Delirio está limitado a un tercio de la Fuerza de Voluntad del Personaje. Esta limitación aumentará a medida que el juego progresa.
 
@@ -521,9 +521,9 @@ Augmentowanie postaci obniży jej Wytrzymałość do zera.","Вы собирае
 
 Аугментированные части тела невосприимчивы к кровотечениям и устойчивы к вирусным повреждениям, ядам и параличу. Поврежденные кибернетические части можно будет починить после боя за счет технологий и материалов.
 
-Кроме того, каждая бионическая аугментация уменьшает максимальное количество Сонного Безумия, которое может быть у персонажа, на 1/3, и тут же удаляет с бойца это количество Сонного Безумия.
+Кроме того, каждая бионическая аугментация уменьшает максимальное количество Сонного Безумия, которое может быть у персонажа, на 4 и удаляет у бойца лишнее Сонное Безумие.
 
-При аугментации бойца его выносливость снижается до нуля.","Está a punto de mecanizar a tu primer soldado. Un personaje solo puede reemplazar HASTA 2 PARTES DEL CUERPO de esta forma.
+При аугментации бойца его Выносливость тут же снижается до нуля.","Está a punto de mecanizar a tu primer soldado. Un personaje solo puede reemplazar HASTA 2 PARTES DEL CUERPO de esta forma.
 
 Cuando el aumento sea instalado, el soldado no podrá recuperar sus miembros naturales. Sin embargo, las partes mecanizadas PUEDEN SER INTERCAMBIADAS..
 
@@ -551,9 +551,9 @@ Każda augmentacja zmniejsza maksymalne Delirium postaci o 1/3 i natychmiast usu
 
 Aby augmentować żołnierza, przejdź do zakładki PERSONEL, wybierz EDYTUJ JEDNOSTKĘ, a następnie AUGMENTUJ.","Строительство вашей кибернетической лаборатории завершено. Теперь вы сможете аугментировать бойцов, заменяя их естественные конечности на мощные кибернетические.
 
-Каждая аугментация уменьшает максимальное количество очков Сонного Безумия, которое может быть у бойца, на 1/3, а также немедленно вылечивает столько же текущих очков Сонного Безумия.
+Каждая аугментация уменьшает максимальное количество очков Сонного Безумия, которое может быть у бойца, на 4, а также немедленно вылечивает столько же текущих очков Сонного Безумия.
 
-Чтобы аугментировать бойца, перейдите на вкладку ""Состав"" в главном меню Геоскопа, выберите иконку ""Характеристики и снаряжение"", а затем иконку ""Аугмент"".","La construcción del Laboratorio de Cibernética se ha completado. Ahora puedes AUMENTAR SOLDADOS, reemplazando sus extremidades naturales con poderosos aumentos cibernéticos.
+Чтобы аугментировать бойца, перейдите на вкладку «Состав» в главном меню Геоскейпа, выберите иконку «Характеристики и снаряжение», а затем иконку «Аугмент».","La construcción del Laboratorio de Cibernética se ha completado. Ahora puedes AUMENTAR SOLDADOS, reemplazando sus extremidades naturales con poderosos aumentos cibernéticos.
 
 Cada aumento reduce el máximo de Delirio que un personaje puede tener por 1/3 y también inmediatamente elimina esa cantidad de Delirio del personaje.
 
@@ -782,3 +782,22 @@ Durante la fase inicial (más de 12 horas restantes en el reloj) puedes desplega
 Si los Pandoras han penetrado la primera línea de defensa (menos de 12 horas en el reloj), tendrás que desplegarte en la Entrada de la base.
 
 Si la base tiene operativo el Ascensor de Acceso, puedes desplegar a tus operativos en él.",
+KEY_GEO_HINT_MORE_AIRCRAFT_TITLE_AIRCRAFT_REWORK,Text,,AIRCRAFT AND MODULES,,,,,,,,
+KEY_GEO_HINT_MORE_AIRCRAFT_DESC_AIRCRAFT_REWORK,Text,,"In TFTV, Aircraft no longer fight each other. There is no air combat and Aircraft carry no weapons: each one is a platform for MODULES, and the modules decide what it can do.
+
+Basic modules fit any Aircraft and are bought at the Marketplace or unlocked by research: extra speed, extra range, an area scanner, two extra seats, in-flight Stamina recovery, salvage drones and a harness that makes ground vehicles take less space. Each faction Aircraft also takes its own faction modules; the Phoenix Manticore takes every module in the game.
+
+Module tooltips show a TIER. Completing the right technologies raises a module’s tier and improves what it does, so look at your Aircraft again after finishing a research project.
+
+Aircraft also need maintenance. Flying burns OPS HOURS, which are restored at a base with a functioning Vehicle Bay — quickly once you have researched that Aircraft’s faction technology, at a crawl before that. At half OPS HOURS an Aircraft’s speed is halved, and at zero it breaks down and flies itself to the nearest functioning Phoenix base.
+
+All Aircraft except the Anu Blimp fly 20% slower inside the Mist. The Blimp flies faster there instead.",,,,,,,,
+KEY_TUTORIAL_RESOURCES_DESCRIPTION_AIRCRAFT_REWORK,Text,,"On completing a mission, all gathered items and resources are added to your overall SUPPLIES. These can be accessed instantly anywhere on the GEOSCAPE, regardless of location.
+
+Soldiers get fatigued during battle, LOSING 1 STAMINA POINT PER TURN (max 10 per battle).They also lose ALL STAMINA if one of their bodyparts is disabled during the mission.
+
+If an operative starts a mission with 10 STAMINA OR LESS, they will only have 3 Action Points, instead of 4. If the operative has 0 STAMINA, they will only have 2 Action Points.
+
+Your soldiers will slowly recover STAMINA in the aircraft if it carries a module that provides it, such as the Neurorest Hammocks, and much faster at base, as long as it has a functioning Living Quarters. They can also recover HITPOINTS at the base if it has a functioning Medical Facility.
+
+RETURN TO YOUR BASE SO YOUR SOLDIERS CAN RECOVER",,,,,,,,
