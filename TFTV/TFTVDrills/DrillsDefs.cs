@@ -1800,18 +1800,46 @@ namespace TFTV.TFTVDrills
                 string locKeyDesc = $"TFTV_DRILL_{assetName}_DESC";
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{assetName}.png");
 
-                // Tag DeployRiotShield_AbilityDef with a unique SkillTagDef so the cost modification only ever targets that ability
-                TacticalAbilityDef deployRiotShieldAbility = DefCache.GetDef<TacticalAbilityDef>("DeployRiotShield_AbilityDef");
-
+                // Tag every Deploy Shield ability with a unique SkillTagDef so the cost modification
+                // only ever targets those abilities. It has to be all of them, not just
+                // DeployRiotShield_AbilityDef: the game ships a separate def per shield source
+                // (riot shield, bionic shield arm, Guardian), so tagging one left Snap Brace doing
+                // nothing for anyone whose shield came from a different def. The legacy
+                // implementation caught them all because it tested for the DeployShieldAbility
+                // class rather than a single def.
                 _snapBraceDeployShieldTag = Helper.CreateDefFromClone(
                     DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef"),
                     tagGuid,
                     "SnapBraceDeployShield_SkillTagDef");
 
-                if (!deployRiotShieldAbility.SkillTags.Contains(_snapBraceDeployShieldTag))
+                List<TacticalAbilityDef> deployShieldAbilities = Repo.GetAllDefs<DeployShieldAbilityDef>()
+                    .Cast<TacticalAbilityDef>()
+                    .ToList();
+
+                // Named explicitly as well, so the riot shield keeps its tag even if that def ever
+                // turns out not to be a DeployShieldAbilityDef.
+                TacticalAbilityDef deployRiotShieldAbility = DefCache.GetDef<TacticalAbilityDef>("DeployRiotShield_AbilityDef");
+
+                if (deployRiotShieldAbility != null && !deployShieldAbilities.Contains(deployRiotShieldAbility))
                 {
-                    deployRiotShieldAbility.SkillTags = deployRiotShieldAbility.SkillTags.AddToArray(_snapBraceDeployShieldTag);
+                    deployShieldAbilities.Add(deployRiotShieldAbility);
                 }
+
+                foreach (TacticalAbilityDef deployShieldAbility in deployShieldAbilities)
+                {
+                    if (deployShieldAbility.SkillTags == null)
+                    {
+                        deployShieldAbility.SkillTags = new SkillTagDef[0];
+                    }
+
+                    if (!deployShieldAbility.SkillTags.Contains(_snapBraceDeployShieldTag))
+                    {
+                        deployShieldAbility.SkillTags = deployShieldAbility.SkillTags.AddToArray(_snapBraceDeployShieldTag);
+                    }
+                }
+
+                TFTVLogger.Always($"[SnapBrace] tagged {deployShieldAbilities.Count} Deploy Shield abilities: " +
+                    $"{string.Join(", ", deployShieldAbilities.Select(a => a.name))}");
 
                 // Status that sets the AP cost of any ability carrying the tag above to 0
                 _snapBraceAPCostStatus = Helper.CreateDefFromClone(

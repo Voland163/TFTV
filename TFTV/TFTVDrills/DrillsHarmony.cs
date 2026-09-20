@@ -1288,6 +1288,125 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+            /// <summary>
+            /// Temporary diagnostics for the report that Snap Brace stops working for characters who
+            /// have the drill and a riot shield.
+            ///
+            /// The whole effect is one ChangeAbilitiesCostStatus instance, applied when the (passive)
+            /// Snap Brace ability is added and removed with it. So there are two ways it can fail, and
+            /// the turn-start audit below tells them apart:
+            ///
+            ///   status absent        - the status was removed, or never applied
+            ///   status present, cost - the status is there but its cost modification is not
+            ///   above zero             registered against the ability the actor actually has
+            ///
+            /// The second case is what a mid-mission reload would look like, since statuses have a
+            /// separate OnApplyOnLoad path from OnApply. The apply/unapply lines, with the
+            /// IsLoadingSavedGame flag, say which turn it went wrong on and whether a load was
+            /// involved. Remove all of this once the cause is known.
+            /// </summary>
+            internal static class SnapBraceDiagnostics
+            {
+                private static bool IsSnapBraceStatus(TacStatus status)
+                {
+                    return _snapBraceAPCostStatus != null
+                        && status?.TacStatusDef == _snapBraceAPCostStatus;
+                }
+
+                [HarmonyPatch(typeof(TacStatus), nameof(TacStatus.OnApply))]
+                internal static class TacStatus_OnApply_SnapBrace_Log
+                {
+                    public static void Postfix(TacStatus __instance)
+                    {
+                        try
+                        {
+                            if (!IsSnapBraceStatus(__instance))
+                            {
+                                return;
+                            }
+
+                            TacticalActorBase actor = __instance.TacticalActorBase;
+
+                            TFTVLogger.Always($"[SnapBrace] status APPLIED to {actor?.DisplayName}, " +
+                                $"turn {actor?.TacticalLevel?.TurnNumber}, " +
+                                $"loading save? {actor?.TacticalLevel?.IsLoadingSavedGame}");
+                        }
+                        catch (Exception e) { TFTVLogger.Error(e); }
+                    }
+                }
+
+                [HarmonyPatch(typeof(TacStatus), nameof(TacStatus.OnUnapply))]
+                internal static class TacStatus_OnUnapply_SnapBrace_Log
+                {
+                    public static void Prefix(TacStatus __instance)
+                    {
+                        try
+                        {
+                            if (!IsSnapBraceStatus(__instance))
+                            {
+                                return;
+                            }
+
+                            TacticalActorBase actor = __instance.TacticalActorBase;
+
+                            TFTVLogger.Always($"[SnapBrace] status REMOVED from {actor?.DisplayName}, " +
+                                $"turn {actor?.TacticalLevel?.TurnNumber}, " +
+                                $"loading save? {actor?.TacticalLevel?.IsLoadingSavedGame}");
+                        }
+                        catch (Exception e) { TFTVLogger.Error(e); }
+                    }
+                }
+
+                [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
+                internal static class TacticalActor_StartTurn_SnapBrace_Audit
+                {
+                    public static void Postfix(TacticalActor __instance)
+                    {
+                        try
+                        {
+                            if (!TFTVNewGameOptions.IsReworkEnabled()
+                                || _snapBrace == null
+                                || __instance == null
+                                || __instance.GetAbilityWithDef<TacticalAbility>(_snapBrace) == null)
+                            {
+                                return;
+                            }
+
+                            bool hasStatus = _snapBraceAPCostStatus != null
+                                && __instance.Status != null
+                                && __instance.Status.HasStatus(_snapBraceAPCostStatus);
+
+                            List<DeployShieldAbility> shieldAbilities =
+                                __instance.GetAbilities<DeployShieldAbility>().ToList();
+
+                            if (shieldAbilities.Count == 0)
+                            {
+                                TFTVLogger.Always($"[SnapBrace] {__instance.DisplayName} has the drill, status? " +
+                                    $"{hasStatus}, but no Deploy Shield ability (no shield equipped?)");
+                                return;
+                            }
+
+                            foreach (DeployShieldAbility shieldAbility in shieldAbilities)
+                            {
+                                TacticalAbilityDef def = shieldAbility.TacticalAbilityDef;
+                                bool tagged = _snapBraceDeployShieldTag != null
+                                    && def?.SkillTags != null
+                                    && def.SkillTags.Contains(_snapBraceDeployShieldTag);
+
+                                TFTVLogger.Always($"[SnapBrace] {__instance.DisplayName} turn " +
+                                    $"{__instance.TacticalLevel?.TurnNumber}: status? {hasStatus}, " +
+                                    $"ability {def?.name}, tagged? {tagged}, " +
+                                    $"AP cost {shieldAbility.ActionPointCost} " +
+                                    $"(def cost {def?.ActionPointCost}), " +
+                                    $"AP now {__instance.CharacterStats?.ActionPoints?.Value}, " +
+                                    $"disabled: {shieldAbility.GetDisabledState()}");
+                            }
+                        }
+                        catch (Exception e) { TFTVLogger.Error(e); }
+                    }
+                }
+            }
+
 
             [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.Activate))]
             static class ShootAbility_Activate_PartingShot_Patch
