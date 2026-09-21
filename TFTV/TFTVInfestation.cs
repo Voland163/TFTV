@@ -12,6 +12,7 @@ using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -445,6 +446,69 @@ namespace TFTV
                 }
             }
 
+            private static readonly MethodInfo UninitZoneMethod = AccessTools.Method(typeof(GeoHaven), "UninitZone");
+            private static readonly FieldInfo HavenZonesField = AccessTools.Field(typeof(GeoHaven), "_zones");
+            private static readonly MethodInfo SetBuildingZoneMethod = AccessTools.PropertySetter(typeof(GeoFaction), nameof(GeoFaction.BuildingZone));
+            private static readonly FieldInfo ObjectiveZoneField = AccessTools.Field(typeof(HavenZoneGeoFactionObjective), "_zone");
+
+            /// <summary>
+            /// An infested haven keeps its site (and so its zones) instead of being destroyed, which would leave the
+            /// faction's unique zone (Moonlaunch, TW Fortress, Leviathan Chamber) stuck at a Pandoran-owned haven:
+            /// the owner can't build it anywhere else while one of its havens "has" it, and a Building one freezes the
+            /// faction's whole building queue. Remove it the way vanilla destruction would, so the faction starts it
+            /// again at another haven (GeoFaction.UpdateBuildingQueue sees it missing and re-queues it).
+            /// </summary>
+            private static void RemoveUniqueZones(GeoSite site)
+            {
+                try
+                {
+                    GeoHaven haven = site.GetComponent<GeoHaven>();
+
+                    if (haven == null)
+                    {
+                        return;
+                    }
+
+                    List<GeoHavenZone> zones = (List<GeoHavenZone>)HavenZonesField.GetValue(haven);
+                    List<GeoHavenZone> uniqueZones = zones.Where(z => z?.Def != null && z.Def.IsUnique).ToList();
+
+                    foreach (GeoHavenZone zone in uniqueZones)
+                    {
+                        // Drop Phoenix's "faction is building X" objective while zone.Haven is still set, so it can
+                        // unsubscribe from the site cleanly.
+                        foreach (GeoFaction faction in site.GeoLevel.Factions)
+                        {
+                            foreach (HavenZoneGeoFactionObjective objective in faction.Objectives.OfType<HavenZoneGeoFactionObjective>().ToList())
+                            {
+                                if (ObjectiveZoneField.GetValue(objective) == zone)
+                                {
+                                    faction.RemoveObjective(objective);
+                                }
+                            }
+
+                            if (faction.BuildingZone == zone)
+                            {
+                                SetBuildingZoneMethod.Invoke(faction, new object[] { null });
+                            }
+                        }
+
+                        UninitZoneMethod.Invoke(haven, new object[] { zone });
+                        zones.Remove(zone);
+
+                        TFTVLogger.Always($"[Infestation] Removed unique zone {zone.Def.name} ({zone.State}) from infested haven {site.LocalizedSiteName}.");
+                    }
+
+                    if (uniqueZones.Count > 0)
+                    {
+                        haven.ZonesStats.UpdateZonesStats();
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
             [HarmonyPatch(typeof(GeoSite), "DestroySite")]
             public static class GeoSite_DestroySite_Patch_ConvertDestructionToInfestation
             {
@@ -487,6 +551,8 @@ namespace TFTV
 
                                 TFTVLogger.Always("We got to here, defense mission should be successful and haven should look infested");
                                 __instance.GeoLevel.EventSystem.SetVariable("Number_of_Infested_Havens", __instance.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable) + 1);
+
+                                RemoveUniqueZones(__instance);
 
                                 __instance.RefreshVisuals();
 
