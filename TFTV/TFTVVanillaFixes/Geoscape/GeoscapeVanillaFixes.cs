@@ -25,6 +25,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
@@ -877,6 +878,73 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                 {
                     TFTVLogger.Error(e);
                     throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fixes the geoscape breaking when a haven is destroyed while it is building a Moonlaunch, TW Fortress or
+        /// Leviathan Chamber zone (e.g. by winning a Haven Infestation mission on a haven that was building one).
+        /// The haven's own Site_StateChanged handler runs first and uninits its zones (zone.Haven = null); the
+        /// HavenZoneGeoFactionObjective handler then sees the objective as completed, and its OnUnassignedFromFaction
+        /// dereferences zone.Haven.Site - a NullReferenceException that kills GeoLevelController's level coroutine.
+        /// </summary>
+        internal static class HavenZoneObjectiveOnDestroyedHaven
+        {
+            private static readonly MethodInfo SiteStateChangedMethod = AccessTools.Method(typeof(HavenZoneGeoFactionObjective), "Site_StateChanged");
+            private static readonly MethodInfo OnZoneConstructedMethod = AccessTools.Method(typeof(HavenZoneGeoFactionObjective), "OnZoneConstructed");
+
+            // The site is only known here, so unhook from it before the objective completes and can no longer find it.
+            [HarmonyPatch(typeof(HavenZoneGeoFactionObjective), "Site_StateChanged")]
+            public static class TFTV_HavenZoneGeoFactionObjective_Site_StateChanged
+            {
+                public static void Prefix(HavenZoneGeoFactionObjective __instance, GeoSite site, GeoHavenZone ____zone)
+                {
+                    try
+                    {
+                        if (site == null || ____zone == null || ____zone.Haven != null)
+                        {
+                            return;
+                        }
+
+                        site.StateChanged -= (GeoSite.SiteChangedEventHandler)Delegate.CreateDelegate(
+                            typeof(GeoSite.SiteChangedEventHandler), __instance, SiteStateChangedMethod);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(HavenZoneGeoFactionObjective), nameof(HavenZoneGeoFactionObjective.OnUnassignedFromFaction))]
+            public static class TFTV_HavenZoneGeoFactionObjective_OnUnassignedFromFaction
+            {
+                public static bool Prefix(HavenZoneGeoFactionObjective __instance, GeoHavenZone ____zone)
+                {
+                    try
+                    {
+                        if (____zone == null)
+                        {
+                            return false;
+                        }
+
+                        if (____zone.Haven != null)
+                        {
+                            return true;
+                        }
+
+                        ____zone.OnZoneConstructed -= (GeoHavenZone.GeoHavenZoneEventHandler)Delegate.CreateDelegate(
+                            typeof(GeoHavenZone.GeoHavenZoneEventHandler), __instance, OnZoneConstructedMethod);
+
+                        TFTVLogger.Always($"[HavenZoneObjective] Unassigned the {____zone.Def?.name} objective after its haven was destroyed.");
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        return true;
+                    }
                 }
             }
         }
