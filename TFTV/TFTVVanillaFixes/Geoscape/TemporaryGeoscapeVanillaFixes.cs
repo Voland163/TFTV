@@ -11,7 +11,6 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewStates;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -398,88 +397,6 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                     __state);
             }
         }
-
-        [HarmonyPatch(typeof(UIInventoryList), "ItemChangingHandler")]
-        internal static class ItemChangingHandlerPatch
-        {
-            private static bool Prefix(
-                UIInventoryList __instance,
-                ICommonItem oldItem,
-                ref bool ____isFiltering)
-            {
-                if (!____isFiltering && oldItem != null)
-                {
-                    RemoveByReference(__instance.UnfilteredItems, oldItem);
-                }
-
-                // The original uses List.Remove(), which invokes GeoItem.Equals().
-                return false;
-            }
-
-            internal static void RemoveByReference(List<ICommonItem> items, ICommonItem item)
-            {
-                for (int i = 0; i < items.Count; i++)
-                {
-                    if (ReferenceEquals(items[i], item))
-                    {
-                        items.RemoveAt(i);
-                        return;
-                    }
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(UIInventoryList), "ItemChangedHandler")]
-        internal static class ItemChangedHandlerPatch
-        {
-            private static bool Prefix(
-                UIInventoryList __instance,
-                UIInventorySlot slot,
-                ICommonItem oldItem,
-                ICommonItem newItem,
-                Predicate<TacticalItemDef> ____filter,
-                ref bool ____isFiltering)
-            {
-                if (____isFiltering)
-                {
-                    return false;
-                }
-
-                if (oldItem != null)
-                {
-                    ItemChangingHandlerPatch.RemoveByReference(__instance.UnfilteredItems, oldItem);
-                    ItemChangingHandlerPatch.RemoveByReference(__instance.FilteredItems, oldItem);
-                }
-
-                if (newItem == null)
-                {
-                    return false;
-                }
-
-                int index = __instance.Slots.IndexOf(slot);
-                if (index != -1)
-                {
-                    __instance.UnfilteredItems.Insert(Math.Min(index, __instance.UnfilteredItems.Count), newItem);
-                }
-                else
-                {
-                    __instance.UnfilteredItems.Add(newItem);
-                }
-
-                if (____filter == null || ____filter(newItem.ItemDef as TacticalItemDef))
-                {
-                    __instance.FilteredItems.Add(newItem);
-                    return false;
-                }
-
-                ____isFiltering = true;
-                slot.Item = null;
-                slot.UpdateItem();
-                ____isFiltering = false;
-                return false;
-            }
-        }
-
 
         //temporary fix for 1.30 locate phoenix base function
         [HarmonyPatch(typeof(UIStatePhoenixBaseLayout), "ShowBaseOnGeoscape")]
