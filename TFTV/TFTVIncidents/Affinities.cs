@@ -336,6 +336,13 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<LeaderSelection.AffinityApproach, int> TacticalBenefitChoiceSnapshot =
               new Dictionary<LeaderSelection.AffinityApproach, int>();
 
+            /// <summary>Forget per-level lookups; the level's event variables (geoscape) and the imported snapshot (tactical) are the truth.</summary>
+            internal static void ClearChoiceCaches()
+            {
+                GeoBenefitChoiceCache.Clear();
+                TacticalBenefitChoiceCache.Clear();
+            }
+
             internal static void RefreshTacticalAbilityDescriptionsFromSnapshot()
             {
                 try
@@ -421,11 +428,13 @@ namespace TFTV.TFTVIncidents
                         return cached;
                     }
 
-                    int stored = 0;
-                    if (level?.EventSystem != null)
+                    if (level?.EventSystem == null)
                     {
-                        stored = level.EventSystem.GetVariable(GetGeoBenefitVariableName(approach));
+                        // no level to read from: don't cache the default, or it would stick once a level is available
+                        return 1;
                     }
+
+                    int stored = level.EventSystem.GetVariable(GetGeoBenefitVariableName(approach));
 
                     int normalized = (stored == 2) ? 2 : 1;
                     GeoBenefitChoiceCache[approach] = normalized;
@@ -485,11 +494,13 @@ namespace TFTV.TFTVIncidents
                         return cached;
                     }
 
-                    int stored = 0;
-                    if (level?.EventSystem != null)
+                    if (level?.EventSystem == null)
                     {
-                        stored = level.EventSystem.GetVariable(GetTacticalBenefitVariableName(approach));
+                        // In tactical there is no geoscape level: the snapshot imported from the mission data is the truth.
+                        return GetTacticalBenefitChoiceFromSnapshot(approach);
                     }
+
+                    int stored = level.EventSystem.GetVariable(GetTacticalBenefitVariableName(approach));
 
                     int normalized = NormalizeOption(stored);
                     CacheTacticalBenefitChoice(approach, normalized);

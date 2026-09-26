@@ -1002,7 +1002,11 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
 
 
         //Prevents multiple instancing of mission briefings when several aircraft arrive simultaneously at the mission site
+        // Keyed to the level instance and site: a load creates a new level, so an arrival replayed at the same
+        // game time after loading is not mistaken for a duplicate of one seen before the load.
         private static TimeUnit _arrivalTime;
+        private static GeoSite _arrivalSite;
+        private static GeoLevelController _arrivalLevel;
 
         [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteVisited")] //VERIFIED
         public static class UIStateVehicleSelected_OnVehicleSiteVisitedt_patch
@@ -1013,13 +1017,16 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                 {
                     TimeUnit currentTime = vehicle.GeoLevel.Timing.Now;
 
-                    if (_arrivalTime != null && _arrivalTime == currentTime && vehicle?.CurrentSite.Vehicles.Count() > 1)
+                    if (_arrivalLevel == vehicle.GeoLevel && _arrivalSite == vehicle.CurrentSite && _arrivalTime == currentTime
+                        && vehicle.CurrentSite != null && vehicle.CurrentSite.Vehicles.Count() > 1)
                     {
                         TFTVLogger.Always($"more than 1 vehicle arriving at {vehicle?.CurrentSite?.LocalizedSiteName} simultaneously; cancelling stuff for all vehicles except the first");
                         return false;
                     }
 
                     _arrivalTime = currentTime;
+                    _arrivalSite = vehicle.CurrentSite;
+                    _arrivalLevel = vehicle.GeoLevel;
 
                     return true;
                 }

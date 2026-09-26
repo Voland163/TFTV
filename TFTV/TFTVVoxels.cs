@@ -26,17 +26,24 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        public static bool GooVoxelSpawnAlreadyChecked = false;
         public static bool FireVoxelSpawnAlreadyChecked = false;
 
         [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.VoxelSpawned))]
         public static class TacticalVoxelMatrix_VoxelSpawned_patch
         {
-            public static void Postfix(TacticalVoxelMatrix __instance, TacticalVoxel voxel)
+            // HadGoo counts toward the goo research only when Pandorans spawned the goo. VoxelSpawned sets HadGoo on the
+            // first goo voxel of the mission, so only that transition needs checking; once HadGoo is legitimately true
+            // (including after loading a mid-mission save) later goo can't clear it.
+            public static void Prefix(TacticalVoxelMatrix __instance, out bool __state)
+            {
+                __state = __instance.HadGoo;
+            }
+
+            public static void Postfix(TacticalVoxelMatrix __instance, TacticalVoxel voxel, bool __state)
             {
                 try
                 {
-                    if (!GooVoxelSpawnAlreadyChecked && __instance.HadGoo)
+                    if (!__state && __instance.HadGoo)
                     {
                         PropertyInfo propertyInfo = typeof(TacticalVoxelMatrix).GetProperty("HadGoo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
@@ -50,7 +57,6 @@ namespace TFTV
                             if (__instance.TacticalLevel.CurrentFaction == __instance.TacticalLevel.GetFactionByCommandName("aln"))
                             {
                                 TFTVLogger.Always($"Pandorans used goo!");
-                                GooVoxelSpawnAlreadyChecked = true;
                             }
                             else
                             {

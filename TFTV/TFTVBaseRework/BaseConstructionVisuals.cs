@@ -253,6 +253,17 @@ namespace TFTV.TFTVBaseRework
                 try
                 {
                     GeoLevelController level = __instance?.gameObject?.GetComponent<GeoLevelController>();
+
+                    // New level (new game, save load, return from tactical): the saved event-system timers are the
+                    // truth. Drop everything from the previous level, or a construction queued after the save that
+                    // was just loaded would still complete, unpaid.
+                    ActivePendingByTimerId.Clear();
+                    PendingConstructionVisuals.Clear();
+                    AppliedProgression.Clear();
+                    PendingVisualCreationLogged.Clear();
+                    PendingVisualMissingLogged.Clear();
+                    InvalidatePendingVisuals();
+
                     RehydratePendingActions(__instance, level);
                     RefreshPendingConstructionVisuals(level);
                 }

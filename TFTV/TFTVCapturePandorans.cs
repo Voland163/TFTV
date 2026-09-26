@@ -199,6 +199,10 @@ namespace TFTV
             {
                 TFTVLogger.Always("CheckCaptureCapability running");
 
+                // Per-mission data: start from scratch, or flags from a mission that wasn't Won (the only path
+                // that cleared them) leak into this one, e.g. the Scylla-capture discount.
+                InternalData.ClearInternalCaptureData();
+
                 GetGeoVehicleForSite(geoMission);
 
 

@@ -32,6 +32,7 @@ namespace TFTV.TFTVIncidents
             {
                 if (level == null || !TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
+                    HavenAttackRiskService.Clear();
                     return;
                 }
 
@@ -42,6 +43,11 @@ namespace TFTV.TFTVIncidents
                 if (leadHours > 0)
                 {
                     HavenAttackRiskService.RefreshForCurrentHour(level, leadHours);
+                }
+                else
+                {
+                    // lead dropped to 0: clear, or the last markers stay frozen on the map
+                    HavenAttackRiskService.Clear();
                 }
             }
             catch (Exception e)
@@ -64,6 +70,12 @@ namespace TFTV.TFTVIncidents
             private static int _currentLeadHours;
 
             public static int CurrentLeadHours => _currentLeadHours;
+
+            public static void Clear()
+            {
+                _currentLeadHours = 0;
+                SiteRiskById.Clear();
+            }
 
             public static RiskWindow GetRisk(GeoSite site)
             {

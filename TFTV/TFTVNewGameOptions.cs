@@ -319,16 +319,20 @@ namespace TFTV
                     StrongerPandoransSetting = true;
                     ImpossibleWeaponsAdjustmentsSetting = true;
                     LimitedCaptureSetting = true;
-                    LimitedHarvestingSetting = true;             
+                    LimitedHarvestingSetting = true;
+                    // every branch sets every option, or values from a previous campaign in this session carry over
+                    NoSecondChances = false;
                 }
                 else if(difficulty > 2) 
                 {
                     DiplomaticPenaltiesSetting = true;
                     StaminaPenaltyFromInjurySetting = true;
                     MoreAmbushesSetting = true; 
+                    StrongerPandoransSetting = false;
                     ImpossibleWeaponsAdjustmentsSetting = true;
                     LimitedCaptureSetting = true;
                     LimitedHarvestingSetting = true;
+                    NoSecondChances = false;
                 }
                 else 
                 {

@@ -872,7 +872,14 @@ namespace TFTV.TFTVBaseRework
         #region Clear
         public static void ClearAllSessions()
         {
-            try { RecruitSessions.Clear(); }
+            try
+            {
+                RecruitSessions.Clear();
+                // Keyed by GeoCharacter.Id, which a loaded save restores and a new game restarts at 1:
+                // stale entries would make later trainees skip their stat gains.
+                _appliedStatLevels.Clear();
+                _pendingPostRecruitStatApply.Clear();
+            }
             catch (Exception e) { TFTVLogger.Error(e); }
         }
         #endregion

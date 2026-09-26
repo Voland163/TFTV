@@ -255,6 +255,8 @@ namespace TFTV
                 HavenRecruitsMain.ClearInternalData();
                 DrillsUI.InternalData.ClearInternalData();
                 TFTV.TFTVIncidents.Resolution.IncidentController.ClearStateOnStateChangeAndLoad();
+                TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ClearChoiceCaches();
+                TFTV.TFTVIncidents.AdvanceWarningHavenAttack.HavenAttackRiskService.Clear();
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
