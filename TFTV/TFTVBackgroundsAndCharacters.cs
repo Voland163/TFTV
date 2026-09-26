@@ -145,7 +145,7 @@ namespace TFTV
 
                     if (__instance.Title != null && __instance.Title.LocalizationKey.Contains("VOID_OMEN_TITLE_"))
                     {
-                        __result = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                        __result = Helper.GetCachedSpriteFromImageFile("Void-04P.png"); // GetIcon is called repeatedly
                     }
 
                 }
@@ -156,6 +156,10 @@ namespace TFTV
             }
         }
 
+
+        // The 4th (Virophage/Helena) choice removed from these defs, kept so it can be put back: the defs are
+        // process-global, and regenerating it would lose the event trigger it was created with.
+        private static readonly Dictionary<GeoscapeEventDef, GeoEventChoice> _removedAlistairFourthChoices = new Dictionary<GeoscapeEventDef, GeoEventChoice>();
 
         public static void AdjustAlistairRoads()
         {
@@ -187,6 +191,7 @@ namespace TFTV
                     {
                         if (geoscapeEventDef.GeoscapeEventData.Choices.Count > 3) 
                         {
+                            _removedAlistairFourthChoices[geoscapeEventDef] = geoscapeEventDef.GeoscapeEventData.Choices[3];
                             geoscapeEventDef.GeoscapeEventData.Choices.RemoveAt(3);
                         } 
                     } 
@@ -195,9 +200,11 @@ namespace TFTV
                 {
                     foreach (GeoscapeEventDef geoscapeEventDef in eventsDef)
                     {
-                        if (geoscapeEventDef.GeoscapeEventData.Choices.Count < 3)
+                        // the defs are built with 4 choices: restore the 4th if an earlier call removed it
+                        if (geoscapeEventDef.GeoscapeEventData.Choices.Count < 4
+                            && _removedAlistairFourthChoices.TryGetValue(geoscapeEventDef, out GeoEventChoice removedChoice))
                         {
-                            TFTVCommonMethods.GenerateGeoEventChoice(geoscapeEventDef, questionAboutVirophage, answerAboutVirophage);
+                            geoscapeEventDef.GeoscapeEventData.Choices.Add(removedChoice);
                         }
                     }
 

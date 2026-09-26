@@ -1543,7 +1543,7 @@ namespace TFTV
                     {
                         try
                         {
-                            HopliteAPMassShoot.Add(shooterActor, shooterActor?.CharacterStats?.ActionPoints);
+                            HopliteAPMassShoot[shooterActor] = shooterActor?.CharacterStats?.ActionPoints; // indexer: a stale key must not abort the rest of the volley
 
 
                             TFTVLogger.Always($"{shooterActor?.name} has {shooterActor?.CharacterStats?.ActionPoints} action points");

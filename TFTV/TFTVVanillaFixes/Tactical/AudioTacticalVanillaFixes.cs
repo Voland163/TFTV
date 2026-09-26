@@ -14,6 +14,7 @@ namespace TFTV.TFTVVanillaFixes.Tactical
     internal class AudioTacticalVanillaFixes
     {
         private static bool _musicVolumeAncientMapAdjusted = false;
+        private static float _musicVolumeBeforeAncientMap = 1f;
 
         [HarmonyPatch(typeof(AudioManager), "PlayEvent")] //VERIFIED
         public static class AudioManager_PlayEvent_patch
@@ -32,6 +33,8 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                             //  {
                             if (__instance.MasterVolumeRTPC.GetGlobalValue() > 0.25f && __instance.MusicVolumeRTPC.GetGlobalValue() > 0.25f)
                             {
+                                // remember the player's level: master * 4 is not the inverse of this duck
+                                _musicVolumeBeforeAncientMap = __instance.GetAudioLevel(MixerKey.Music);
                                 __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 0.25f);
                                 _musicVolumeAncientMapAdjusted = true;
 
@@ -43,7 +46,7 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                         }
                         else if (!TFTVAncients.CheckIfAncientMap(controller) && _musicVolumeAncientMapAdjusted)
                         {
-                            __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 4f);
+                            __instance.SetAudioLevel(MixerKey.Music, _musicVolumeBeforeAncientMap);
 
                             _musicVolumeAncientMapAdjusted = false;
 
@@ -57,7 +60,7 @@ namespace TFTV.TFTVVanillaFixes.Tactical
 
                     if (_musicVolumeAncientMapAdjusted)
                     {
-                        __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 4f);
+                        __instance.SetAudioLevel(MixerKey.Music, _musicVolumeBeforeAncientMap);
 
                         _musicVolumeAncientMapAdjusted = false;
                         TFTVLogger.Always($"resetting music to {__instance.MasterVolumeRTPC.GetGlobalValue()}");

@@ -391,7 +391,7 @@ namespace TFTV
                     heavy.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                     heavy.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_HEAVY");
                     heavy.ViewElementDef.Description = new LocalizedTextBind(
-                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STRENGTH", 5), true);
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STRENGTH", 10), true); // matches the +10 Endurance (Strength) above
 
                     heavy.ViewElementDef.LargeIcon = VoidIcon;
                     heavy.ViewElementDef.SmallIcon = VoidIcon;

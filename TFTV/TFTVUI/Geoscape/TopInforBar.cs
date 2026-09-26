@@ -299,7 +299,7 @@ namespace TFTV.TFTVUI.Geoscape
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         populationBar.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
-                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                        deliriumIcon.sprite = Helper.GetCachedSpriteFromImageFile("Void-04P.png");
                         deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_VO_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
@@ -309,7 +309,7 @@ namespace TFTV.TFTVUI.Geoscape
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         populationBar.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
-                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                        deliriumIcon.sprite = Helper.GetCachedSpriteFromImageFile("Void-04P.png");
                         deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MAX_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
@@ -320,14 +320,14 @@ namespace TFTV.TFTVUI.Geoscape
                         populationBar.gameObject.SetActive(true);
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
-                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Phalf.png");
+                        deliriumIcon.sprite = Helper.GetCachedSpriteFromImageFile("Void-04Phalf.png");
                         deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MED_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
                     }
                     else if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0)
                     {
-                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Pthird.png");
+                        deliriumIcon.sprite = Helper.GetCachedSpriteFromImageFile("Void-04Pthird.png");
                         populationBar.gameObject.SetActive(true);
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
@@ -381,17 +381,17 @@ namespace TFTV.TFTVUI.Geoscape
 
                         if (pEPerDay >= 12)
                         {
-                            evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_fast.png");
+                            evolutionIcon.sprite = Helper.GetCachedSpriteFromImageFile("FactionIcons_Aliens_Evo_fast.png");
                             evolutionToolTipText += $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP1")}";
                         }
                         else if (pEPerDay >= 6)
                         {
-                            evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_medium.png");
+                            evolutionIcon.sprite = Helper.GetCachedSpriteFromImageFile("FactionIcons_Aliens_Evo_medium.png");
                             evolutionToolTipText += $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP2")}";
                         }
                         else
                         {
-                            evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_slow.png");
+                            evolutionIcon.sprite = Helper.GetCachedSpriteFromImageFile("FactionIcons_Aliens_Evo_slow.png");
                             evolutionToolTipText += $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP3")}";
                         }
                     }

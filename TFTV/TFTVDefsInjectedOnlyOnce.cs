@@ -1913,9 +1913,12 @@ namespace TFTV
 
                 string umbraAIClosestEnemyConsiderationName = "Umbra_ClosestPathToEnemy_AIConsiderationDef";
 
-                newTacAIActor.AIActionsTemplateDef.ActionDefs[1].Evaluations[0].Considerations[1].Consideration = Helper.CreateDefFromClone(
+                // ActionDefs holds references to shared action defs (the template clone doesn't copy them): clone
+                // Advance_Aggressive before editing it, or the Crabman Brawler's own action gets the Umbra consideration.
+                AIActionDef umbraAdvanceActionDef = Helper.CreateDefFromClone(source.AIActionsTemplateDef.ActionDefs[1], "{0FC43A33-D23B-42BF-AF69-A33C9322E7F5}", "Umbra_Advance_Aggressive_AIActionDef");
+                umbraAdvanceActionDef.Evaluations[0].Considerations[1].Consideration = Helper.CreateDefFromClone(
                     aIClosestEnemyConsiderationDef, "{28943F5A-9432-496F-9415-81087C686C9F}", umbraAIClosestEnemyConsiderationName);
-                AIClosestEnemyConsiderationDef umbraClosestEnemyConsiderationDef = (AIClosestEnemyConsiderationDef)newTacAIActor.AIActionsTemplateDef.ActionDefs[1].Evaluations[0].Considerations[1].Consideration;
+                AIClosestEnemyConsiderationDef umbraClosestEnemyConsiderationDef = (AIClosestEnemyConsiderationDef)umbraAdvanceActionDef.Evaluations[0].Considerations[1].Consideration;
                 umbraClosestEnemyConsiderationDef.MaxDistance = 100;
 
                 AIActionMoveAndAttackDef moveAndStrikeAIActionDef = DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndStrike_AIActionDef");
@@ -1974,7 +1977,7 @@ namespace TFTV
 
                 List<AIActionDef> aIActionDefs = new List<AIActionDef>() {
                     source.AIActionsTemplateDef.ActionDefs[0],
-                    source.AIActionsTemplateDef.ActionDefs[1],
+                    umbraAdvanceActionDef,
                     umbraMoveAndStrikeActionDef,
                     source.AIActionsTemplateDef.ActionDefs[4],
                 };
@@ -2739,7 +2742,9 @@ namespace TFTV
                 newDummyObjective.IsVictoryObjective = false;
 
                 ActivateConsoleFactionObjectiveDef sourceActivateFactionObjective = DefCache.GetDef<ActivateConsoleFactionObjectiveDef>("StealResearch_HackConsole_CustomMissionObjective");
-                ActivateConsoleFactionObjectiveDef newObjective = Helper.CreateDefFromClone(sourceActivateFactionObjective, name, gUID1);
+                // The (guid, name) arguments were swapped when this shipped, so the def's guid is 'name'. Keep that guid
+                // for mid-mission save compatibility and fix only the name; gUID1 is intentionally unused.
+                ActivateConsoleFactionObjectiveDef newObjective = Helper.CreateDefFromClone(sourceActivateFactionObjective, name, name);
                 newObjective.ObjectiveData.ActiveInteractables = -1;
                 newObjective.ObjectiveData.InteractablesToActivate = -1;
                 newObjective.ObjectiveData.InteractableTagDef = interactableConsoleTag;

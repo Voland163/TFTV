@@ -280,6 +280,9 @@ namespace TFTV
                         alwaysDisplayedTacticalHintsDbDef.Hints.Remove(contextHelpHintDef);
                         TFTVLogger.Always("Squad hint " + contextHelpHintDef.name + " removed");
                     }
+
+                    // per-mission hint: its sprite entry is otherwise only dropped if the hint was shown
+                    TFTVHints._hintDefSpriteFileNameDictionary.Remove(contextHelpHintDef);
                 }
 
                 TFTVHumanEnemies.TacticsHint.Clear();

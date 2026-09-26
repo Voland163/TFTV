@@ -180,13 +180,16 @@ namespace TFTV.TFTVDrills
                 {
                     if (extraSections == null)
                         extraSections = new List<string>();
-                    extraSections.Add($"<color=#E21515><b>Missing requirements:</b>\n{_missingRequirements}</color>");
+                    extraSections.Add($"<color=#E21515><b>{DrillsText.Get(DrillsText.MissingRequirementsHeader)}</b>\n{_missingRequirements}</color>");
                 }
 
-                if (_isAcquired)
+                string alreadyAcquired = DrillsText.Get(DrillsText.AlreadyAcquired);
+                // the missing-requirements list may already say so (DrillSwapUI adds it): don't print it twice
+                bool acquiredAlreadyListed = _isLocked && !string.IsNullOrEmpty(_missingRequirements) && _missingRequirements.Contains(alreadyAcquired);
+                if (_isAcquired && !acquiredAlreadyListed)
                 {
                     if(extraSections==null) extraSections = new List<string>();
-                    extraSections.Add("<color=#FF4C00><b>Already acquired</b></color>");
+                    extraSections.Add($"<color=#FF4C00><b>{alreadyAcquired}</b></color>");
                 }
 
                 if (extraSections != null && extraSections.Count > 0)

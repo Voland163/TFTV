@@ -541,6 +541,8 @@ namespace TFTV.TFTVIncidents
                 ApproachIconTooltipTrigger.DestroyTooltip();
                 RestoreVanillaChoiceLayout(__instance);
                 OperativeCards.Clear();
+                // unconditional like the other incident decorations, or the strip leaks onto the next non-incident event
+                LeaderAbilityIcons.Clear();
                 ResetSelectedLeaderContext(null, null);
 
                 if (!IsIncidentIntroEvent(geoEvent))
@@ -558,7 +560,6 @@ namespace TFTV.TFTVIncidents
                 PortraitGenerator.ClearCache();
                 PortraitGenerator.CancelPendingCardPortraits();
                 ChoicePayoff.ClearCaches();
-                LeaderAbilityIcons.Clear();
 
                 List<GeoCharacter> crew = ResolveCrew(vehicle);
                 if (crew.Count == 0)

@@ -781,7 +781,13 @@ namespace TFTV.TFTVUI.Tactical
                 int availableContainmentSpace = phoenixFaction.ContaimentCapacity - phoenixFaction.ContaimentUsage;
                 bool limitedCaptureSetting = TFTVNewGameOptions.LimitedCaptureSetting;
 
-                if (limitedCaptureSetting && Mathf.Min(captureCapacity, availableContainmentSpace) > spaceRequired || !limitedCaptureSetting && availableContainmentSpace > spaceRequired)
+                // Inclusive, like every other capacity test for capture. A base defense with working containment sets
+                // the aircraft capacity to -1 ("not limited"), so only containment space counts there.
+                int limit = limitedCaptureSetting && !TFTVCapturePandorans.ContainmentFacilityPresent
+                    ? Mathf.Min(captureCapacity, availableContainmentSpace)
+                    : availableContainmentSpace;
+
+                if (limit >= spaceRequired)
                 {
                     return true;
                 }
@@ -1402,12 +1408,22 @@ namespace TFTV.TFTVUI.Tactical
 
         private static IEnumerator RunPendingObjectivesCoroutine()
         {
-            for (int x = 0; x < _pendingObjectivesTargets.Keys.Count; x++)
+            // Snapshot and clear up front: clearing inside the loop ended it after the first target, and a second
+            // RunPendingObjectives call would otherwise re-announce the same targets.
+            List<KeyValuePair<TacticalActor, List<FactionObjective>>> pending = _pendingObjectivesTargets.ToList();
+            _pendingObjectivesTargets.Clear();
+
+            for (int x = 0; x < pending.Count; x++)
             {
-                // Wait for x * 3f seconds
+                // Wait for x * 5f seconds
                 yield return new WaitForSeconds(x * 5f);
 
-                TacticalActor target = _pendingObjectivesTargets.Keys.ElementAt(x);
+                TacticalActor target = pending[x].Key;
+                if (target == null || target.TacticalActorView == null)
+                {
+                    continue;
+                }
+
                 target.TacticalActorView.DoCameraChase(true);
 
                 /*  _targetUIActorElement = target.TacticalActorViewBase.UIActorElement;
@@ -1418,7 +1434,7 @@ namespace TFTV.TFTVUI.Tactical
                   _targetUIActorElement.SetHighlighted(true);*/
 
 
-                List<FactionObjective> factionObjectives = _pendingObjectivesTargets[target];
+                List<FactionObjective> factionObjectives = pending[x].Value;
 
                 List<string> description = new List<string>();
 
@@ -1447,8 +1463,6 @@ namespace TFTV.TFTVUI.Tactical
 
                     // TFTVLogger.Always($"RunPendingObjectivesCoroutine: {factionObjective.GetDescription()}, {description.Count()}");
                 }
-
-                _pendingObjectivesTargets.Clear();
 
                 Sprite icon = target.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement.MainClassIcon.sprite;
 

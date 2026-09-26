@@ -737,7 +737,11 @@ namespace PRMBetterClasses.SkillModifications
                 DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerPoisonExplosion_Die_AbilityDef]"),
                 "d9870608-797c-428a-8b56-17c1bdadbe27",
                 $"E_DamagePayloadEffectDef {skillName}");
-            DamageEffect.DamagePayload = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Mutoid_ViralExplode_AbilityDef").DamagePayload;
+            // Copy, don't share: DamagePayload is a class, and every edit below (and per hit) would otherwise also
+            // land on the vanilla Mutoid_ViralExplode_AbilityDef.
+            DamagePayload mutoidViralExplodePayload = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Mutoid_ViralExplode_AbilityDef").DamagePayload;
+            DamageEffect.DamagePayload = new DamagePayload();
+            Helper.CopyFieldsByReflection(mutoidViralExplodePayload, DamageEffect.DamagePayload);
             DamageEffect.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
             {
                 //new DamageKeywordPair()

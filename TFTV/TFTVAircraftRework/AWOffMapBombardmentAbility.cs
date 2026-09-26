@@ -165,6 +165,12 @@ namespace TFTV.TFTVAircraftRework
                 results.Add(center);
             }
 
+            if (results.Count == 0)
+            {
+                // nothing to pad with; the caller's Count == 0 check stops the bombardment
+                return results;
+            }
+
             while (results.Count < requiredCount)
             {
                 results.Add(results.Last());

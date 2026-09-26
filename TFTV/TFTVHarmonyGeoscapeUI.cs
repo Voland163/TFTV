@@ -136,19 +136,27 @@ namespace TFTV
         {
 
 
-            public static void Prefix(ref Sprite icon, ref Color iconColor, string objectiveText, ref Timing ____levelTiming, ref TimeUnit ____endTime)
+            // Writes the endTime/levelTiming *parameters*: SetObjective copies them into its private fields right after
+            // this prefix, so writing the fields (as before) was overwritten and no countdown ever showed.
+            public static void Prefix(ref Sprite icon, ref Color iconColor, string objectiveText, ref TimeUnit endTime, ref Timing levelTiming)
             {
                 try
                 {
                     GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    foreach (GeoSite geoSite in geoLevelController.PhoenixFaction.Sites)
+                    // keep a timer vanilla already supplies; only add one for a site whose timer is still running
+                    // (the element hides itself once now > end time)
+                    if (!(endTime > geoLevelController.Timing.Now) && !string.IsNullOrEmpty(objectiveText))
                     {
-                        if (objectiveText.Contains(geoSite.LocalizedSiteName))
+                        foreach (GeoSite geoSite in geoLevelController.PhoenixFaction.Sites)
                         {
-                            ____levelTiming = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Timing;
-                            ____endTime = geoSite.ExpiringTimerAt;
-
+                            if (!string.IsNullOrEmpty(geoSite.LocalizedSiteName) && objectiveText.Contains(geoSite.LocalizedSiteName)
+                                && geoSite.ExpiringTimerAt > geoLevelController.Timing.Now)
+                            {
+                                levelTiming = geoLevelController.Timing;
+                                endTime = geoSite.ExpiringTimerAt;
+                                break;
+                            }
                         }
                     }
 

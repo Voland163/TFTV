@@ -1602,6 +1602,41 @@ namespace TFTV
 
 
 
+            private static string _underAttackTemplate;
+            private static string[] _underAttackTemplateParts;
+
+            /// <summary>
+            /// The objective title is a literal built from KEY_TFTV_BASE_UNDERATTACK_GEOOBJECTIVE in the language active
+            /// when it was created, so match it against that template in the current language (and the English text,
+            /// for saves created in English). Called from the hot get_Objectives getter: cheap prefix test first.
+            /// </summary>
+            internal static bool IsBaseUnderAttackObjective(GeoFactionObjective objective)
+            {
+                string title = objective?.Title?.LocalizeEnglish();
+                if (string.IsNullOrEmpty(title) || !title.StartsWith("<color=#FF0000>", StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                if (title.Contains("Phoenix base") && title.Contains("is under attack!"))
+                {
+                    return true;
+                }
+
+                string template = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_BASE_UNDERATTACK_GEOOBJECTIVE");
+                if (!string.Equals(template, _underAttackTemplate, StringComparison.Ordinal))
+                {
+                    _underAttackTemplate = template;
+                    _underAttackTemplateParts = (template ?? string.Empty)
+                        .Split(new[] { "{0}" }, StringSplitOptions.None)
+                        .Select(part => part.Trim())
+                        .Where(part => part.Length > 0)
+                        .ToArray();
+                }
+
+                return _underAttackTemplateParts.Length > 0 && _underAttackTemplateParts.All(part => title.Contains(part));
+            }
+
             [HarmonyPatch(typeof(GeoFaction), "get_Objectives")]
             internal static class TFTV_GeoFaction_get_Objectives_ExperimentPatch
             {
@@ -1617,7 +1652,7 @@ namespace TFTV
                         {
                             foreach (GeoFactionObjective objective in __result)
                             {
-                                if (objective.Title != null && objective.Title.LocalizeEnglish().Contains("Phoenix base") && objective.Title.LocalizeEnglish().Contains("is under attack!"))
+                                if (IsBaseUnderAttackObjective(objective))
                                 {
                                     //  TFTVLogger.Always($"Found base under attack objective");
                                     reOrderedObjectiveList.Add(objective);
@@ -1679,7 +1714,8 @@ namespace TFTV
 
                         if (PhoenixBasesUnderAttack.Count > 0)
                         {
-                            objectivesHeaderText.text += warningMessage;
+                            // set, not append: this runs once per objective on every refresh
+                            objectivesHeaderText.text = objectivesRegularHeader + " " + warningMessage;
                         }
                         else
                         {
@@ -1691,7 +1727,7 @@ namespace TFTV
                             }
                         }
 
-                        if (objective.Title != null && objective.Title.LocalizeEnglish().Contains("Phoenix base") && objective.Title.LocalizeEnglish().Contains("is under attack!"))
+                        if (IsBaseUnderAttackObjective(objective))
                         {
 
                             //   MethodInfo getObjectiveTooltipMethod = __instance.GetType().GetMethod("GetObjectiveTooltip", BindingFlags.NonPublic | BindingFlags.Instance);

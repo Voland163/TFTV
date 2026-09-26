@@ -746,7 +746,10 @@ namespace TFTV
                         {
                             GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                             GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
-                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
+                            // halve what is already there (e.g. the Rookie adjustment above) instead of overwriting it
+                            RewardDiplomacyChange current = rewardDescription.DiplomacyChange?.FirstOrDefault(d => d.Party == faction && d.Target == viewerFaction);
+                            int baseValue = current != null ? current.Value : __instance.DiplomacyToFaction.Min;
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(baseValue * 0.5f));
                             TFTVLogger.Always($"In preview, applying VO2. Original diplo reward from mission {mission?.MissionDef?.name} was " +
                                 $"{__instance.DiplomacyToFaction.Min}; now it is {__instance.DiplomacyToFaction.Min * 0.5f}");
                        // TFTVLogger.Always($"{__instance.name}");
@@ -817,7 +820,10 @@ namespace TFTV
                         {
                             GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                             GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
-                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
+                            // halve what is already there (e.g. the Rookie adjustment above) instead of overwriting it
+                            RewardDiplomacyChange current = rewardDescription.DiplomacyChange?.FirstOrDefault(d => d.Party == faction && d.Target == viewerFaction);
+                            int baseValue = current != null ? current.Value : __instance.DiplomacyToFaction.RandomValue();
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(baseValue * 0.5f));
                             TFTVLogger.Always("Apply VO2. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
                                 + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
                            // TFTVLogger.Always($"{__instance.name}");

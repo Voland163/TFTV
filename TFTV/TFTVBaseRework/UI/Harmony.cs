@@ -441,6 +441,13 @@ namespace TFTV.TFTVBaseRework
 
                     if (complete)
                     {
+                        // A dismissed trainee the player can't afford to redeploy would fail silently and block
+                        // every trainee after it; skip it until there are enough SP.
+                        if (session != null && session.WasDismissed
+                            && level.PhoenixFaction.Skillpoints < PersonnelRestrictions.GetRedeployCost(p.Character))
+                        {
+                            continue;
+                        }
 
                         AutoOpenVanillaDeploymentUI(level, level.PhoenixFaction, p);
 
