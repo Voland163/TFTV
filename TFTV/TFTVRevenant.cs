@@ -2453,7 +2453,7 @@ namespace TFTV
                     {
                         description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_SNIPER");//"All seeing.";
                     }
-                    else if (specializations.Contains(technicianSpecialization))
+                    if (specializations.Contains(technicianSpecialization))
                     {
                         description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_TECH");//"Surge!";
                     }

@@ -253,7 +253,8 @@ namespace TFTV.TFTVIncidents
                 }
 
                 HavenZonesStats.HavenOnlyOutput output = haven.ZonesStats.GetTotalHavenOutput();
-                return haven.GetPopulationChange(output) > 0;
+                // a starving haven loses population (GetPopulationChange = -dying + drained-in)
+                return haven.GetPopulationChange(output) < 0;
             }
 
             private bool HasZoneWithDefName(GeoHaven haven, string zoneDefName)

@@ -657,7 +657,7 @@ namespace TFTV
 
                                 if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
                                 {
-                                    for (int y = 1; x < 100; x++)
+                                    for (int y = 1; y < 100; y++)
                                     {
                                         if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
                                         {
@@ -743,7 +743,7 @@ namespace TFTV
 
                                 if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
                                 {
-                                    for (int y = 1; x < 100; x++)
+                                    for (int y = 1; y < 100; y++)
                                     {
                                         if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
                                         {

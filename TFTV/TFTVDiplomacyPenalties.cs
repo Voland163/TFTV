@@ -48,8 +48,8 @@ namespace TFTV
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_AN4", geoscapeEventContext);
                     }
-                    else if (newValue == 74 && eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 2 
-                        || eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 1 && eventSystem.GetEventRecord("PROG_AN6_2")?.SelectedChoice ==1)
+                    else if (newValue == 74 && (eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 2
+                        || (eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 1 && eventSystem.GetEventRecord("PROG_AN6_2")?.SelectedChoice == 1)))
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_AN6", geoscapeEventContext);
                     }

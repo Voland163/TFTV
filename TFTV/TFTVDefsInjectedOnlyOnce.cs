@@ -1095,7 +1095,7 @@ namespace TFTV
 
                 foreach (TacCharacterDef characterDef in specialTemplates)
                 {
-                    if (characterDef.Data.GameTags.Contains(AlwaysDeployTag))
+                    if (!characterDef.Data.GameTags.Contains(AlwaysDeployTag))
                     {
                         characterDef.Data.GameTags = characterDef.Data.GameTags.AddToArray(AlwaysDeployTag);
                     }

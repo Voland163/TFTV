@@ -141,7 +141,7 @@ namespace TFTV
                 {
                     //1-30 Umbra, 31-36 dud,37-66 MfD, 67-96 Reinforcements, 97-100 dud  
 
-                    if (roll > 37 && roll <= 66)
+                    if (roll >= 37 && roll <= 66)
                     {
                         if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
                         {
@@ -255,8 +255,8 @@ namespace TFTV
                                                 TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
                                             }
 
-                                            else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
-                                                && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                            else if (tacticalActor.GameTags.Contains(fishTag) && !tacticalActor.GameTags.Contains(voidTouchedTag)
+                                                && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
                                                  && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
                                                 && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
                                             {
