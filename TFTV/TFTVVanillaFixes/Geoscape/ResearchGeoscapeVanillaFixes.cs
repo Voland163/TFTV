@@ -140,7 +140,8 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
         [HarmonyPatch(typeof(ActorResearchRequirementDef), nameof(ActorResearchRequirementDef.IsValidActor))]
         public static class TFTV_ActorResearchRequirementDef_IsValidActor
         {
-            public static bool Prefix(ActorResearchRequirementDef __instance, GeoUnitDescriptor unit, TacticalActorDef actorRequirement, GameTagDef tagRequirement, ref bool __result)
+            public static bool Prefix(GeoUnitDescriptor unit, // IsValidActor is static: no __instance
+                 TacticalActorDef actorRequirement, GameTagDef tagRequirement, ref bool __result)
             {
                 try
                 {

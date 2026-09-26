@@ -645,7 +645,7 @@ namespace TFTV
         public static class TFTV_UIStateEditSoldier_EnterState_patch
         {
 
-            public static void Prefix(UIStateRosterAliens __instance)
+            public static void Prefix(UIStateEditSoldier __instance)
             {
                 try
                 {
@@ -870,7 +870,7 @@ namespace TFTV
         public static class TFTV_UIStateRosterRecruits_PushState_patch
         {
 
-            public static void Prefix(UIStateRosterAliens __instance)
+            public static void Prefix(UIStateRosterRecruits __instance)
             {
                 try
                 {
@@ -890,7 +890,7 @@ namespace TFTV
         public static class TFTV_UIStateSoldierCustomization_EnterState_patch
         {
 
-            public static void Prefix(UIStateRosterAliens __instance)
+            public static void Prefix(UIStateSoldierCustomization __instance)
             {
                 try
                 {
@@ -1066,7 +1066,7 @@ namespace TFTV
         public static class TFTV_UIStateVehicleRoster_EnterState_patch
         {
 
-            public static void Prefix(UIStateRosterAliens __instance)
+            public static void Prefix(UIStateVehicleRoster __instance)
             {
                 try
                 {

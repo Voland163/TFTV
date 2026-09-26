@@ -910,7 +910,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacParticipantSpawn), nameof(TacParticipantSpawn.AdjustSpawned))]
             public static class TFTV_TacParticipantSpawn_AdjustSpawned_Patch
             {
-                public static bool Prefix(TacParticipantSpawn __instance, TacticalLevelController tacticalLevel)
+                public static bool Prefix(TacticalLevelController tacticalLevel) // AdjustSpawned is static: no __instance
                 {
                     try
                     {

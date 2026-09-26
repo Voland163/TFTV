@@ -112,7 +112,7 @@ namespace TFTV.TFTVUI.Tactical
         [HarmonyPatch(typeof(UIStateShoot), "GetMinMaxPossibleDamage")] //VERIFIED
         public static class UIStateShoot_GetMinMaxPossibleDamage_patch
         {
-            public static bool Prefix(UIStateShoot __instance)
+            public static bool Prefix() // GetMinMaxPossibleDamage is static: no __instance
             {
                 try
                 {

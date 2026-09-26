@@ -161,7 +161,7 @@ namespace TFTV
 
                // HarmonyPatchValidator.ValidatePatchTargets();
              //   Harmony.DEBUG = true;
-                harmony.PatchAll();
+                PatchAllIsolated(harmony);
 
                 // After PatchAll, and after every def change above: this reads and rewrites the
                 // achievement checklists through its own patches, so they have to be live first.
@@ -384,10 +384,46 @@ namespace TFTV
             {
                 Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}'; harmony re-patching everything in case config changed");
 
-                Harmony harmony = (Harmony)HarmonyInstance;
-                harmony.UnpatchAll(harmony.Id);
-                harmony.PatchAll();
-                TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.PatchInternalClassUIStateCharacterSelecter(harmony);
+                try
+                {
+                    Harmony harmony = (Harmony)HarmonyInstance;
+                    harmony.UnpatchAll(harmony.Id);
+                    PatchAllIsolated(harmony);
+                    TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.PatchInternalClassUIStateCharacterSelecter(harmony);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Same as harmony.PatchAll() for this assembly, but one patch class that fails (a target renamed by a game
+        /// update, a TargetMethod returning null) is logged and skipped instead of aborting every class after it,
+        /// which would leave the mod half-patched and skip the rest of OnModEnabled.
+        /// </summary>
+        private static void PatchAllIsolated(Harmony harmony)
+        {
+            int failed = 0;
+
+            foreach (Type type in AccessTools.GetTypesFromAssembly(typeof(TFTVMain).Assembly))
+            {
+                try
+                {
+                    harmony.CreateClassProcessor(type).Patch();
+                }
+                catch (Exception e)
+                {
+                    failed++;
+                    TFTVLogger.Always($"[PatchAll] patch class {type.FullName} failed and was skipped");
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            if (failed > 0)
+            {
+                TFTVLogger.Always($"[PatchAll] {failed} patch class(es) failed; everything else was patched");
             }
         }
 

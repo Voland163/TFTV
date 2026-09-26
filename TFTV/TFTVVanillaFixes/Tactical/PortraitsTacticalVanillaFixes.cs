@@ -23,7 +23,7 @@ namespace TFTV.TFTVVanillaFixes.Tactical
 {
     typeof(Vector2Int),
     typeof(RenderingEnvironmentOption),
-    typeof(Color),
+    typeof(Color?), // the live constructor takes Color? (binding with Color only worked via the Nullable<T> <- T rule)
     typeof(Camera)
   })]
         public static class RenderingEnvironmentPatch

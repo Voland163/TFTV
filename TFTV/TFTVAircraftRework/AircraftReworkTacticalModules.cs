@@ -1263,7 +1263,8 @@ namespace TFTV
                 //────────────────────────────────────────────────────────────
                 [HarmonyPrefix]
                 [HarmonyPatch("GatherKnowableActors")]
-                public static bool GatherKnowableActorsPrefix(TacticalFactionVision __instance,
+                // GatherKnowableActors is static: no __instance
+                public static bool GatherKnowableActorsPrefix(
                     TacticalActorBase fromActor,
                     Vector3 fromActorPos,
                     float basePerceptionRange,
