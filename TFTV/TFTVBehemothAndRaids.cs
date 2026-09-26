@@ -880,7 +880,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoBehemothActor), nameof(GeoBehemothActor.UpdateHourly))]
             public static class GeoBehemothActor_UpdateHourly_Patch
             {
-                public static bool Prefix(GeoBehemothActor __instance, ref int ____disruptionThreshhold, int ____disruptionPoints, int ____nextActionHoursLeft)
+                public static bool Prefix(GeoBehemothActor __instance, ref int ____disruptionThreshhold, int ____disruptionPoints)
                 {
                     try
                     {
@@ -951,15 +951,8 @@ namespace TFTV
                             }
                         }
 
-                        ____nextActionHoursLeft = Mathf.Clamp(____nextActionHoursLeft - 1, 0, int.MaxValue);
-
-                        if (____nextActionHoursLeft <= 0)
-                        {
-                            MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PerformAction");
-                            method_GenerateTargetData.Invoke(__instance, null);
-                            TFTVLogger.Always($"Behemoth hourly update{____nextActionHoursLeft} hours left to move, so time to move");
-
-                        }
+                        // Movement while emerged is TFTV's own (target havens / roam below); vanilla's periodic PerformAction
+                        // movement check is intentionally not run here.
 
 
                         if (__instance.IsSubmerging)//second check

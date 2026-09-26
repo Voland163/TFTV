@@ -78,8 +78,6 @@ namespace TFTV
         //   public static bool LOTAReworkActive = false;
         //  public static bool AutomataResearched = TFTVAncientsGeo.AutomataResearched;
 
-        //This is the number of previous encounters with Ancients. It is added to the Difficulty to determine the number of fully repaired MediumGuardians in battle
-        private static int AncientsEncounterCounter = TFTVAncientsGeo.AncientsEncounterCounter;
         private static readonly AlertedStatusDef AlertedStatus = DefCache.GetDef<AlertedStatusDef>("Alerted_StatusDef");
         public static DamageMultiplierStatusDef CyclopsDefenseStatus = null;
         private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
@@ -2659,7 +2657,8 @@ namespace TFTV
                     if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
                     {
                         faction = controller.GetFactionByCommandName("anc");
-                        countUndamagedGuardians = AncientsEncounterCounter + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+                        // The number of fully intact Hoplites is set by difficulty alone (previous Ancient encounters deliberately don't add to it)
+                        countUndamagedGuardians = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
                     }
                     else
                     {

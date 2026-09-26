@@ -720,6 +720,7 @@ namespace TFTV
                 try
                 {
                     TFTVBallistics.ClearBallisticInfoOnAbilityExecuteFinished();
+                    TFTVArtOfCrab.SingleAPWeaponsMultipleShots.RevertAfterKludgedShot(ability);
                     TFTVArtOfCrab.ScyllaBlasterAttack.ForceScyllaToUseCannonsAfterUsingHeadAttack(ability, __instance, parameter);
                     TFTVAncients.CyclopsAbilities.AddMindCrushEffectToCyclposScream(ability, __instance, parameter);
                     TFTVAncients.CyclopsAbilities.CyclopsCrossBeamShooting.RedeployHopliteShieldsAfterMassShootAttackAndRestoreTheirAP(ability, __instance, parameter);

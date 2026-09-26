@@ -1217,6 +1217,41 @@ namespace TFTV
             public static class TacticalFactionVision_PrefixPatch
             {
                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+                // The vanilla originals call the private overload with the caller's basePerceptionRange, which acts as a
+                // minimum spotting range (DetectionRange, or infinity for an enemy that shot at us). The public 7-arg overload
+                // forwards 0, which would drop both floors, so call the private one through a compiled delegate (hot path).
+                // Built lazily (not in a static initializer) so a missing overload after a game update can't break PatchAll.
+                private static Func<TacticalActorBase, Vector3, TacticalActorBase, bool, float, Vector3?, float, Base.Levels.PhysicsCast, bool> _checkVisibleLineWithBaseRange;
+                private static bool _checkVisibleLineWithBaseRangeResolved;
+
+                private static bool VisibleLine(TacticalActorBase fromActor, Vector3 fromActorPos, TacticalActorBase targetActor, float basePerceptionRange)
+                {
+                    if (!_checkVisibleLineWithBaseRangeResolved)
+                    {
+                        _checkVisibleLineWithBaseRangeResolved = true;
+                        MethodInfo method = AccessTools.Method(typeof(TacticalFactionVision), "CheckVisibleLineBetweenActors", new[]
+                        {
+                            typeof(TacticalActorBase), typeof(Vector3), typeof(TacticalActorBase), typeof(bool),
+                            typeof(float), typeof(Vector3?), typeof(float), typeof(Base.Levels.PhysicsCast)
+                        });
+
+                        if (method != null)
+                        {
+                            _checkVisibleLineWithBaseRange = (Func<TacticalActorBase, Vector3, TacticalActorBase, bool, float, Vector3?, float, Base.Levels.PhysicsCast, bool>)
+                                Delegate.CreateDelegate(typeof(Func<TacticalActorBase, Vector3, TacticalActorBase, bool, float, Vector3?, float, Base.Levels.PhysicsCast, bool>), method);
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("[MistVision] private CheckVisibleLineBetweenActors overload not found; falling back to the public one (no base perception range)");
+                        }
+                    }
+
+                    return _checkVisibleLineWithBaseRange != null
+                        ? _checkVisibleLineWithBaseRange(fromActor, fromActorPos, targetActor, true, basePerceptionRange, null, 1f, null)
+                        : TacticalFactionVision.CheckVisibleLineBetweenActors(fromActor, fromActorPos, targetActor, true, null, 1f, null);
+                }
+
                 //────────────────────────────────────────────────────────────
                 // 1. Replacement for GatherKnowableActors
                 //────────────────────────────────────────────────────────────
@@ -1275,10 +1310,7 @@ namespace TFTV
                                 // TFTVLogger.Always($"{actor.DisplayName} touching Mist, so revealing to {fromActor.DisplayName}");
                             }
 
-                            else if ((bool)TacticalFactionVision.CheckVisibleLineBetweenActors(
-                                         fromActor, fromActorPos, actor,
-                                         true, null,
-                                         1, null))
+                            else if (VisibleLine(fromActor, fromActorPos, actor, basePerceptionRange))
                             {
                                 visible.Add(actor);
                                 //   TFTVLogger.Always($"{actor.DisplayName} in LOS at a distance of {(fromActorPos - actor.Pos).magnitude}, so revealing to {fromActor.DisplayName}");
@@ -1369,7 +1401,7 @@ namespace TFTV
                             // TFTVLogger.Always($"{targetActor.DisplayName} in Mist revealed to {fromActor.DisplayName}");
                             condition = true;
                         }
-                        else if (TacticalFactionVision.CheckVisibleLineBetweenActors(fromActor, fromActor.Pos, targetActor, true, null, 1, null))
+                        else if (VisibleLine(fromActor, fromActor.Pos, targetActor, basePerceptionRange))
                         {
                             // TFTVLogger.Always($"{targetActor.DisplayName} revealed to {fromActor.DisplayName} because LOS");
                             condition = true;
