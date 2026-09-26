@@ -167,20 +167,9 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                         bool flag = tacticalActorBaseDef.GameTags.Contains(tagRequirement);
                         if (!flag)
                         {
-                            List<TacticalItemDef> enumerable = unit.ArmorItems;
-                            List<TacticalItemDef> equipment = unit.Equipment;
-                            if (enumerable == null)
-                            {
-                                enumerable = new List<TacticalItemDef>();
-                            }
-
-                            if (equipment != null)
-                            {
-                                enumerable.Concat(equipment);
-                            }
-
-                            enumerable.AddRange(unit.UnitType.TemplateDef.GetTemplateBodyparts());
-
+                            // never mutate unit.ArmorItems: it is the saved GeoUnitDescriptor list
+                            IEnumerable<TacticalItemDef> enumerable = unit.ArmorItems ?? Enumerable.Empty<TacticalItemDef>();
+                            enumerable = enumerable.Concat(unit.UnitType.TemplateDef.GetTemplateBodyparts());
 
 
                             flag = enumerable.Any(b => b.Tags.Contains(tagRequirement));
