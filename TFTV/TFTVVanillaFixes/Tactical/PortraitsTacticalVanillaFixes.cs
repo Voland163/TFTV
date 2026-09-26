@@ -245,11 +245,15 @@ namespace TFTV.TFTVVanillaFixes.Tactical
 
                     float cameraDistance = renderParams.CameraDistance;
 
-                    Transform targetBone = soldierToRender.transform.FindTransformInChildren("Nose");
+                    // Bone name/distance now come from RenderPortraitParams (vanilla added
+                    // FallbackBoneName/FallbackDistance so per-def zoom tuning, e.g. for
+                    // Phoenix Operatives, survives the fallback path) instead of the
+                    // previously hardcoded "Nose"/"Jaw"/0.63f.
+                    Transform targetBone = soldierToRender.transform.FindTransformInChildren(renderParams.TargetBoneName);
                     if (targetBone == null)
                     {
-                        targetBone = soldierToRender.transform.FindTransformInChildren("Jaw");//Head");
-                        cameraDistance = 0.63f;
+                        targetBone = soldierToRender.transform.FindTransformInChildren(renderParams.FallbackBoneName);
+                        cameraDistance = renderParams.FallbackDistance;
 
                         if (targetBone == null)
                         {
