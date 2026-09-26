@@ -142,7 +142,12 @@ namespace TFTV
                         __instance.CorruptionSlider.maxValue = Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(____character));
                         __instance.CorruptionSlider.value = delirium;
 
-                        UITooltipText corruptionSliderTip = __instance.CorruptionSlider.gameObject.AddComponent<UITooltipText>();
+                        // one tooltip component per element: this runs on every refresh
+                        UITooltipText corruptionSliderTip = __instance.CorruptionSlider.gameObject.GetComponent<UITooltipText>();
+                        if (corruptionSliderTip == null)
+                        {
+                            corruptionSliderTip = __instance.CorruptionSlider.gameObject.AddComponent<UITooltipText>();
+                        }
                         corruptionSliderTip.TipText = $"{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DELIRIUM_EXPLANATION")} {TFTVDelirium.CurrentDeliriumLevel(____character.Faction.GeoLevel)}.";
                         __instance.CorruptionStatText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
 
@@ -153,14 +158,11 @@ namespace TFTV
                         __instance.StaminaSlider.value = num;
 
                         //  UITooltipText staminaTextTip = new UITooltipText();
-                        if (__instance.StaminaStatText.gameObject.GetComponent<UITooltipText>() == null)
+                        UITooltipText staminaTip = __instance.StaminaStatText.gameObject.GetComponent<UITooltipText>();
+                        if (staminaTip == null)
                         {
-
-                            __instance.StaminaStatText.gameObject.AddComponent<UITooltipText>();
-
+                            staminaTip = __instance.StaminaStatText.gameObject.AddComponent<UITooltipText>();
                         }
-
-                        __instance.StaminaStatText.gameObject.AddComponent<UITooltipText>();
                         if (num != num2)
                         {
                             string deliriumReducedStamina = "";
@@ -181,7 +183,7 @@ namespace TFTV
                         string tipText = $"{localizedTextBind.Localize()} {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}";
 
 
-                        __instance.StaminaStatText.gameObject.GetComponent<UITooltipText>().TipKey = new LocalizedTextBind(tipText, true);
+                        staminaTip.TipKey = new LocalizedTextBind(tipText, true);
 
 
                         //   staminaTextTip.TipText = $"Character's current Stamina is reducing the effects of Delirium on Willpower by {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}";

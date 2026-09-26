@@ -227,10 +227,12 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            var localized = text.GetComponent<LocalizedTextBind>();
-            if (localized != null && !string.IsNullOrEmpty(localized.LocalizationKey))
+            // LocalizedTextBind is a plain class, not a Component, so it can never be found with GetComponent;
+            // the header's Text carries an I2 Localize component whose Term is the localization key.
+            var localized = text.GetComponent<I2.Loc.Localize>();
+            if (localized != null && !string.IsNullOrEmpty(localized.Term))
             {
-                string key = localized.LocalizationKey.ToUpperInvariant();
+                string key = localized.Term.ToUpperInvariant();
                 if (key.Contains("ABILITY_NAME")
                     || key.Contains("ABILITY_DESCRIPTION")
                     || key.Contains("ABILITY_DESC")
@@ -251,13 +253,13 @@ namespace TFTV.TFTVDrills
                 return false;
             }
 
-            var localized = text.GetComponent<LocalizedTextBind>();
-            if (localized == null || string.IsNullOrEmpty(localized.LocalizationKey))
+            var localized = text.GetComponent<I2.Loc.Localize>();
+            if (localized == null || string.IsNullOrEmpty(localized.Term))
             {
                 return false;
             }
 
-            string key = localized.LocalizationKey;
+            string key = localized.Term;
             foreach (var knownKey in KnownHeaderLocalizationKeys)
             {
                 if (string.Equals(key, knownKey, StringComparison.OrdinalIgnoreCase))

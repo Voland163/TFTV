@@ -181,8 +181,10 @@ namespace TFTV
 
                         string reasonKey = null;
                         var existing = AugmentScreenUtilities.GetAugmentAtSlot(currentChar, slotDef);
-                        bool isMutation = existing != null && existing.Tags.Contains(
-                            GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag);
+                        var sharedTags = GameUtl.GameComponent<SharedData>().SharedGameTags;
+                        bool isMutation = existing != null && existing.Tags.Contains(sharedTags.AnuMutationTag);
+                        // as vanilla: a slot that already holds a bionic can still be swapped, so it isn't "limit reached"
+                        bool isBionic = existing != null && existing.Tags.Contains(sharedTags.BionicalTag);
 
                         AugumentSlotState state;
                         if (existing != null && isMutation)
@@ -190,7 +192,7 @@ namespace TFTV
                             state = AugumentSlotState.BlockedByPermenantAugument;
                             reasonKey = ((LocalizedTextBind)LockedMutationKeyFI.GetValue(__instance)).LocalizationKey;
                         }
-                        else if (!hasFreeSlot)
+                        else if (!hasFreeSlot && !isBionic)
                         {
                             state = AugumentSlotState.AugumentationLimitReached;
                             reasonKey = ((LocalizedTextBind)LockedLimitKeyFI.GetValue(__instance)).LocalizationKey;

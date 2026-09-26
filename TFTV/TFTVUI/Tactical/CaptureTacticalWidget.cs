@@ -347,31 +347,18 @@ namespace TFTV.TFTVUI.Tactical
                         TacticalActor alien = capturedAliens[i];
 
                         // Alien Icon
+                        if (_alienPanels.Count == 0)
+                        {
+                            // no capacity means no row panels (priority aliens can exceed capacity)
+                            break;
+                        }
+
                         GameObject alienIconObject = new GameObject($"AlienIcon_{i}");
-                        int position = i;
-                        if (i < 6)
-                        {
-                            _alienPanel1.SetActive(true);
-                            alienIconObject.transform.SetParent(_alienPanel1.transform, false);
-                        }
-                        else if (i >= 6 && i < 13)
-                        {
-                            _alienPanel2.SetActive(true);
-                            alienIconObject.transform.SetParent(_alienPanel2.transform, false);
-                            position -= 6;
-                        }
-                        else if (i >= 13 && i < 19)
-                        {
-                            _alienPanel3.SetActive(true);
-                            alienIconObject.transform.SetParent(_alienPanel3.transform, false);
-                            position -= 12;
-                        }
-                        else
-                        {
-                            _alienPanel3.SetActive(true);
-                            alienIconObject.transform.SetParent(_alienPanel3.transform, false);
-                            position -= 18;
-                        }
+                        // 6 slots per row panel (alienPanelsNeeded = (capacity + 5) / 6)
+                        int position = i % 6;
+                        GameObject rowPanel = _alienPanels[Mathf.Min(i / 6, _alienPanels.Count - 1)];
+                        rowPanel.SetActive(true);
+                        alienIconObject.transform.SetParent(rowPanel.transform, false);
 
 
                         Image alienIconImage = alienIconObject.AddComponent<Image>();

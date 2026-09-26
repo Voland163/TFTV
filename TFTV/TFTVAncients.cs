@@ -78,8 +78,6 @@ namespace TFTV
         //   public static bool LOTAReworkActive = false;
         //  public static bool AutomataResearched = TFTVAncientsGeo.AutomataResearched;
 
-        //This is the number of previous encounters with Ancients. It is added to the Difficulty to determine the number of fully repaired MediumGuardians in battle
-        private static int AncientsEncounterCounter = TFTVAncientsGeo.AncientsEncounterCounter;
         private static readonly AlertedStatusDef AlertedStatus = DefCache.GetDef<AlertedStatusDef>("Alerted_StatusDef");
         public static DamageMultiplierStatusDef CyclopsDefenseStatus = null;
         private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
@@ -1545,7 +1543,7 @@ namespace TFTV
                     {
                         try
                         {
-                            HopliteAPMassShoot.Add(shooterActor, shooterActor?.CharacterStats?.ActionPoints);
+                            HopliteAPMassShoot[shooterActor] = shooterActor?.CharacterStats?.ActionPoints; // indexer: a stale key must not abort the rest of the volley
 
 
                             TFTVLogger.Always($"{shooterActor?.name} has {shooterActor?.CharacterStats?.ActionPoints} action points");
@@ -1843,113 +1841,40 @@ namespace TFTV
 
                 internal static void BeamsVsCyborgs()
                 {
-                    try
-                    {
-                        WeaponDef originalBeam = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
-
-                        GameTagDamageKeywordDataDef virophageDamageKeyword = DefCache.GetDef<GameTagDamageKeywordDataDef>("Virophage_DamageKeywordDataDef");
-                        GameTagDamageKeywordDataDef empDamageKeyword = DefCache.GetDef<GameTagDamageKeywordDataDef>("EMP_DamageKeywordDataDef");
-
-                        DamageKeywordPair virophageDamage = new DamageKeywordPair { Value = 60, DamageKeywordDef = virophageDamageKeyword };
-                        DamageKeywordPair empDamage = new DamageKeywordPair { Value = 40, DamageKeywordDef = empDamageKeyword };
-
-                        WeaponDef cyclopsLCBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_LivingCrystal_WeaponDef");
-                        WeaponDef cyclopsOBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_Orichalcum_WeaponDef");
-                        WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
-
-                        if (!originalBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            originalBeam.DamagePayload.DamageKeywords.Add(empDamage);
-                        }
-                        if (!cyclopsLCBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            cyclopsLCBeam.DamagePayload.DamageKeywords.Add(empDamage);
-                        }
-                        if (!cyclopsOBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            cyclopsOBeam.DamagePayload.DamageKeywords.Add(empDamage);
-                        }
-                        if (!cyclopsPBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            cyclopsPBeam.DamagePayload.DamageKeywords.Add(empDamage);
-                        }
-                        if (originalBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            originalBeam.DamagePayload.DamageKeywords.Remove(virophageDamage);
-                        }
-                        if (cyclopsLCBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            cyclopsLCBeam.DamagePayload.DamageKeywords.Remove(virophageDamage);
-                        }
-                        if (cyclopsOBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            cyclopsOBeam.DamagePayload.DamageKeywords.Remove(virophageDamage);
-                        }
-                        if (cyclopsPBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            cyclopsPBeam.DamagePayload.DamageKeywords.Remove(virophageDamage);
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-
-
+                    // EMP bonus on, virophage bonus off
+                    SetBeamBonusKeyword("EMP_DamageKeywordDataDef", 40, "Virophage_DamageKeywordDataDef");
                 }
 
                 internal static void BeamsVsMutants()
                 {
+                    // virophage bonus on, EMP bonus off
+                    SetBeamBonusKeyword("Virophage_DamageKeywordDataDef", 60, "EMP_DamageKeywordDataDef");
+                }
+
+                /// <summary>
+                /// Puts one bonus keyword on the Hoplite and Cyclops beams and takes the other off. Matches by keyword def:
+                /// DamageKeywordPair has no value equality, so Contains/Remove on a new pair never matched, and pairs stacked
+                /// up turn after turn (and across missions) with both bonuses active at once.
+                /// </summary>
+                private static void SetBeamBonusKeyword(string addKeywordName, int addValue, string removeKeywordName)
+                {
                     try
                     {
-                        WeaponDef originalBeam = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                        GameTagDamageKeywordDataDef addKeyword = DefCache.GetDef<GameTagDamageKeywordDataDef>(addKeywordName);
+                        GameTagDamageKeywordDataDef removeKeyword = DefCache.GetDef<GameTagDamageKeywordDataDef>(removeKeywordName);
 
-                        GameTagDamageKeywordDataDef virophageDamageKeyword = DefCache.GetDef<GameTagDamageKeywordDataDef>("Virophage_DamageKeywordDataDef");
-                        GameTagDamageKeywordDataDef empDamageKeyword = DefCache.GetDef<GameTagDamageKeywordDataDef>("EMP_DamageKeywordDataDef");
+                        foreach (string beamName in new[] { "HumanoidGuardian_Head_WeaponDef", "MediumGuardian_Head_LivingCrystal_WeaponDef",
+                            "MediumGuardian_Head_Orichalcum_WeaponDef", "MediumGuardian_Head_ProteanMutane_WeaponDef" })
+                        {
+                            List<DamageKeywordPair> keywords = DefCache.GetDef<WeaponDef>(beamName).DamagePayload.DamageKeywords;
 
-                        DamageKeywordPair virophageDamage = new DamageKeywordPair { Value = 60, DamageKeywordDef = virophageDamageKeyword };
-                        DamageKeywordPair empDamage = new DamageKeywordPair { Value = 40, DamageKeywordDef = empDamageKeyword };
+                            keywords.RemoveAll(pair => pair.DamageKeywordDef == removeKeyword);
 
-                        WeaponDef cyclopsLCBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_LivingCrystal_WeaponDef");
-                        WeaponDef cyclopsOBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_Orichalcum_WeaponDef");
-                        WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
-
-                        if (!originalBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            originalBeam.DamagePayload.DamageKeywords.Add(virophageDamage);
+                            if (!keywords.Any(pair => pair.DamageKeywordDef == addKeyword))
+                            {
+                                keywords.Add(new DamageKeywordPair { Value = addValue, DamageKeywordDef = addKeyword });
+                            }
                         }
-                        if (!cyclopsLCBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            cyclopsLCBeam.DamagePayload.DamageKeywords.Add(virophageDamage);
-                        }
-                        if (!cyclopsOBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            cyclopsOBeam.DamagePayload.DamageKeywords.Add(virophageDamage);
-                        }
-                        if (!cyclopsPBeam.DamagePayload.DamageKeywords.Contains(virophageDamage))
-                        {
-                            cyclopsPBeam.DamagePayload.DamageKeywords.Add(virophageDamage);
-                        }
-                        if (originalBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            originalBeam.DamagePayload.DamageKeywords.Remove(empDamage);
-                        }
-                        if (cyclopsLCBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            cyclopsLCBeam.DamagePayload.DamageKeywords.Remove(empDamage);
-                        }
-                        if (cyclopsOBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            cyclopsOBeam.DamagePayload.DamageKeywords.Remove(empDamage);
-                        }
-                        if (cyclopsPBeam.DamagePayload.DamageKeywords.Contains(empDamage))
-                        {
-                            cyclopsPBeam.DamagePayload.DamageKeywords.Remove(empDamage);
-                        }
-
-
-
                     }
                     catch (Exception e)
                     {
@@ -2659,7 +2584,8 @@ namespace TFTV
                     if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
                     {
                         faction = controller.GetFactionByCommandName("anc");
-                        countUndamagedGuardians = AncientsEncounterCounter + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+                        // The number of fully intact Hoplites is set by difficulty alone (previous Ancient encounters deliberately don't add to it)
+                        countUndamagedGuardians = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
                     }
                     else
                     {

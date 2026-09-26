@@ -79,7 +79,6 @@ namespace PRMBetterClasses
                         PRMLogger.Debug("        Speed: " + stats.Speed);
                         PRMLogger.Debug("----------------------------------------------------", false);
                         string ability;
-                        int spCost = 0;
                         TacticalAbilityDef tacticalAbilityDef;
                         string[] ppOrder = Config.OrderOfPersonalPerks;
                         // Temporary dictionary to collect the configured perks
@@ -90,6 +89,8 @@ namespace PRMBetterClasses
                         for (int i = 0; i < ppOrder.Length; i++)
                         {
                             PRMLogger.Debug("Set personal perk index: " + i);
+                            // per slot: 0 means "use the ability's own cost"; carried over, slot 0's cost leaked into later slots
+                            int spCost = 0;
                             PersonalPerksDef personalPerksDef = Config.PersonalPerks.FirstOrDefault(pp => pp.PerkKey.Equals(ppOrder[i]));
                             if (!personalPerksDef.IsDefaultValue())
                             {
@@ -113,7 +114,7 @@ namespace PRMBetterClasses
                                 {
                                     PRMLogger.Debug("       Ability: " + ability);
                                     tacticalAbilityDef = DefCache.GetDef<TacticalAbilityDef>(ability);
-                                    if (spCost == 0)
+                                    if (spCost == 0 && tacticalAbilityDef != null)
                                     {
                                         spCost = tacticalAbilityDef.CharacterProgressionData.SkillPointCost;
                                     }

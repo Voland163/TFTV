@@ -746,7 +746,10 @@ namespace TFTV
                         {
                             GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                             GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
-                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
+                            // halve what is already there (e.g. the Rookie adjustment above) instead of overwriting it
+                            RewardDiplomacyChange current = rewardDescription.DiplomacyChange?.FirstOrDefault(d => d.Party == faction && d.Target == viewerFaction);
+                            int baseValue = current != null ? current.Value : __instance.DiplomacyToFaction.Min;
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(baseValue * 0.5f));
                             TFTVLogger.Always($"In preview, applying VO2. Original diplo reward from mission {mission?.MissionDef?.name} was " +
                                 $"{__instance.DiplomacyToFaction.Min}; now it is {__instance.DiplomacyToFaction.Min * 0.5f}");
                        // TFTVLogger.Always($"{__instance.name}");
@@ -817,7 +820,10 @@ namespace TFTV
                         {
                             GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                             GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
-                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
+                            // halve what is already there (e.g. the Rookie adjustment above) instead of overwriting it
+                            RewardDiplomacyChange current = rewardDescription.DiplomacyChange?.FirstOrDefault(d => d.Party == faction && d.Target == viewerFaction);
+                            int baseValue = current != null ? current.Value : __instance.DiplomacyToFaction.RandomValue();
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(baseValue * 0.5f));
                             TFTVLogger.Always("Apply VO2. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
                                 + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
                            // TFTVLogger.Always($"{__instance.name}");
@@ -849,12 +855,13 @@ namespace TFTV
                             float multiplier = TFTVNewGameOptions.ResourceMultiplierSetting;
 
                             //  TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
-                            reward.Resources = new ResourcePack
-                            { new ResourceUnit{
-
-                                Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * multiplier}
-
-                            };
+                            // scale every unit: 6 interception rewards carry two resources
+                            ResourcePack scaled = new ResourcePack();
+                            foreach (ResourceUnit unit in reward.Resources)
+                            {
+                                scaled.Add(new ResourceUnit { Type = unit.Type, Value = unit.Value * multiplier });
+                            }
+                            reward.Resources = scaled;
                             TFTVLogger.Always($"Applying multiplier of {multiplier}. Reward now {reward.Resources[0].Value}, from {reward.Resources[0].Value / multiplier}");
                         }
 
@@ -903,7 +910,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacParticipantSpawn), nameof(TacParticipantSpawn.AdjustSpawned))]
             public static class TFTV_TacParticipantSpawn_AdjustSpawned_Patch
             {
-                public static bool Prefix(TacParticipantSpawn __instance, TacticalLevelController tacticalLevel)
+                public static bool Prefix(TacticalLevelController tacticalLevel) // AdjustSpawned is static: no __instance
                 {
                     try
                     {

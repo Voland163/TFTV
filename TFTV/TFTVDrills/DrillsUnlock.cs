@@ -273,7 +273,7 @@ namespace TFTV.TFTVDrills
                     string researchName = TryGetResearchName(researchId);
                     if (!string.IsNullOrEmpty(researchName))
                     {
-                        yield return $"Research: {researchName}";
+                        yield return DrillsText.Format(DrillsText.ResearchRequirement, researchName);
                     }
                 }
             }
@@ -475,11 +475,11 @@ namespace TFTV.TFTVDrills
             string className = requirement.ClassTag?.className;
             if (string.IsNullOrEmpty(className))
             {
-                className = "operative";
+                className = DrillsText.Get(DrillsText.OperativeFallback);
             }
 
             // string subject = "Selected operative";
-            return $"Level: {requirement.MinimumLevel} {className}";
+            return DrillsText.Format(DrillsText.ClassLevelRequirement, requirement.MinimumLevel, className);
         }
 
         private static string BuildWeaponProficiencyRequirementMessage(DrillWeaponProficiencyRequirement requirement)

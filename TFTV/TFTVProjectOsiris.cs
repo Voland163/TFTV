@@ -45,7 +45,7 @@ namespace TFTV
         public static readonly string ShooterMutantDeliveryEvent = "ShooterMutantDeliveryEvent";
         public static readonly List<string> ProjectOsirisDeliveryEvents = new List<string>()
         {RobocopEvent, ProjectOsirisEvent, FullMutantEvent, RoboCopDeliveryEvent, ScoutDeliveryEvent, HeavyMutantDeliveryEvent, ShinobiDeliveryEvent,
-            WatcherMutantDeliveryEvent, ShinobiDeliveryEvent};
+            WatcherMutantDeliveryEvent, ShooterMutantDeliveryEvent};
 
 
         private static readonly TacticalItemDef juggHead = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Helmet_BodyPartDef");
@@ -774,6 +774,11 @@ namespace TFTV
                 TacCharacterDef deadTemplateDef = _geoCharacterCloneFromDead.TemplateDef;
                 deadTemplateDef.Data = SaveTemplateData;
                 bCSettings.SpecialCharacterPersonalSkills.Clear();
+                // drop the revived soldier's delirium entry before the id is reset (after the reset this looked up key 0)
+                if (TFTVRevenant.DeadSoldiersDelirium.ContainsKey(IdProjectOsirisCandidate))
+                {
+                    TFTVRevenant.DeadSoldiersDelirium.Remove(IdProjectOsirisCandidate);
+                }
                 IdProjectOsirisCandidate = new GeoTacUnitId();
                 SaveTemplateData = new TacCharacterData();
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Clear();
@@ -793,11 +798,6 @@ namespace TFTV
                 foreach (GeoscapeEventDef eventDef in allDeliveryEvents)
                 {
                     eventDef.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Remove(deadTemplateDef);
-                }
-
-                if (TFTVRevenant.DeadSoldiersDelirium.Keys.Contains(IdProjectOsirisCandidate))
-                {
-                    TFTVRevenant.DeadSoldiersDelirium.Remove(IdProjectOsirisCandidate);
                 }
 
             }

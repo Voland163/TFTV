@@ -720,7 +720,7 @@ namespace TFTV
                 TFTVLogger.Always($"There are {listOfHumansEnemies.Count()} human enemies in {faction.Faction?.FactionDef?.GetName()}");
                 List<TacticalActor> orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.LevelProgression.Level).ToList();
 
-                if (listOfHumansEnemies[0].LevelProgression.Level == listOfHumansEnemies[listOfHumansEnemies.Count - 1].LevelProgression.Level)
+                if (orderedListOfHumanEnemies[0].LevelProgression.Level == orderedListOfHumanEnemies[orderedListOfHumanEnemies.Count - 1].LevelProgression.Level)
                 {
                     // TFTVLogger.Always("All enemies are of the same level");
                     orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.CharacterStats.Willpower.IntValue).ToList();

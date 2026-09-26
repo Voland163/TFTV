@@ -954,9 +954,10 @@ namespace TFTV
 
                     OptionsManager optionsManager = null;
                     bool savedHintsEnabled = false;
+                    // per hint: only a forced (BaseRework) hint hides the "disable hints" control
+                    BaseReworkHints.IsBaseReworkHintActive = forceShow;
                     if (forceShow)
                     {
-                        BaseReworkHints.IsBaseReworkHintActive = true;
                         optionsManager = GameUtl.GameComponent<OptionsManager>();
                         OptionsManager.GameplayOptions opts = optionsManager.CurrentGameplayOptions;
                         savedHintsEnabled = opts.EnableContextHelpHints;
@@ -1030,6 +1031,8 @@ namespace TFTV
                         __instance.Image.gameObject.SetActive(true);
 
                         __instance.DisableHintsToggle.gameObject.SetActive(true);
+                        // a forced BaseRework hint disables the toggle below; re-enable it so later hints stay clickable
+                        __instance.DisableHintsToggle.enabled = true;
 
                         OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
 

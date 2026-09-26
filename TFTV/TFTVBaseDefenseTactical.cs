@@ -2562,7 +2562,8 @@ namespace TFTV
                             }
                         }
 
-                        TacticalActorBase chosenDummy = new TacticalActorBase();
+                        // null until an egg is chosen (a new-ed MonoBehaviour has no GameTags and only looks null to Unity)
+                        TacticalActorBase chosenDummy = null;
 
                         foreach (TacticalDeployZone tacticalDeployZone in Map.DeploymentZones.GetEnemyDeployZones(controller))
                         {
@@ -2600,7 +2601,10 @@ namespace TFTV
                             scylla.GameTags.Add(Objectives._killMainObjectiveTag);
                             scylla.GameTags.Add(Defs.EscapedPandoran);
                             controller.SituationCache.Invalidate();
-                            chosenDummy.GameTags.Remove(Objectives._killMainObjectiveTag);
+                            if (chosenDummy != null)
+                            {
+                                chosenDummy.GameTags.Remove(Objectives._killMainObjectiveTag);
+                            }
                             //  controller.View.ResetCharacterSelectedState();            
                         }
                         controller.AssetsLoader.StartLoadingRoots(scyllaDef.AsEnumerable(), null, onLoadingCompleted);

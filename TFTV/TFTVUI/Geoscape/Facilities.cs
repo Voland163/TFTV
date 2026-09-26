@@ -273,20 +273,26 @@ namespace TFTV.TFTVUI.Geoscape
 
                     click.callback.AddListener((eventData) =>
                     {
+                        // The warning can be gone (facility repowered, base lost) while this listener stays on the label.
+                        if (!_resourcePowerWarnings.TryGetValue(transformHook, out List<GeoPhoenixFacility> warned) || warned.Count == 0)
+                        {
+                            return;
+                        }
+
                         geoLevelController.Timing.Paused = true;
 
-                        GeoPhoenixFacility currentFacility = _resourcePowerWarnings[transformHook].FirstOrDefault();
+                        GeoPhoenixFacility currentFacility = warned.FirstOrDefault();
                         if (currentFacility.PxBase.Site.Owner != geoLevelController.PhoenixFaction)
                         {
                             RemoveFacilityFromList(currentFacility);
-                            currentFacility = _resourcePowerWarnings[transformHook].FirstOrDefault();
+                            currentFacility = _resourcePowerWarnings.TryGetValue(transformHook, out warned) ? warned.FirstOrDefault() : null;
                         }
 
                         if (currentFacility != null)
                         {
                             geoLevelController.View.ToBaseLayoutState(currentFacility.PxBase);
-                            _resourcePowerWarnings[transformHook].Remove(currentFacility);
-                            _resourcePowerWarnings[transformHook].Add(currentFacility);
+                            warned.Remove(currentFacility);
+                            warned.Add(currentFacility);
                         }
                     });
 
@@ -825,7 +831,13 @@ namespace TFTV.TFTVUI.Geoscape
                     facilityController.RepairBuildSlidingContainer.offsetMin = new Vector2(facilityController.RepairBuildSlidingContainer.offsetMin.x, -1f * facilityController.FacilityInfoContainer.rect.height);
                     string tip = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_UNPOWERED_UNDER_ATTACK_TOOLTIP");
 
-                    attackTransform.gameObject.AddComponent<UITooltipText>().TipText = tip;
+                    // refresh runs repeatedly: reuse the marker's tooltip instead of stacking one per refresh
+                    UITooltipText attackTip = attackTransform.GetComponent<UITooltipText>();
+                    if (attackTip == null)
+                    {
+                        attackTip = attackTransform.gameObject.AddComponent<UITooltipText>();
+                    }
+                    attackTip.TipText = tip;
                     //  facilityController.CanTogglePower = false;
                 }
                 else

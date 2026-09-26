@@ -46,6 +46,14 @@ namespace TFTV
                     {
                         // TFTVLogger.Always($"GeoscapeLogEntryController_SetEntry_patch {__instance?.Text?.text}");
 
+                        // Log entry controllers are pooled and reused for other lines: drop the previous line's
+                        // click-to-chase first, so a line without a target doesn't chase the old one.
+                        EventTrigger reusedTrigger = __instance.gameObject.GetComponent<EventTrigger>();
+                        if (reusedTrigger != null)
+                        {
+                            reusedTrigger.triggers.Clear();
+                        }
+
                         if (__instance.Text.text != null)
                         {
                             GeoActor targetActor = null;

@@ -283,6 +283,24 @@ namespace TFTV
                 return null;
             }
         }
+
+        private static readonly System.Collections.Generic.Dictionary<string, Sprite> _cachedSpritesByFile = new System.Collections.Generic.Dictionary<string, Sprite>();
+
+        /// <summary>
+        /// Loads the file once and reuses the sprite, for UI that asks for the same icon repeatedly
+        /// (CreateSpriteFromImageFile reads the file and allocates a new texture on every call).
+        /// </summary>
+        public static Sprite GetCachedSpriteFromImageFile(string imageFileName)
+        {
+            if (!_cachedSpritesByFile.TryGetValue(imageFileName, out Sprite sprite) || sprite == null)
+            {
+                sprite = CreateSpriteFromImageFile(imageFileName);
+                _cachedSpritesByFile[imageFileName] = sprite;
+            }
+
+            return sprite;
+        }
+
         public static Sprite CreatePortraitFromImageFile(string imageFileName, int width = 128, int height = 128, TextureFormat textureFormat = TextureFormat.RGBA32, bool mipChain = true)
         {
             try

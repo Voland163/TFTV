@@ -35,6 +35,8 @@ namespace TFTV
         private static readonly GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
         private static readonly GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
         private static readonly string _puAmbushVariable = "PU13";
+        // PU13 value at which PROG_PU13 (Bionic Fortress) fires; the PU9/PU10/PU121 cut-off uses the same value
+        private const int BionicFortressPU13Threshold = 6;
         private static GeoscapeEventDef _OlenaOnPureEvent;
         internal static GeoscapeEventDef PU_AmbushStartEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU5_GeoscapeEventDef");
 
@@ -92,7 +94,7 @@ namespace TFTV
                 //NJ_Bionics1_ResearchDef_EncounterVarResearchRewardDef_0 +1
                 //NJ_Bionics2_ResearchDef_EncounterVarResearchRewardDef_0 +1  This happens on Jan 24th
                 //SYN_Bionics3_ResearchDef_EncounterVarResearchRewardDef_0 +1
-                //TFTV: Trigger when PU13 reaches 9 Done
+                //TFTV: Trigger when PU13 reaches BionicFortressPU13Threshold (6) Done; PU9/PU10/PU121 are disabled from then on
 
 
 
@@ -125,14 +127,15 @@ namespace TFTV
                         // Source is a known-good "variable compare" condition we can safely clone.
                         GeoLevelConditionDef conditionSource = DefCache.GetDef<GeoLevelConditionDef>("[PROG_PU10] Condition 1");
 
-                        GeoLevelConditionDef pu13LessThan9 = Helper.CreateDefFromClone(
+                        // Eligible only while the Bionic Fortress event (PROG_PU13) hasn't fired yet
+                        GeoLevelConditionDef pu13BeforeBionicFortress = Helper.CreateDefFromClone(
                             conditionSource,
                             "{8B2B9B7E-0B10-4E1A-9CF2-6F4B3BC2C2A8}",
-                            "PU13_LessThan9_Condition");
+                            "PU13_BeforeBionicFortress_Condition");
 
-                        pu13LessThan9.Variable = "PU13";
-                        pu13LessThan9.VariableCompareOperator = GeoEventVariationConditionDef.ComparisonOperator.Less;
-                        pu13LessThan9.VariableCompareToNumber = 9;
+                        pu13BeforeBionicFortress.Variable = "PU13";
+                        pu13BeforeBionicFortress.VariableCompareOperator = GeoEventVariationConditionDef.ComparisonOperator.Less;
+                        pu13BeforeBionicFortress.VariableCompareToNumber = BionicFortressPU13Threshold;
 
                         foreach (string eventDefName in new[]
                         {
@@ -148,9 +151,9 @@ namespace TFTV
                                 ev.GeoscapeEventData.Conditions = new List<GeoEventVariationConditionDef>();
                             }
 
-                            if (!ev.GeoscapeEventData.Conditions.Contains(pu13LessThan9))
+                            if (!ev.GeoscapeEventData.Conditions.Contains(pu13BeforeBionicFortress))
                             {
-                                ev.GeoscapeEventData.Conditions.Add(pu13LessThan9);
+                                ev.GeoscapeEventData.Conditions.Add(pu13BeforeBionicFortress);
                             }
                         }
                     }
@@ -398,7 +401,7 @@ namespace TFTV
                     {
                         GeoLevelConditionDef varConditonPU13 = DefCache.GetDef<GeoLevelConditionDef>("[PROG_PU13] Condition 1");
                         varConditonPU13.VariableCompareOperator = GeoEventVariationConditionDef.ComparisonOperator.GreaterOrEqual;
-                        varConditonPU13.VariableCompareToNumber = 6;
+                        varConditonPU13.VariableCompareToNumber = BionicFortressPU13Threshold;
                     }
                     catch (Exception e)
                     {

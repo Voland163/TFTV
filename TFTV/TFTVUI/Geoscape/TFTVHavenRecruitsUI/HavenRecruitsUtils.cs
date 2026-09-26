@@ -355,8 +355,6 @@ namespace TFTV.TFTVHavenRecruitsUI
             return false;
         }
 
-        private static readonly Func<AbilityTrackSlot, int> AbilitySlotSkillPointCostGetter = CreateSkillPointCostGetter();
-
         internal readonly struct AbilityIconData
         {
             public AbilityIconData(AbilityTrackSlot slot)
@@ -485,51 +483,10 @@ namespace TFTV.TFTVHavenRecruitsUI
             }
         }
 
-        private static Func<AbilityTrackSlot, int> CreateSkillPointCostGetter()
-        {
-            try
-            {
-                var getter = AccessTools.PropertyGetter(typeof(AbilityTrackSlot), "SkillPointCost");
-                if (getter != null)
-                {
-                    return AccessTools.MethodDelegate<Func<AbilityTrackSlot, int>>(getter);
-                }
-
-                var field = AccessTools.Field(typeof(AbilityTrackSlot), "SkillPointCost");
-                if (field != null)
-                {
-                    return slot => slot != null ? (int)field.GetValue(slot) : 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                TFTVLogger.Error(ex);
-            }
-
-            return null;
-        }
-
         private static int GetAbilitySlotSkillPointCost(AbilityTrackSlot slot)
         {
-            if (slot == null)
-            {
-                return 0;
-            }
-
-            if (AbilitySlotSkillPointCostGetter != null)
-            {
-                try
-                {
-                    return AbilitySlotSkillPointCostGetter(slot);
-                }
-                catch (Exception ex)
-                {
-
-                    TFTVLogger.Error(ex);
-                }
-            }
-
-            return 0;
+            // AbilityTrackSlot has no SkillPointCost member; the cost lives on the ability, as vanilla CharacterProgression reads it
+            return slot?.Ability?.CharacterProgressionData != null ? slot.Ability.CharacterProgressionData.SkillPointCost : 0;
         }
         internal static IEnumerable<MutationIconData> GetMutationIcons(GeoUnitDescriptor recruit)
         {

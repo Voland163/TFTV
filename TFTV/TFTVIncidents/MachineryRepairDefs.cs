@@ -304,10 +304,10 @@ namespace TFTV.TFTVIncidents
             damageTypeBaseEffectDefs.Add(fireDamage);
             damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
             damageTypeBaseEffectDefs.Add(acidDamage);
-            damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
-
 
             vulnerabilityStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+            // melee is TFTV's own damage type, which doesn't exist yet when these statuses are built
+            TFTVMeleeDamage.IncludeMeleeDamage(vulnerabilityStatus);
 
 
             return vulnerabilityStatus;

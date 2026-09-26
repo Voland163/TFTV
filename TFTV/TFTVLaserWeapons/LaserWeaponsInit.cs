@@ -251,6 +251,12 @@ namespace TFTV.LaserWeapons
             battery.Weight = 1;
             battery.ManufactureMaterials = 40f;
             battery.ManufactureTech = 10f;
+            // CreateDefFromClone keeps references to other defs: without its own ViewElementDef, renaming the
+            // battery would rename the vanilla laser-pistol clip it was cloned from.
+            battery.ViewElementDef = Helper.CreateDefFromClone(
+                sourceAmmo.ViewElementDef,
+                "{4E9CF57D-B660-4CAF-890A-9DC99DEFFC43}",
+                "E_View [TFTV_LaserBatteryPack_ItemDef]");
             battery.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_LASER_BATTERY_NAME";
             battery.ViewElementDef.Description.LocalizationKey = "TFTV_LASER_BATTERY_DESC";
 

@@ -9,6 +9,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TFTV.LaserWeapons
@@ -96,9 +97,13 @@ namespace TFTV.LaserWeapons
                 }
             }
 
+            private static readonly System.Reflection.FieldInfo CommonItemDataChargesField = AccessTools.Field(typeof(CommonItemData), "_charges");
+
             private static int GetBatteryCharges(ICommonItem item)
             {
-                return item?.CommonItemData != null ? Math.Max(0, item.CommonItemData.CurrentCharges) : 0;
+                // A spent battery wraps to _count=0/_charges=ChargesMax, so CurrentCharges alone would report a full battery.
+                CommonItemData data = item?.CommonItemData;
+                return data == null || data.IsEmpty() ? 0 : Math.Max(0, data.TotalAvailableCharges());
             }
 
             internal static int CountAvailableCharges(TacticalActor actor)
@@ -131,12 +136,21 @@ namespace TFTV.LaserWeapons
                     return 0;
                 }
 
-                int current = Math.Max(0, data.CurrentCharges);
+                int current = GetBatteryCharges(item);
                 int take = Math.Min(current, amount);
-                if (take > 0)
+                if (take <= 0 || !data.ModifyCharges(-take, false))
                 {
-                    Log($"Consuming {take} charge(s) from '{item.ItemDef.name}' (before={current})");
-                    data.ModifyCharges(-take, false);
+                    return 0;
+                }
+
+                Log($"Consuming {take} charge(s) from '{item.ItemDef.name}' (before={current})");
+
+                if (data.IsEmpty() && item is TacticalItem batteryItem)
+                {
+                    // ModifyCharges leaves a spent battery reading ChargesMax, so vanilla never destroys it
+                    // (TacticalItem.OnChargesChanged checks CurrentCharges == 0). Zero it and remove it like a spent clip.
+                    CommonItemDataChargesField?.SetValue(data, 0);
+                    batteryItem.Destroy();
                 }
 
                 return take;
@@ -164,7 +178,8 @@ namespace TFTV.LaserWeapons
 
                 if (actor != null)
                 {
-                    foreach (ICommonItem item in EnumerateActorBatteryItems(actor))
+                    // snapshot: a battery emptied here is destroyed and leaves the inventory
+                    foreach (ICommonItem item in EnumerateActorBatteryItems(actor).ToList())
                     {
                         if (ReferenceEquals(item, preferredItem))
                         {
@@ -236,14 +251,19 @@ namespace TFTV.LaserWeapons
                     return true;
                 }
 
-                int shotsToAdd = Math.Min(missing, chargesToSpend * perCharge);
-                Log($"Tactical reload '{weaponDef.name}': missing={missing}, available={available}, perCharge={perCharge}, chargesToSpend={chargesToSpend}, shotsToAdd={shotsToAdd}");
+                // pay first, then load only what was actually paid for
+                int consumed = ConsumeCharges(actor, ammoClip, chargesToSpend);
+                Log($"Spent {consumed}/{chargesToSpend} battery charge(s) for '{weaponDef.name}' (tactical)");
+                if (consumed <= 0)
+                {
+                    return true;
+                }
+
+                int shotsToAdd = Math.Min(missing, consumed * perCharge);
+                Log($"Tactical reload '{weaponDef.name}': missing={missing}, available={available}, perCharge={perCharge}, chargesSpent={consumed}, shotsToAdd={shotsToAdd}");
 
                 TacticalItem magazine = CreateMagazine(entry, shotsToAdd);
                 weaponData.Ammo.LoadMagazine(magazine);
-
-                int consumed = ConsumeCharges(actor, ammoClip, chargesToSpend);
-                Log($"Spent {consumed}/{chargesToSpend} battery charge(s) for '{weaponDef.name}' (tactical)");
                 return true;
             }
 
@@ -357,11 +377,18 @@ namespace TFTV.LaserWeapons
             }
         }
 
+        // Set while vanilla TryLoadItemWithItem reloads a registered laser weapon with a legacy (original) clip:
+        // vanilla then adds the unloaded magazines to that clip's stack, so they must stay original clips
+        // instead of being converted to batteries (which would merge into the clip stack as the wrong item).
+        [ThreadStatic] private static bool _vanillaReloadWithOriginalClip;
+
         [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.TryLoadItemWithItem))]
         private static class GeoscapeReloadPatch
         {
             private static bool Prefix(UIInventoryList __instance, ICommonItem item, ICommonItem ammoItem, UIInventorySlot ammoSlot, ref bool __result)
             {
+                _vanillaReloadWithOriginalClip = false;
+
                 if (LaserAmmoShareHelper.BatteryPackDef == null)
                 {
                     return true;
@@ -373,7 +400,17 @@ namespace TFTV.LaserWeapons
                     return false;
                 }
 
+                _vanillaReloadWithOriginalClip = item?.ItemDef is WeaponDef weaponDef
+                    && LaserAmmoShareHelper.TryGetEntry(weaponDef, out var entry)
+                    && ammoItem?.ItemDef == entry.OriginalAmmoDef;
+
                 return true;
+            }
+
+            private static Exception Finalizer(Exception __exception)
+            {
+                _vanillaReloadWithOriginalClip = false;
+                return __exception;
             }
         }
 
@@ -389,6 +426,12 @@ namespace TFTV.LaserWeapons
 
                 if (!(__instance.ParentItem.ItemDef is WeaponDef weaponDef) || !LaserAmmoShareHelper.TryGetEntry(weaponDef, out var entry))
                 {
+                    return;
+                }
+
+                if (_vanillaReloadWithOriginalClip)
+                {
+                    // loaded magazines are original-clip items; leave them so vanilla re-stacks them with the same def
                     return;
                 }
 
@@ -425,7 +468,7 @@ namespace TFTV.LaserWeapons
                     ICommonItem battery = __instance.ParentItem.Create(LaserAmmoShareHelper.BatteryPackDef);
                     if (battery?.CommonItemData == null)
                     {
-                        continue;
+                        break; // 'continue' here would loop forever: remaining never changes
                     }
 
                     battery.CommonItemData.ModifyCharges(-battery.CommonItemData.CurrentCharges, false);

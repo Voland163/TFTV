@@ -634,7 +634,7 @@ namespace TFTV
                     string voidOmenString = "VoidOmen_";
                     int difficulty = Math.Max(geoLevelController.CurrentDifficultyLevel.Order - 1, 1);
 
-                    GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives?.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
+                    GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives?.FirstOrDefault(o => o?.Title?.LocalizationKey != null && o.Title.LocalizationKey.Contains(voidOmenTitleString));
 
                     //    TFTVLogger.Always($" 2");
 
@@ -657,7 +657,7 @@ namespace TFTV
 
                                 if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
                                 {
-                                    for (int y = 1; x < 100; x++)
+                                    for (int y = 1; y < 100; y++)
                                     {
                                         if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
                                         {
@@ -743,7 +743,7 @@ namespace TFTV
 
                                 if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
                                 {
-                                    for (int y = 1; x < 100; x++)
+                                    for (int y = 1; y < 100; y++)
                                     {
                                         if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
                                         {
@@ -1347,24 +1347,32 @@ namespace TFTV
 
 
 
+        // Needs its own patch class: PatchAll ignores a method-level [HarmonyPatch] in a class that has none,
+        // so as a bare method on TFTVVoidOmens this was never applied.
         [HarmonyPatch(typeof(GeoscapeLog), "AddEntry")] //VERIFIED
-        public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef, GeoscapeLog __instance)
+        public static class GeoscapeLog_AddEntry_DestroyedAlienBaseName_Patch
         {
-            try
+            public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef)
             {
-                if (entry.Text == ____messagesDef.AlienBaseDestroyedMessage && actor is GeoSite geoSite)
+                try
                 {
-                    if (entry.Parameters[0] == geoSite.SiteName)
+                    if (entry.Text == ____messagesDef.AlienBaseDestroyedMessage && actor is GeoSite geoSite
+                        && entry.Parameters != null && entry.Parameters.Length > 0 && entry.Parameters[0] == geoSite.SiteName)
                     {
-                        entry.Parameters[0] = _destroyedAlienBase;
+                        // Prefer the site's own base type, so this doesn't depend on AlienBaseDestroyed running first.
+                        GeoAlienBase alienBase = geoSite.GetComponent<GeoAlienBase>();
+                        LocalizedTextBind baseTypeName = alienBase?.AlienBaseTypeDef?.Name ?? _destroyedAlienBase;
+
+                        if (baseTypeName != null && !string.IsNullOrEmpty(baseTypeName.LocalizationKey))
+                        {
+                            entry.Parameters[0] = baseTypeName;
+                        }
                     }
                 }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
         }
 

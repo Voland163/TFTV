@@ -270,13 +270,13 @@ namespace TFTV.TFTVDrills
                             if (confirmationContext.ReplacementAbility != null)
                             {
                                 string replacementName = confirmationContext.ReplacementAbility.ViewElementDef?.DisplayName1?.Localize() ?? confirmationContext.ReplacementAbility.name ?? string.Empty;
-                                description += string.Format("\n\n<color=#{0}><b>Replaces:</b> {1}</color>", pulseHex, replacementName);
+                                description += string.Format("\n\n<color=#{0}><b>{1}</b> {2}</color>", pulseHex, DrillsText.Get(DrillsText.ReplacesLabel), replacementName);
                             }
                         }
 
                         if (showStaminaWarning)
                         {
-                            description += string.Format("\n\n<color=#{0}><b>Warning:</b> Stamina will be set to 0.</color>", pulseHex);
+                            description += string.Format("\n\n<color=#{0}><b>{1}</b> {2}</color>", pulseHex, DrillsText.Get(DrillsText.WarningLabel), DrillsText.Get(DrillsText.StaminaWarning));
                         }
 
                         __instance.AbilitiyDescriptionText.text = description;

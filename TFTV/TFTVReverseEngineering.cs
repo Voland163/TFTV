@@ -310,7 +310,7 @@ namespace TFTV
                 PX_NJ_HRocketLauncherResearchReq.ResearchID = "PX_NJ_HeavyRocketLauncher_WeaponDef_ResearchDef";
 
                 ReseachRequirementDefOpContainer[] defOpContainersHRocketLauncher = HrocketLauncher.RevealRequirements.Container;
-                for (int i = 0; i < defOpContainersRocketLauncher.Length; i++)
+                for (int i = 0; i < defOpContainersHRocketLauncher.Length; i++)
                 {
                     if (defOpContainersHRocketLauncher[i].Operation != ResearchContainerOperation.ANY)
                     {

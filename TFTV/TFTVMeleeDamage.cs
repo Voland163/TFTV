@@ -30,6 +30,33 @@ namespace TFTV
         public static StandardDamageTypeEffectDef PsychicStandardDamageType;
         public static DamageKeywordDef PsychicStandardDamageKeywordDef;
 
+        // Statuses that must also affect melee but were built before the melee damage type existed.
+        private static readonly List<DamageMultiplierStatusDef> _statusesAwaitingMeleeDamage = new List<DamageMultiplierStatusDef>();
+
+        /// <summary>
+        /// Makes a damage-multiplier status apply to TFTV melee damage too, whatever the def-creation order:
+        /// appended now if the melee type exists, otherwise as soon as CreateMeleeDamageType creates it.
+        /// </summary>
+        public static void IncludeMeleeDamage(DamageMultiplierStatusDef status)
+        {
+            if (status == null)
+            {
+                return;
+            }
+
+            if (MeleeStandardDamageType != null)
+            {
+                if (!status.DamageTypeDefs.Contains(MeleeStandardDamageType))
+                {
+                    status.DamageTypeDefs = status.DamageTypeDefs.AddToArray(MeleeStandardDamageType);
+                }
+            }
+            else if (!_statusesAwaitingMeleeDamage.Contains(status))
+            {
+                _statusesAwaitingMeleeDamage.Add(status);
+            }
+        }
+
         public static void AddMeleeDamageType()
         {
             CreateMeleeDamageType();
@@ -559,6 +586,12 @@ namespace TFTV
 
                 DamageMultiplierStatusDef closeQuartersStatus = DefCache.GetDef<DamageMultiplierStatusDef>("E_CloseQuatersStatus [CloseQuarters_AbilityDef]");
                 closeQuartersStatus.DamageTypeDefs = closeQuartersStatus.DamageTypeDefs.AddToArray(MeleeStandardDamageType);
+
+                foreach (DamageMultiplierStatusDef status in _statusesAwaitingMeleeDamage)
+                {
+                    IncludeMeleeDamage(status);
+                }
+                _statusesAwaitingMeleeDamage.Clear();
             }
             catch (Exception e)
             {

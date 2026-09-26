@@ -56,6 +56,18 @@ namespace TFTV.TFTVDrills
         internal const string ProficiencyRequirement = "TFTV_DRILLS_UI_PROFICIENCY_REQUIREMENT";
         internal const string ProficiencyRequirementFallback = "TFTV_DRILLS_UI_PROFICIENCY_FALLBACK";
         internal const string ProficiencyRequirementSeparator = "TFTV_DRILLS_UI_PROFICIENCY_SEPARATOR";
+        internal const string ResearchRequirement = "TFTV_DRILLS_UI_RESEARCH_REQUIREMENT";
+        internal const string ClassLevelRequirement = "TFTV_DRILLS_UI_CLASS_LEVEL_REQUIREMENT";
+        internal const string OperativeFallback = "TFTV_DRILLS_UI_OPERATIVE_FALLBACK";
+
+        #endregion
+
+        #region Tooltip and confirmation sections
+
+        internal const string MissingRequirementsHeader = "TFTV_DRILLS_UI_MISSING_REQUIREMENTS";
+        internal const string ReplacesLabel = "TFTV_DRILLS_UI_REPLACES_LABEL";
+        internal const string WarningLabel = "TFTV_DRILLS_UI_WARNING_LABEL";
+        internal const string StaminaWarning = "TFTV_DRILLS_UI_STAMINA_WARNING";
 
         #endregion
     }

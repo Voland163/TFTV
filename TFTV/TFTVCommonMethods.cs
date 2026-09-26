@@ -219,6 +219,8 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                // the beam defs are process-global: start every mission/load neutral, like the buff tracking above
+                TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.BeamOriginal();
                 TFTVAncientsGeo.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
 
@@ -255,6 +257,12 @@ namespace TFTV
                 HavenRecruitsMain.ClearInternalData();
                 DrillsUI.InternalData.ClearInternalData();
                 TFTV.TFTVIncidents.Resolution.IncidentController.ClearStateOnStateChangeAndLoad();
+                TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ClearChoiceCaches();
+                // campaign state: restored from the geoscape save (TFTVGSInstanceData) after this clear
+                TFTVExperienceDistribution.PendingDeathSkillPointRefunds.Clear();
+                // before the new level ticks (OnLevelStart is too late: the event system can tick first)
+                TFTVBaseRework.BaseConstructionVisuals.ClearForLevelChange();
+                TFTV.TFTVIncidents.AdvanceWarningHavenAttack.HavenAttackRiskService.Clear();
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
@@ -276,6 +284,9 @@ namespace TFTV
                         alwaysDisplayedTacticalHintsDbDef.Hints.Remove(contextHelpHintDef);
                         TFTVLogger.Always("Squad hint " + contextHelpHintDef.name + " removed");
                     }
+
+                    // per-mission hint: its sprite entry is otherwise only dropped if the hint was shown
+                    TFTVHints._hintDefSpriteFileNameDictionary.Remove(contextHelpHintDef);
                 }
 
                 TFTVHumanEnemies.TacticsHint.Clear();
@@ -304,6 +315,10 @@ namespace TFTV
         {
             try
             {
+                // Here (LoadGame prefix, before the new level deserializes) rather than in the state-change hub:
+                // the hub also runs from ProcessGeoscapeInstanceData, after the loaded save may have re-patched
+                // an event whose popup is open.
+                TFTVDiplomacyPenalties.RestoreAllPatchedEvents();
 
                 TFTVRevenant.InternalData.RevenantDataToClearOnLoadOnly();
 
@@ -350,6 +365,7 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.BeamOriginal();
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.Tactical.Data.ClearDataOnMissionRestart();
 

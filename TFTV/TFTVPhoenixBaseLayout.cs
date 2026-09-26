@@ -66,14 +66,14 @@ namespace TFTV
                 {
                     PhoenixFacilityData phoenixFacilityData = null;
 
-                    if (list.Count == list.Count - 2) //place hangar 3rd
+                    if (list.Count == facilitiesCount - 2) //place hangar 3rd
                     {
                         IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 2);
                         phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
                         //   TFTVLogger.Always($"Facility to be placed: {phoenixFacilityData?.FacilityDef?.name}");
 
                     }
-                    else if (list.Count == list.Count - 4) //place access lift with at least one space to hangar
+                    else if (list.Count == facilitiesCount - 4) //place access lift with at least one space to hangar
                     {
                         IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef == accessLift);
                         phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());

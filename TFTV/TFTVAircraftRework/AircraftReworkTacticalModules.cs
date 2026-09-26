@@ -347,14 +347,20 @@ namespace TFTV
         {
             try
             {
+                // Normalize the snapshot to full size: other readers (OnTacticalStart's log, direct [n] writes)
+                // index it without the ReadModuleSlot tolerance, so a null or short array would throw there.
                 if (InternalData.ModulesInTactical == null)
                 {
                     TFTVLogger.Always("[LoadInternalDataForTactical] no aircraft module snapshot in this save; treating every module as absent");
+                    InternalData.ModulesInTactical = new int[InternalData.ModulesInTacticalSlots];
                 }
                 else if (InternalData.ModulesInTactical.Length < InternalData.ModulesInTacticalSlots)
                 {
                     TFTVLogger.Always($"[LoadInternalDataForTactical] aircraft module snapshot has {InternalData.ModulesInTactical.Length} " +
                         $"slots, this build expects {InternalData.ModulesInTacticalSlots}; the missing ones read 0");
+                    int[] grown = new int[InternalData.ModulesInTacticalSlots];
+                    InternalData.ModulesInTactical.CopyTo(grown, 0);
+                    InternalData.ModulesInTactical = grown;
                 }
 
                 _thunderBirdScannerPresent = ReadModuleSlot(0);
@@ -1217,12 +1223,48 @@ namespace TFTV
             public static class TacticalFactionVision_PrefixPatch
             {
                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+                // The vanilla originals call the private overload with the caller's basePerceptionRange, which acts as a
+                // minimum spotting range (DetectionRange, or infinity for an enemy that shot at us). The public 7-arg overload
+                // forwards 0, which would drop both floors, so call the private one through a compiled delegate (hot path).
+                // Built lazily (not in a static initializer) so a missing overload after a game update can't break PatchAll.
+                private static Func<TacticalActorBase, Vector3, TacticalActorBase, bool, float, Vector3?, float, Base.Levels.PhysicsCast, bool> _checkVisibleLineWithBaseRange;
+                private static bool _checkVisibleLineWithBaseRangeResolved;
+
+                private static bool VisibleLine(TacticalActorBase fromActor, Vector3 fromActorPos, TacticalActorBase targetActor, float basePerceptionRange)
+                {
+                    if (!_checkVisibleLineWithBaseRangeResolved)
+                    {
+                        _checkVisibleLineWithBaseRangeResolved = true;
+                        MethodInfo method = AccessTools.Method(typeof(TacticalFactionVision), "CheckVisibleLineBetweenActors", new[]
+                        {
+                            typeof(TacticalActorBase), typeof(Vector3), typeof(TacticalActorBase), typeof(bool),
+                            typeof(float), typeof(Vector3?), typeof(float), typeof(Base.Levels.PhysicsCast)
+                        });
+
+                        if (method != null)
+                        {
+                            _checkVisibleLineWithBaseRange = (Func<TacticalActorBase, Vector3, TacticalActorBase, bool, float, Vector3?, float, Base.Levels.PhysicsCast, bool>)
+                                Delegate.CreateDelegate(typeof(Func<TacticalActorBase, Vector3, TacticalActorBase, bool, float, Vector3?, float, Base.Levels.PhysicsCast, bool>), method);
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("[MistVision] private CheckVisibleLineBetweenActors overload not found; falling back to the public one (no base perception range)");
+                        }
+                    }
+
+                    return _checkVisibleLineWithBaseRange != null
+                        ? _checkVisibleLineWithBaseRange(fromActor, fromActorPos, targetActor, true, basePerceptionRange, null, 1f, null)
+                        : TacticalFactionVision.CheckVisibleLineBetweenActors(fromActor, fromActorPos, targetActor, true, null, 1f, null);
+                }
+
                 //────────────────────────────────────────────────────────────
                 // 1. Replacement for GatherKnowableActors
                 //────────────────────────────────────────────────────────────
                 [HarmonyPrefix]
                 [HarmonyPatch("GatherKnowableActors")]
-                public static bool GatherKnowableActorsPrefix(TacticalFactionVision __instance,
+                // GatherKnowableActors is static: no __instance
+                public static bool GatherKnowableActorsPrefix(
                     TacticalActorBase fromActor,
                     Vector3 fromActorPos,
                     float basePerceptionRange,
@@ -1275,10 +1317,7 @@ namespace TFTV
                                 // TFTVLogger.Always($"{actor.DisplayName} touching Mist, so revealing to {fromActor.DisplayName}");
                             }
 
-                            else if ((bool)TacticalFactionVision.CheckVisibleLineBetweenActors(
-                                         fromActor, fromActorPos, actor,
-                                         true, null,
-                                         1, null))
+                            else if (VisibleLine(fromActor, fromActorPos, actor, basePerceptionRange))
                             {
                                 visible.Add(actor);
                                 //   TFTVLogger.Always($"{actor.DisplayName} in LOS at a distance of {(fromActorPos - actor.Pos).magnitude}, so revealing to {fromActor.DisplayName}");
@@ -1369,7 +1408,7 @@ namespace TFTV
                             // TFTVLogger.Always($"{targetActor.DisplayName} in Mist revealed to {fromActor.DisplayName}");
                             condition = true;
                         }
-                        else if (TacticalFactionVision.CheckVisibleLineBetweenActors(fromActor, fromActor.Pos, targetActor, true, null, 1, null))
+                        else if (VisibleLine(fromActor, fromActor.Pos, targetActor, basePerceptionRange))
                         {
                             // TFTVLogger.Always($"{targetActor.DisplayName} revealed to {fromActor.DisplayName} because LOS");
                             condition = true;
@@ -1515,8 +1554,10 @@ namespace TFTV
             public static class UIStateRosterDeployment_EnterState_Patch
             {
                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
-                public static void Prefix(UIStateRosterDeployment __instance)
+                public static void Prefix(UIStateRosterDeployment __instance, out bool __state)
                 {
+                    // true only when this Prefix flipped the (shared) mission def, so Postfix restores just that def
+                    __state = false;
                     try
                     {
                         if (!AircraftReworkOn)
@@ -1534,6 +1575,7 @@ namespace TFTV
                             {
                                 _captureDronesPresent = 1;
                                 mission.MissionDef.DontRecoverItems = false;
+                                __state = true;
                             }
                         }
 
@@ -1544,7 +1586,7 @@ namespace TFTV
                         throw;
                     }
                 }
-                public static void Postfix(UIStateRosterDeployment __instance)
+                public static void Postfix(UIStateRosterDeployment __instance, bool __state)
                 {
                     try
                     {
@@ -1555,10 +1597,9 @@ namespace TFTV
 
                         GeoMission mission = __instance.Mission;
 
-                        if (_captureDronesPresent > 0)
+                        if (__state)
                         {
                             mission.MissionDef.DontRecoverItems = true;
-                            // CaptureDronesModulePresent = false;
                         }
                     }
                     catch (Exception e)

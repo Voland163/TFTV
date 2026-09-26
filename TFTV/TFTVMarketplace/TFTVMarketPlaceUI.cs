@@ -128,7 +128,8 @@ namespace TFTV
                         TimeUnit updateTime = (TimeUnit)fieldInfo_updateOptionsNextTime.GetValue(geoMarketplace);
                         TimeUnit currentTime = controller.Timing.Now;
 
-                        int daysToRotation = Mathf.Max(updateTime.DateTime.Day - currentTime.DateTime.Day, 1);
+                        // whole calendar days between the dates (Day is the day of the month, which breaks across month ends)
+                        int daysToRotation = Mathf.Max((updateTime.DateTime.Date - currentTime.DateTime.Date).Days, 1);
 
                         string suffix = TFTVCommonMethods.ConvertKeyToString("KEY_DAYS");
 
@@ -268,7 +269,9 @@ namespace TFTV
                     {
                         //   TFTVLogger.Always($"Running ExitState marketplace");
                         GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
-                        if (MPGeoEventChoices != null && MPGeoEventChoices.Count > 0)
+                        // always release the master list, even when everything was bought: an empty market is a normal state,
+                        // and a kept-empty list would later overwrite fresh stock
+                        if (MPGeoEventChoices != null)
                         {
                             /* foreach(GeoEventChoice geoEventChoice in MPGeoEventChoices) 
                              {

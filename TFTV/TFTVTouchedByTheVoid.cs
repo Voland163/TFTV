@@ -141,7 +141,7 @@ namespace TFTV
                 {
                     //1-30 Umbra, 31-36 dud,37-66 MfD, 67-96 Reinforcements, 97-100 dud  
 
-                    if (roll > 37 && roll <= 66)
+                    if (roll >= 37 && roll <= 66)
                     {
                         if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
                         {
@@ -255,8 +255,8 @@ namespace TFTV
                                                 TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
                                             }
 
-                                            else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
-                                                && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                            else if (tacticalActor.GameTags.Contains(fishTag) && !tacticalActor.GameTags.Contains(voidTouchedTag)
+                                                && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
                                                  && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
                                                 && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
                                             {
@@ -863,7 +863,7 @@ namespace TFTV
                     if (difficulty > 0)
                     {
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                        int roll = UnityEngine.Random.Range(1, 2);
+                        int roll = UnityEngine.Random.Range(1, 3); // 1 = Arthron, 2 = Triton (int max is exclusive)
 
                         if (roll == 1)
                         {
@@ -885,7 +885,7 @@ namespace TFTV
                         else
                         {
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            int roll = UnityEngine.Random.Range(1, 2);
+                            int roll = UnityEngine.Random.Range(1, 3); // 1 = Arthron, 2 = Triton (int max is exclusive)
 
                             if (roll == 1)
                             {
@@ -914,35 +914,12 @@ namespace TFTV
 
                     if (difficulty > 3)
                     {
-                        if (eligibleClassTagDefs.Contains(sirenTag) && eligibleClassTagDefs.Contains(myrmidonTag))
+                        // Siren whenever Sirens are unlocked; extra Myrmidon only when they are not
+                        if (eligibleClassTagDefs.Contains(sirenTag))
                         {
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            int roll = UnityEngine.Random.Range(1, 2);
-
-                            if (roll == 1)
-                            {
-                                reinforcements.Add(sirenTag, 1);
-                            }
-                            else
-                            {
-                                if (reinforcements.ContainsKey(myrmidonTag))
-                                {
-                                    reinforcements[myrmidonTag] += 1;
-                                }
-                                else
-                                {
-                                    reinforcements.Add(myrmidonTag, 1);
-                                }
-                            }
-
-                        }
-                        else if (eligibleClassTagDefs.Contains(sirenTag) && !eligibleClassTagDefs.Contains(myrmidonTag))
-                        {
-
                             reinforcements.Add(sirenTag, 1);
-
                         }
-                        else if (!eligibleClassTagDefs.Contains(sirenTag) && eligibleClassTagDefs.Contains(myrmidonTag))
+                        else if (eligibleClassTagDefs.Contains(myrmidonTag))
                         {
                             if (reinforcements.ContainsKey(myrmidonTag))
                             {
@@ -957,7 +934,7 @@ namespace TFTV
                         else
                         {
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            int roll = UnityEngine.Random.Range(1, 2);
+                            int roll = UnityEngine.Random.Range(1, 3); // 1 = Arthron, 2 = Triton (int max is exclusive)
 
                             if (roll == 1)
                             {

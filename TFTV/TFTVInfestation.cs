@@ -817,7 +817,7 @@ namespace TFTV
 
                                 if (havenToReceiveRefugees.Count > 0)
                                 {
-                                    dynamicDescription = $"{around} {(Mathf.RoundToInt(populationSaved / 100)) * 100} {fortunateFew}";
+                                    dynamicDescription = $"{around} {Mathf.RoundToInt(populationSaved / 100f) * 100} {fortunateFew}";
 
                                 }
 

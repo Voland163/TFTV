@@ -45,18 +45,8 @@ namespace TFTV
             DrainOverrides[__instance] = drainPart;
             SetPopulationDrainPart?.Invoke(__instance.ZonesStats, 0f);
 
-            foreach (GeoSite geoSite in from s in __instance.Range.SitesInRange
-                                        where s.Type == GeoSiteType.Haven && s.State == GeoSiteState.Functioning
-                                        select s)
-            {
-                GeoHaven target = geoSite.GetComponent<GeoHaven>();
-                int drained = CalculateDrainAmount(__instance, target, drainPart);
-                if (drained > 0)
-                {
-                    target.Population -= drained;
-                }
-            }
-
+            // The targets are drained in the postfix, after the original has credited this haven via
+            // GetPopulationChange: draining here first made the source gain less than the targets lost.
             return true;
         }
 
@@ -67,6 +57,19 @@ namespace TFTV
             if (__state <= 0f)
             {
                 return;
+            }
+
+            // same order as vanilla UpdatePerDay: credit the source first (done by the original), then drain the targets
+            foreach (GeoSite geoSite in from s in __instance.Range.SitesInRange
+                                        where s.Type == GeoSiteType.Haven && s.State == GeoSiteState.Functioning
+                                        select s)
+            {
+                GeoHaven target = geoSite.GetComponent<GeoHaven>();
+                int drained = CalculateDrainAmount(__instance, target, __state);
+                if (drained > 0)
+                {
+                    target.Population -= drained;
+                }
             }
 
             SetPopulationDrainPart?.Invoke(__instance.ZonesStats, __state);

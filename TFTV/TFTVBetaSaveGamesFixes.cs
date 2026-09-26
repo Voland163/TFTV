@@ -842,25 +842,8 @@ namespace TFTV
                 return 0;
             }
 
-            PropertyInfo geoItemAmountProperty = AccessTools.Property(typeof(GeoItem), "Amount")
-                                             ?? AccessTools.Property(typeof(GeoItem), "Quantity");
-            if (geoItemAmountProperty != null)
-            {
-                return (int)geoItemAmountProperty.GetValue(geoItem);
-            }
-
-            object commonItemData = geoItem.CommonItemData;
-            if (commonItemData != null)
-            {
-                PropertyInfo commonAmountProperty = AccessTools.Property(commonItemData.GetType(), "Amount")
-                                                 ?? AccessTools.Property(commonItemData.GetType(), "Quantity");
-                if (commonAmountProperty != null)
-                {
-                    return (int)commonAmountProperty.GetValue(commonItemData);
-                }
-            }
-
-            return 1;
+            // the stack size lives in CommonItemData.Count (GeoItem has no Amount/Quantity member)
+            return geoItem.CommonItemData?.Count ?? 1;
         }
 
 

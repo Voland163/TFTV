@@ -78,7 +78,7 @@ namespace TFTV
                 }
                 else if (moduleDef == _blimpMutationLabModule)
                 {
-                    tier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches);
+                    tier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches) + 1; //+1 to account for base level
                 }
                 else if (moduleDef == _blimpMistModule)
                 {

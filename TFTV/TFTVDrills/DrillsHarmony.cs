@@ -2728,7 +2728,8 @@ namespace TFTV.TFTVDrills
             [HarmonyPatch(typeof(TacStatus), nameof(TacStatus.OnUnapply))]
             public static class DamageMultiplierStatus_OnUnapply_PackLoyalty_Patch
             {
-                public static void Postfix(DamageMultiplierStatus __instance)
+                // Patches the base TacStatus.OnUnapply, so it runs for every status: take TacStatus and filter.
+                public static void Postfix(TacStatus __instance)
                 {
                     try
                     {
@@ -2737,13 +2738,13 @@ namespace TFTV.TFTVDrills
                             return;
                         }
 
-
-                        if (PsychicWardStatusDef == null || __instance?.TacStatusDef != PsychicWardStatusDef)
+                        if (PsychicWardStatusDef == null || !(__instance is DamageMultiplierStatus damageMultiplierStatus)
+                            || damageMultiplierStatus.TacStatusDef != PsychicWardStatusDef)
                         {
                             return;
                         }
 
-                        UnregisterMindWard(__instance);
+                        UnregisterMindWard(damageMultiplierStatus);
                     }
                     catch (Exception ex)
                     {

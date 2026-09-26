@@ -206,7 +206,6 @@ namespace TFTV.Vehicles.Ammo
                     }
 
                     GeoItem storageAmmo = storage.Items[ammoDef];
-                    int clipSize = ammoDef.ChargesMax;
 
                     while (!storageAmmo.CommonItemData.IsEmpty())
                     {
@@ -214,13 +213,21 @@ namespace TFTV.Vehicles.Ammo
                         if (needed <= 0)
                             break;
 
-                        int toLoad = Mathf.Min(needed, clipSize);
-                        GeoItem clip = new GeoItem(ammoDef, 1, -1, null, -100);
-                        // Zero out and set to exactly toLoad charges (handles partial last clip)
-                        clip.CommonItemData.ModifyCharges(-clip.CommonItemData.CurrentCharges, false);
-                        clip.CommonItemData.ModifyCharges(toLoad, false);
+                        // Take the real top magazine of the stack (may be a partial), as vanilla TryReloadItem does,
+                        // so the module never receives more charges than storage actually holds.
+                        var clip = storageAmmo.GetSingleItem().Clone();
+                        int available = clip.CommonItemData.TotalCharges;
+                        int toLoad = Mathf.Min(needed, available);
+                        if (toLoad < available)
+                        {
+                            clip.CommonItemData.ModifyCharges(-clip.CommonItemData.CurrentCharges, false);
+                            clip.CommonItemData.ModifyCharges(toLoad, false);
+                        }
                         item.CommonItemData.Ammo.LoadMagazine(clip);
-                        storageAmmo.CommonItemData.Subtract(clip);
+                        if (toLoad < available)
+                            storageAmmo.CommonItemData.ModifyCharges(-toLoad, false);
+                        else
+                            storageAmmo.CommonItemData.Subtract(clip);
                     }
 
                     int finalCharges = GetAmmoChargesForDef(item.CommonItemData, ammoDef);

@@ -276,7 +276,7 @@ namespace TFTV
             }
 
         }
-        //temporarily increases burst of 1AP weapons to avoid multiple shots when more than 1 AP is available, reverts at end of turn or if weapon changed
+        //temporarily increases burst of 1AP weapons to avoid multiple shots when more than 1 AP is available, reverts once that shot finishes (end of turn as fallback)
         internal class SingleAPWeaponsMultipleShots 
         
         {
@@ -393,6 +393,24 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                     throw;
+                }
+            }
+
+            // The kludge edits the shared WeaponDef, so every weapon of that type (player's included) sees it while it lasts.
+            // AIActionMoveAndAttack applies it (GetAttackTarget) right before firing, so restore it as soon as that shot is done.
+            // EndTurn / new faction turn remain as fallbacks, e.g. if the shot never executes.
+            public static void RevertAfterKludgedShot(TacticalAbility ability)
+            {
+                try
+                {
+                    if (_weaponChanged != null && ability is ShootAbility shootAbility && shootAbility.Weapon == _weaponChanged)
+                    {
+                        RevertAdjustForMultipleSingleAPAttack();
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
 
@@ -2001,19 +2019,13 @@ namespace TFTV
 
                         GameTagDef caterpillarDamage = CachedDefs.CaterpillarDamageTag;
 
+                        // Big monsters ignore enemy critters; everyone else may target critters at any range.
                         if (actor.GameTags.Contains(CachedDefs.QueenTag)
                             || actor.GameTags.Contains(CachedDefs.AcheronTag)
                             || actor.GameTags.Contains(CachedDefs.ChironTag)
                             || actor.GameTags.Contains(CachedDefs.CyclopsTag))
                         {
                             if (targetActor.GameTags.Contains(caterpillarDamage) && targetActor.TacticalFaction != actor.TacticalFaction)
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            if (targetActor.GameTags.Contains(caterpillarDamage) && (targetActor.Pos - target.Actor.Pos).magnitude > 8)
                             {
                                 return false;
                             }

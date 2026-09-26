@@ -79,6 +79,10 @@ namespace TFTV.TFTVIncidents
 
                 if (_container != null)
                 {
+                    // Destroy is deferred to end of frame and the container is found by name: detach it first so a
+                    // Show in the same frame builds a fresh one instead of re-adopting the dying one.
+                    _container.SetActive(false);
+                    _container.transform.SetParent(null, false);
                     UnityEngine.Object.Destroy(_container);
                 }
             }

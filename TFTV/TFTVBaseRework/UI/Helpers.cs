@@ -254,6 +254,26 @@ namespace TFTV.TFTVBaseRework
                         var session = TrainingFacilityRework.GetRecruitSession(person.Character);
                         bool wasDismissed = session?.WasDismissed ?? false;
 
+                        if (wasDismissed)
+                        {
+                            // FinalizeRecruitTraining charges the redeploy fee after crediting any early refund,
+                            // and silently fails if the player can't pay: say so up front instead.
+                            int expectedRefund = 0;
+                            if (!trainingComplete && session != null)
+                            {
+                                int achievedLevel = session.VirtualLevelAchieved;
+                                expectedRefund = Math.Max(0, session.SpPaid - (10 * Math.Max(0, achievedLevel - 1)));
+                            }
+
+                            int redeployCost = PersonnelRestrictions.GetRedeployCost(person.Character);
+                            if (faction.Skillpoints + expectedRefund < redeployCost)
+                            {
+                                ShowMessage(PersonnelText.Format(PersonnelText.NotEnoughSpRedeploy,
+                                    person.Character?.DisplayName, redeployCost, faction.Skillpoints));
+                                return;
+                            }
+                        }
+
                         Action finalize = () =>
                         {
                             var character = TrainingFacilityRework.FinalizeRecruitTraining(level, person.Character, geoBase, early: !trainingComplete);

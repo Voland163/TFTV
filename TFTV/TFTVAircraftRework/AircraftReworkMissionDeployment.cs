@@ -213,6 +213,12 @@ namespace TFTV
 
                     }
 
+                    if (priorityContainer == null)
+                    {
+                        // no crewed aircraft at the site: keep vanilla sources rather than returning [null]
+                        return;
+                    }
+
                     __result = new List<IGeoCharacterContainer> { priorityContainer };
 
                 }

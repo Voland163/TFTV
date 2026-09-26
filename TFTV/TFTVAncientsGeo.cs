@@ -841,7 +841,7 @@ namespace TFTV
                                 Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
                                 Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
 
-                                exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                                exoticResourceTextCopy.GetComponent<Text>().text = resourceUnit.RoundedValue.ToString(); // this exotic entry, not the pack's first (Materials)
                                 // exoticResourceTextCopy.GetComponent<Text>().text = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources[0].Value.ToString();
                                 exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
                                 exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
@@ -869,7 +869,7 @@ namespace TFTV
                                 Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
                                 Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
 
-                                exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                                exoticResourceTextCopy.GetComponent<Text>().text = resourceUnit.RoundedValue.ToString(); // this exotic entry, not the pack's first (Materials)
                                 // DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources[0].Value.ToString();
                                 exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
                                 exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
@@ -900,7 +900,7 @@ namespace TFTV
                                 Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
                                 Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
                                 // TFTVLogger.Always($"{reward.Values[0].Value}");
-                                exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                                exoticResourceTextCopy.GetComponent<Text>().text = resourceUnit.RoundedValue.ToString(); // this exotic entry, not the pack's first (Materials)
                                 //  TFTVLogger.Always($"{exoticResourceTextCopy.GetComponent<Text>().text}");
                                 //DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources[0].Value.ToString();
                                 exoticResourceTextCopy.SetParent(exoticResourceIconCopy);

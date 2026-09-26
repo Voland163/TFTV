@@ -630,8 +630,6 @@ namespace TFTV
 
         internal class Consoles
         {
-            private static List<string> ActivatedObjectives = new List<string>();
-
             private static readonly string ObjectiveName1 = "Objective1";
             private static readonly string ObjectiveName2 = "Objective2";
             private static readonly string ObjectiveName3 = "Objective3";
@@ -672,16 +670,18 @@ namespace TFTV
                             {
                                 TFTVLogger.Always($"Console {console.name} activated");
 
-                                ActivatedObjectives.Add(ObjectiveName1);
+                                // Count from the consoles' own state (restored by saves, reset by a restart) rather than a
+                                // session-long counter; this postfix runs after the status is added, so this console counts.
+                                int activatedConsoles = UnityEngine.Object.FindObjectsOfType<StructuralTarget>()
+                                    .Count(c => c.Pos.z == 0 && c.Status != null && c.Status.HasStatus(status.Def));
 
-                                if (ActivatedObjectives.Count() == 3)
+                                if (activatedConsoles == 3)
                                 {
                                     yuggoth.QueenWallDownOnTurn = -1; //resetting to -1 before activating to avoid issues
 
                                     TFTVLogger.Always($"All consoles activated! Lowering the gate!");
 
                                     lowerShields.LowerQueensWall();
-                                    ActivatedObjectives.Clear();
 
                                     TFTVLogger.Always($"shields down on turn {yuggoth.QueenWallDownOnTurn}");
                                 }
