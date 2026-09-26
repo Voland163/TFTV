@@ -905,6 +905,10 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         [HarmonyPatch(typeof(InputController), "GetDefaultAction", typeof(int))] //VERIFIED
         public static class InputController_GetDefaultAction_patch
         {
+            // Hashes whose miss has already been logged. The dump lists the whole action map, and an
+            // action that is polled every frame would otherwise write it on every poll.
+            private static readonly HashSet<int> _loggedMissingHashes = new HashSet<int>();
+
             public static bool Prefix(InputController __instance, int hash, ref InputAction __result)
             {
                 try
@@ -931,6 +935,13 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                     if (hash < __instance.AllActionMap.Count && hash != InputCache.InvalidHash)
                     {
                         __result = __instance.AllActionMap[hash];
+                        return false;
+                    }
+
+                    // Re-applying the keybindings below can never produce an action for the invalid hash.
+                    if (hash == InputCache.InvalidHash)
+                    {
+                        __result = null;
                         return false;
                     }
 
@@ -963,11 +974,14 @@ namespace TFTV.TFTVVanillaFixes.Tactical
 
                     __result = null;
 
-                    TFTVLogger.Always($"{hash} is null!, __instance.AllActionMap.Count: {__instance.AllActionMap.Count} ");
-
-                    foreach (InputAction inputAction in __instance.AllActionMap)
+                    if (_loggedMissingHashes.Add(hash))
                     {
-                        TFTVLogger.Always($"__instance.AllActionMap: {inputAction.Name}, {inputAction.Hash}, {inputAction.Chords[0]?.Keys[0]?.Name}");
+                        TFTVLogger.Always($"{hash} is null!, __instance.AllActionMap.Count: {__instance.AllActionMap.Count} ");
+
+                        foreach (InputAction inputAction in __instance.AllActionMap)
+                        {
+                            TFTVLogger.Always($"__instance.AllActionMap: {inputAction.Name}, {inputAction.Hash}, {inputAction.Chords[0]?.Keys[0]?.Name}");
+                        }
                     }
 
                     return false;

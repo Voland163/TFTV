@@ -3910,8 +3910,6 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("get_CanCreateBaseDefense invoked");
-
                     if (PhoenixBasesUnderAttack.ContainsKey(__instance.Site.SiteId))
                     {
                         __result = true;

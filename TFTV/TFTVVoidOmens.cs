@@ -1045,6 +1045,9 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")] //VERIFIED
         public static class TacticalAbility_get_WillPointCost_VoidOmenExtraWPCost_Patch
         {
+            // Resolved on first use: WillPointCost is read for every ability whenever the bar refreshes.
+            private static PassiveModifierAbilityDef _feralDeliriumPerk;
+
             public static void Postfix(ref float __result, TacticalAbility __instance)
             {
                 try
@@ -1060,7 +1063,8 @@ namespace TFTV
                                 //TFTVLogger.Always("WP cost increased to " + __result);
                             }
                         }
-                        PassiveModifierAbilityDef feralDeliriumPerk = DefCache.GetDef<PassiveModifierAbilityDef>("FeralNew_AbilityDef");
+                        if (_feralDeliriumPerk == null) _feralDeliriumPerk = DefCache.GetDef<PassiveModifierAbilityDef>("FeralNew_AbilityDef");
+                        PassiveModifierAbilityDef feralDeliriumPerk = _feralDeliriumPerk;
 
                         if (__instance.TacticalActor != null && __instance.TacticalActor.GetAbilityWithDef<PassiveModifierAbility>(feralDeliriumPerk) != null)
                         {

@@ -114,6 +114,8 @@ namespace TFTV
             }
         }
 
+        private static readonly MethodInfo DisplayValueMethod = typeof(UIAnimatedResourceController).GetMethod("DisplayValue", BindingFlags.NonPublic | BindingFlags.Instance);
+
         public static void RefreshFoodAndMutagenProductionTooltupUI()
         {
             try
@@ -122,7 +124,7 @@ namespace TFTV
                 UIModuleInfoBar uIModuleInfoBar = controller.View.GeoscapeModules.ResourcesModule;
 
                 UIAnimatedResourceController foodController = uIModuleInfoBar.FoodController;
-                MethodInfo methodDisplayValue = typeof(UIAnimatedResourceController).GetMethod("DisplayValue", BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo methodDisplayValue = DisplayValueMethod;
 
                 int foodProductionFacilitiesCount = CountFoodProductionFacilities(controller.PhoenixFaction);
                 int facilityFoodPerDay = Mathf.RoundToInt(GetFoodFacilityOutputPerDay(controller.PhoenixFaction));
@@ -211,10 +213,21 @@ namespace TFTV
             {
                 try
                 {
-                    if (ShouldUseExplicitFoodAndMutagenGeneration())
+                    if (!ShouldUseExplicitFoodAndMutagenGeneration())
                     {
-                        RefreshFoodAndMutagenProductionTooltupUI();
+                        return;
                     }
+
+                    // UIModuleInfoBar.UpdateResourceInfo refreshes all seven resource counters in turn
+                    // (food 1st, mutagens 4th), and it is the only caller. Only the food and mutagen
+                    // refreshes overwrite what this sets, so redoing it after the other five was waste.
+                    UIModuleInfoBar infoBar = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.View?.GeoscapeModules?.ResourcesModule;
+                    if (infoBar != null && __instance != infoBar.FoodController && __instance != infoBar.MutagensController)
+                    {
+                        return;
+                    }
+
+                    RefreshFoodAndMutagenProductionTooltupUI();
                 }
                 catch (Exception e)
                 {

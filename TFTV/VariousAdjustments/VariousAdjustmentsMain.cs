@@ -99,12 +99,21 @@ namespace PRMBetterClasses.VariousAdjustments
             {
                 return TFTVMain.Main.Config.DeactivateTacticalAutoStandby;
             }
+            // Resolved on first use: CanAct is queried for every actor whenever the game looks for
+            // who can still act, so the per-call lookups added up.
+            private static StatusDef _panicked;
+            private static StatusDef _overWatch;
+            private static StatusDef _hunkerDown;
+
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(TacticalActorBase __instance, ref bool __result)
             {
-                StatusDef panicked = DefCache.GetDef<StatusDef>("Panic_StatusDef");
-                StatusDef overWatch = DefCache.GetDef<StatusDef>("Overwatch_StatusDef");
-                StatusDef hunkerDown = DefCache.GetDef<StatusDef>("E_Status [HunkerDown_AbilityDef]");
+                if (_panicked == null) _panicked = DefCache.GetDef<StatusDef>("Panic_StatusDef");
+                if (_overWatch == null) _overWatch = DefCache.GetDef<StatusDef>("Overwatch_StatusDef");
+                if (_hunkerDown == null) _hunkerDown = DefCache.GetDef<StatusDef>("E_Status [HunkerDown_AbilityDef]");
+                StatusDef panicked = _panicked;
+                StatusDef overWatch = _overWatch;
+                StatusDef hunkerDown = _hunkerDown;
                 // Check if actor is from viewer faction (= player) and several conditions are not met
                 SharedData Shared = GameUtl.GameComponent<SharedData>();
                 if (__instance.IsFromViewerFaction && !(__instance.IsDead

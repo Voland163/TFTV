@@ -394,9 +394,27 @@ namespace TFTV.AgendaTracker
 
         #region Event trigger wiring
 
+        /// <summary>
+        /// Remembers which tracked object a row's click handler was built for. The tracker's UpdateData
+        /// runs for every row on every tick, and the handler only depends on that object, so it is
+        /// rebuilt only when the row is new or has been reused for something else.
+        /// </summary>
+        private sealed class AgendaClickWiring : MonoBehaviour
+        {
+            internal object WiredFor;
+            internal EventTrigger Trigger;
+        }
+
         internal static void WireClickEvent(UIFactionDataTrackerElement element, Action onClick)
         {
             GameObject go = element.gameObject;
+
+            AgendaClickWiring wiring = go.GetComponent<AgendaClickWiring>();
+            if (wiring != null && wiring.Trigger != null && ReferenceEquals(wiring.WiredFor, element.TrackedObject))
+            {
+                return;
+            }
+
             if (!go.GetComponent<EventTrigger>())
                 go.AddComponent<EventTrigger>();
 
@@ -406,6 +424,14 @@ namespace TFTV.AgendaTracker
             var click = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
             click.callback.AddListener((_) => onClick());
             trigger.triggers.Add(click);
+
+            if (wiring == null)
+            {
+                wiring = go.AddComponent<AgendaClickWiring>();
+            }
+
+            wiring.WiredFor = element.TrackedObject;
+            wiring.Trigger = trigger;
         }
 
         #endregion

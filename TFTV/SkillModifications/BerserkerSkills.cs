@@ -140,15 +140,22 @@ namespace PRMBetterClasses.SkillModifications
             //internal static ApplyStatusAbilityDef adrenalineRush = DefCache.GetDef<ApplyStatusAbilityDef>("AdrenalineRush_AbilityDef");
             //internal static ChangeAbilitiesCostStatusDef arStatus = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]");
 
+            // Resolved on first use: this runs for every ability x cost modification whenever AP costs
+            // are worked out, which the ability bar and the AI both do constantly.
+            private static ChangeAbilitiesCostStatusDef _arStatus;
+            private static SkillTagDef _attackAbilityTag;
+
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(TacticalAbilityCostModification __instance, ref bool __result, TacticalAbility ability)
             {
                 try
                 {
-                    ChangeAbilitiesCostStatusDef arStatus = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]");
-                    if (ability.TacticalActor.Status.HasStatus(arStatus) && __instance == arStatus.AbilityCostModification)
+                    if (_arStatus == null) _arStatus = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]");
+                    ChangeAbilitiesCostStatusDef arStatus = _arStatus;
+                    if (__instance == arStatus.AbilityCostModification && ability.TacticalActor.Status.HasStatus(arStatus))
                     {
-                        SkillTagDef attackAbility_Tag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+                        if (_attackAbilityTag == null) _attackAbilityTag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+                        SkillTagDef attackAbility_Tag = _attackAbilityTag;
                         __result = ability.TacticalAbilityDef.SkillTags.Contains(attackAbility_Tag)
                             ? ability.Equipment == null || ability.Equipment.HandsToUse == 1 || ability.AbilityDef.name.Equals("ElectricTentacleAttack_AbilityDef")
                             : !arExcludeList.Contains(ability.TacticalAbilityDef.name);

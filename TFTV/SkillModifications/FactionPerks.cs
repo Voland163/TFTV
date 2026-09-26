@@ -1065,9 +1065,11 @@ namespace PRMBetterClasses.SkillModifications
         [HarmonyPatch(typeof(RecoverWillAbility), "GetDisabledStateInternal", new Type[] { typeof(IgnoredAbilityDisabledStatesFilter) })]
         public static class DisabledState_Patch
         {
+            // Resolved once: the ability bar re-queries disabled states on every refresh.
+            private static readonly MethodInfo baseMethod = typeof(TacticalAbility).GetMethod("GetDisabledStateDefaults", BindingFlags.NonPublic | BindingFlags.Instance);
+
             public static void Postfix(RecoverWillAbility __instance, IgnoredAbilityDisabledStatesFilter filter, ref AbilityDisabledState __result)
             {
-                MethodInfo baseMethod = typeof(TacticalAbility).GetMethod("GetDisabledStateDefaults", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (baseMethod != null)
                 {
                     if (__result == AbilityDisabledState.NoWillpowerRecover)

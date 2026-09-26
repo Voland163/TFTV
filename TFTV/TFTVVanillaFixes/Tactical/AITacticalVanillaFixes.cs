@@ -24,12 +24,13 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")] //VERIFIED
         public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
         {
+            // Resolved once: the AI runs this for every candidate position and target.
+            private static readonly MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetPayloadMaxDamage", BindingFlags.NonPublic | BindingFlags.Instance);
+
             public static bool Prefix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, TacticalAbilityDef abilityDef, ref float __result)
             {
                 try
                 {
-
-                    MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetPayloadMaxDamage", BindingFlags.NonPublic | BindingFlags.Instance);
 
                     //TFTVLogger.Always($"getDamagePayloadMethodInfo null {getDamagePayloadMethodInfo==null}");
 

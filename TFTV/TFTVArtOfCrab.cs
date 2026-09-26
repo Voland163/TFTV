@@ -599,15 +599,18 @@ namespace TFTV
             [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")] //VERIFIED
             internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_patch
             {
+                // Resolved on first use: the AI scores every candidate position with this.
+                private static FumbleChanceStatusDef _jammingField;
 
                 public static void Postfix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
                 {
                     try
                     {
-                        FumbleChanceStatusDef jammingField = DefCache.GetDef<FumbleChanceStatusDef>("E_FumbleChanceStatus [JammingFiled_AbilityDef]");
-
                         if (__result > 0)
                         {
+                            if (_jammingField == null) _jammingField = DefCache.GetDef<FumbleChanceStatusDef>("E_FumbleChanceStatus [JammingFiled_AbilityDef]");
+                            FumbleChanceStatusDef jammingField = _jammingField;
+
                             TacticalActor tacActor = (TacticalActor)actor;
                             if (tacActor != null && tacActor.Status.HasStatus(jammingField))
                             {
@@ -1007,12 +1010,13 @@ namespace TFTV
             [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), nameof(AISlowTargetsInConeConsideration.Evaluate))]
             public static class AISlowTargetsInConeConsideration_GetMovementDataInRange_patch
             {
+                // Resolved once: the AI runs this for every candidate position.
+                private static readonly MethodInfo method = typeof(AISlowTargetsInConeConsideration).GetMethod("GetEnemiesInCone", BindingFlags.NonPublic | BindingFlags.Instance);
+
                 private static bool Prefix(AISlowTargetsInConeConsideration __instance, ref float __result, IAIActor actor, IAITarget target)
                 {
                     try
                     {
-
-                        MethodInfo method = typeof(AISlowTargetsInConeConsideration).GetMethod("GetEnemiesInCone", BindingFlags.NonPublic | BindingFlags.Instance);
 
                         TacticalActor tacticalActor = (TacticalActor)actor;
                         TacAITarget tacAITarget = (TacAITarget)target;
@@ -1526,6 +1530,9 @@ namespace TFTV
                 [HarmonyPatch(typeof(AIVisibleEnemiesConsideration), nameof(AIVisibleEnemiesConsideration.Evaluate))]
                 public static class AIVisibleEnemiesConsideration_Evaluate_patch
                 {
+                    // Resolved once: the AI runs this for every candidate position.
+                    private static readonly MethodInfo enemiesToConsiderMethod = typeof(AIVisibleEnemiesConsideration).GetMethod("EnemiesToConsider", BindingFlags.Instance | BindingFlags.NonPublic);
+
                     public static bool Prefix(AIVisibleEnemiesConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
                     {
                         try
@@ -1538,7 +1545,6 @@ namespace TFTV
                                 return true;
                             }
 
-                            MethodInfo enemiesToConsiderMethod = typeof(AIVisibleEnemiesConsideration).GetMethod("EnemiesToConsider", BindingFlags.Instance | BindingFlags.NonPublic);
                             TacAITarget tacTarget = target as TacAITarget;
 
 
@@ -2088,6 +2094,8 @@ namespace TFTV
                 [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetShootTargets))]
                 public static class TFTV_Weapon_GetShootTargets2_Patch
                 {
+                    private static readonly MethodInfo methodInfoCheckShootTarget = typeof(Weapon).GetMethod("CheckShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
                     public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance, TacticalTargetData ____originData,
                         Vector3? shooterPosition, TacticalTargetData targetData, TacticalAbilityTarget target)
                     {
@@ -2098,7 +2106,6 @@ namespace TFTV
                         {
                             //  TFTVLogger.Always($"got here");
 
-                            MethodInfo methodInfoCheckShootTarget = typeof(Weapon).GetMethod("CheckShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
                             if (targetData == null)
                             {
