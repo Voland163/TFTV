@@ -65,6 +65,39 @@ namespace TFTV
             return snapshot;
         }
 
+        /// <summary>
+        /// Puts every patched PROG event def back and forgets the snapshots. For a save load or new game: an event
+        /// whose popup was open when the previous game was left never reaches CompleteEvent, so its def would stay
+        /// patched (and be skipped as "already patched") in the next game, even one with penalties turned off.
+        /// Called before the new level deserializes, so an event re-patched by the loaded save is not undone.
+        /// </summary>
+        internal static void RestoreAllPatchedEvents()
+        {
+            try
+            {
+                if (_patchedEvents.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (string eventDefName in _penaltyEventDefNames)
+                {
+                    GeoscapeEventDef eventDef = DefCache.GetDef<GeoscapeEventDef>(eventDefName);
+                    if (eventDef != null && _patchedEvents.TryGetValue(eventDef.EventID, out PatchedEventSnapshot snapshot))
+                    {
+                        RestoreSnapshot(eventDef, snapshot);
+                        TFTVLogger.Always($"Harder diplomacy: restored event {eventDef.EventID}, left patched by the previous game");
+                    }
+                }
+
+                _patchedEvents.Clear();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         private static void RestoreSnapshot(GeoscapeEventDef eventDef, PatchedEventSnapshot snapshot)
         {
             List<GeoEventChoice> choices = eventDef.GeoscapeEventData.Choices;

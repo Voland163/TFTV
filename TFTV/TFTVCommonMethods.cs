@@ -315,6 +315,10 @@ namespace TFTV
         {
             try
             {
+                // Here (LoadGame prefix, before the new level deserializes) rather than in the state-change hub:
+                // the hub also runs from ProcessGeoscapeInstanceData, after the loaded save may have re-patched
+                // an event whose popup is open.
+                TFTVDiplomacyPenalties.RestoreAllPatchedEvents();
 
                 TFTVRevenant.InternalData.RevenantDataToClearOnLoadOnly();
 

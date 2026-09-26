@@ -2488,6 +2488,7 @@ float lengthScale, List<ModSettingController> optionsType = null)
                     __result = entitlementsUserHas;
 
                     TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
+                    TFTVDiplomacyPenalties.RestoreAllPatchedEvents(); // new campaign: no event def left patched by the previous one
                     TFTVNewGameOptions.ConfigImplemented = true;
                     TFTVNewGameOptions.NewTrainingFacilities = true;
                   

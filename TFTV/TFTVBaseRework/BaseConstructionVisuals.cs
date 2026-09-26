@@ -228,6 +228,12 @@ namespace TFTV.TFTVBaseRework
                 // The site in this level has no pending construction (its tags are saved with it), so the record is
                 // left over from another save or campaign: drop it instead of activating the site for free.
                 TFTVLogger.Always($"[BaseActivation] dropping pending action for site {site.SiteId} ({active.Action}): the site has no pending construction in this level");
+                // also drop the saved timer if this level has it, or every tick would rehydrate and reject it again
+                if (eventSystem.GetTimerById(timerId) != null)
+                {
+                    eventSystem.RemoveTimer(timerId);
+                }
+
                 ActivePendingByTimerId.Remove(timerId);
                 return true;
             }
