@@ -260,6 +260,8 @@ namespace TFTV
                 TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ClearChoiceCaches();
                 // campaign state: restored from the geoscape save (TFTVGSInstanceData) after this clear
                 TFTVExperienceDistribution.PendingDeathSkillPointRefunds.Clear();
+                // before the new level ticks (OnLevelStart is too late: the event system can tick first)
+                TFTVBaseRework.BaseConstructionVisuals.ClearForLevelChange();
                 TFTV.TFTVIncidents.AdvanceWarningHavenAttack.HavenAttackRiskService.Clear();
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }

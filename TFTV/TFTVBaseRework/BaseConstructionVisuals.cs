@@ -174,6 +174,22 @@ namespace TFTV.TFTVBaseRework
             InvalidatePendingVisuals();
         }
 
+        /// <summary>
+        /// New level (new game, save load, return from tactical): the saved event-system timers are the truth, and
+        /// TickPendingActions rehydrates from them every frame. Drop everything from the previous level, or a
+        /// construction queued after the save being loaded would still complete, unpaid. Called from the
+        /// load/state-change hub (early, before the new level ticks) and again at GeoscapeEventSystem.OnLevelStart.
+        /// </summary>
+        internal static void ClearForLevelChange()
+        {
+            ActivePendingByTimerId.Clear();
+            PendingConstructionVisuals.Clear();
+            AppliedProgression.Clear();
+            PendingVisualCreationLogged.Clear();
+            PendingVisualMissingLogged.Clear();
+            InvalidatePendingVisuals();
+        }
+
         private static bool CompletePendingActionFromTimer(GeoLevelController level, string timerId)
         {
             if (level == null
@@ -203,6 +219,15 @@ namespace TFTV.TFTVBaseRework
                     eventSystem.RemoveTimer(timerId);
                 }
 
+                ActivePendingByTimerId.Remove(timerId);
+                return true;
+            }
+
+            if (!PhoenixBaseVisitFlow.HasPendingActionPublic(site))
+            {
+                // The site in this level has no pending construction (its tags are saved with it), so the record is
+                // left over from another save or campaign: drop it instead of activating the site for free.
+                TFTVLogger.Always($"[BaseActivation] dropping pending action for site {site.SiteId} ({active.Action}): the site has no pending construction in this level");
                 ActivePendingByTimerId.Remove(timerId);
                 return true;
             }
@@ -254,15 +279,7 @@ namespace TFTV.TFTVBaseRework
                 {
                     GeoLevelController level = __instance?.gameObject?.GetComponent<GeoLevelController>();
 
-                    // New level (new game, save load, return from tactical): the saved event-system timers are the
-                    // truth. Drop everything from the previous level, or a construction queued after the save that
-                    // was just loaded would still complete, unpaid.
-                    ActivePendingByTimerId.Clear();
-                    PendingConstructionVisuals.Clear();
-                    AppliedProgression.Clear();
-                    PendingVisualCreationLogged.Clear();
-                    PendingVisualMissingLogged.Clear();
-                    InvalidatePendingVisuals();
+                    ClearForLevelChange();
 
                     RehydratePendingActions(__instance, level);
                     RefreshPendingConstructionVisuals(level);
