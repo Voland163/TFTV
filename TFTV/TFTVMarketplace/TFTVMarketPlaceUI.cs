@@ -268,7 +268,9 @@ namespace TFTV
                     {
                         //   TFTVLogger.Always($"Running ExitState marketplace");
                         GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
-                        if (MPGeoEventChoices != null && MPGeoEventChoices.Count > 0)
+                        // always release the master list, even when everything was bought: an empty market is a normal state,
+                        // and a kept-empty list would later overwrite fresh stock
+                        if (MPGeoEventChoices != null)
                         {
                             /* foreach(GeoEventChoice geoEventChoice in MPGeoEventChoices) 
                              {

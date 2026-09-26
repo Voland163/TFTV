@@ -849,12 +849,13 @@ namespace TFTV
                             float multiplier = TFTVNewGameOptions.ResourceMultiplierSetting;
 
                             //  TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
-                            reward.Resources = new ResourcePack
-                            { new ResourceUnit{
-
-                                Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * multiplier}
-
-                            };
+                            // scale every unit: 6 interception rewards carry two resources
+                            ResourcePack scaled = new ResourcePack();
+                            foreach (ResourceUnit unit in reward.Resources)
+                            {
+                                scaled.Add(new ResourceUnit { Type = unit.Type, Value = unit.Value * multiplier });
+                            }
+                            reward.Resources = scaled;
                             TFTVLogger.Always($"Applying multiplier of {multiplier}. Reward now {reward.Resources[0].Value}, from {reward.Resources[0].Value / multiplier}");
                         }
 

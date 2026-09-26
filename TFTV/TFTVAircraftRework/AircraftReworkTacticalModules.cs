@@ -1515,8 +1515,10 @@ namespace TFTV
             public static class UIStateRosterDeployment_EnterState_Patch
             {
                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
-                public static void Prefix(UIStateRosterDeployment __instance)
+                public static void Prefix(UIStateRosterDeployment __instance, out bool __state)
                 {
+                    // true only when this Prefix flipped the (shared) mission def, so Postfix restores just that def
+                    __state = false;
                     try
                     {
                         if (!AircraftReworkOn)
@@ -1534,6 +1536,7 @@ namespace TFTV
                             {
                                 _captureDronesPresent = 1;
                                 mission.MissionDef.DontRecoverItems = false;
+                                __state = true;
                             }
                         }
 
@@ -1544,7 +1547,7 @@ namespace TFTV
                         throw;
                     }
                 }
-                public static void Postfix(UIStateRosterDeployment __instance)
+                public static void Postfix(UIStateRosterDeployment __instance, bool __state)
                 {
                     try
                     {
@@ -1555,10 +1558,9 @@ namespace TFTV
 
                         GeoMission mission = __instance.Mission;
 
-                        if (_captureDronesPresent > 0)
+                        if (__state)
                         {
                             mission.MissionDef.DontRecoverItems = true;
-                            // CaptureDronesModulePresent = false;
                         }
                     }
                     catch (Exception e)
