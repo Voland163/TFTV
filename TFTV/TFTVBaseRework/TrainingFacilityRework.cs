@@ -1115,6 +1115,7 @@ namespace TFTV.TFTVBaseRework
             public int VirtualLevelAchieved; // starts at 1
             public int SpPaid;
             public bool WasDismissed;
+            public int StartLevel; // added later: 0 in older saves, reconstructed on load
         }
 
         public static List<RecruitTrainingSessionSave> CreateRecruitSessionsSnapshot()
@@ -1132,7 +1133,8 @@ namespace TFTV.TFTVBaseRework
                     VirtualLevelAchieved = s.VirtualLevelAchieved,
                     Completed = s.Completed,
                     SpPaid = s.SpPaid,
-                    WasDismissed = s.WasDismissed
+                    WasDismissed = s.WasDismissed,
+                    StartLevel = s.StartLevel
                 });
             }
             return list;
@@ -1167,7 +1169,12 @@ namespace TFTV.TFTVBaseRework
                         VirtualLevelAchieved = save.VirtualLevelAchieved,
                         Completed = save.Completed,
                         SpPaid = save.SpPaid,
-                        WasDismissed = save.WasDismissed
+                        WasDismissed = save.WasDismissed,
+                        // Older saves lack StartLevel. It is reconstructable: civilians start at 1, and a dismissed
+                        // operative keeps its original level until the training is finalized.
+                        StartLevel = save.StartLevel > 0
+                            ? save.StartLevel
+                            : (save.WasDismissed ? (character.LevelProgression?.Level ?? 1) : 1)
                     });
 
                     TFTVLogger.Always($"[Training] Session restored: PersonnelId={character.Id} {character.DisplayName} TargetLevel={save.TargetLevel} SpPaid={save.SpPaid} WasDismissed={save.WasDismissed} Completed={save.Completed}");

@@ -40,6 +40,8 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats;
         public Dictionary<int, int> ProjectOsirisSlugOGStrength = TFTVRevenant.TFTVRevenantResearch.SlugOGStrength;
+        // Death SP refunds deferred while the soldier is a Project Osiris candidate (added later: null in older saves)
+        public Dictionary<int, int> PendingDeathSkillPointRefunds;
         public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
         public Dictionary<int, int> PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule;
         public List<int> InfestedPhoenixBases = new List<int>();
@@ -289,6 +291,7 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats,
                 ProjectOsirisSlugOGStrength = TFTVRevenant.TFTVRevenantResearch.SlugOGStrength,
+                PendingDeathSkillPointRefunds = new Dictionary<int, int>(TFTVExperienceDistribution.PendingDeathSkillPointRefunds),
                 PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack,
                 PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
@@ -377,6 +380,14 @@ namespace TFTV
                 TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestation.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
+                // cleared in ClearInternalVariablesOnStateChangeAndLoad above
+                if (data.PendingDeathSkillPointRefunds != null)
+                {
+                    foreach (KeyValuePair<int, int> refund in data.PendingDeathSkillPointRefunds)
+                    {
+                        TFTVExperienceDistribution.PendingDeathSkillPointRefunds[refund.Key] = refund.Value;
+                    }
+                }
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = data.PhoenixBasesUnderAttack;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule = data.PhoenixBasesContainmentBreach;
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;

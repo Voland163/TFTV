@@ -256,6 +256,8 @@ namespace TFTV
                 DrillsUI.InternalData.ClearInternalData();
                 TFTV.TFTVIncidents.Resolution.IncidentController.ClearStateOnStateChangeAndLoad();
                 TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ClearChoiceCaches();
+                // campaign state: restored from the geoscape save (TFTVGSInstanceData) after this clear
+                TFTVExperienceDistribution.PendingDeathSkillPointRefunds.Clear();
                 TFTV.TFTVIncidents.AdvanceWarningHavenAttack.HavenAttackRiskService.Clear();
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
