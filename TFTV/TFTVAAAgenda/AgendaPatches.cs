@@ -933,9 +933,15 @@ namespace TFTV.AgendaTracker
                         )
                         .ToList();
 
+                // This runs every tracker tick, and the order rarely changes between ticks: only move
+                // rows that are out of place, so an unchanged list does not dirty the layout.
                 for (int index = 0; index < orderedElements.Count; index++)
                 {
-                    orderedElements[index].transform.SetSiblingIndex(index);
+                    Transform rowTransform = orderedElements[index].transform;
+                    if (rowTransform.GetSiblingIndex() != index)
+                    {
+                        rowTransform.SetSiblingIndex(index);
+                    }
                 }
 
                 // Fully replace the original OrderElements method.

@@ -490,6 +490,34 @@ namespace TFTV.TFTVIncidents
                 IncidentCancelButton.Remove(module);
             }
 
+            /// <summary>
+            /// Puts back the walk-away choice an incident hid, before the game lays out the next
+            /// event's responses rather than after.
+            ///
+            /// A response picked on an incident intro goes straight back to the map without a closing
+            /// screen, so SetClosingEncounter never runs and the choice stays hidden. The next event
+            /// reuses the same buttons: vanilla shows the ones it needs and hides the rest, and if the
+            /// hidden choice was only re-shown in the postfix, it came back on top of that layout - an
+            /// event with fewer responses then showed the incident's old cancel as an extra option.
+            /// Restored here, vanilla decides what is visible and the postfix finds nothing to undo.
+            /// </summary>
+            public static void Prefix(UIModuleSiteEncounters __instance, bool pagingEvent)
+            {
+                try
+                {
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled || __instance == null || pagingEvent)
+                    {
+                        return;
+                    }
+
+                    IncidentCancelButton.Remove(__instance);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
             public static void Postfix(UIModuleSiteEncounters __instance, GeoscapeEvent geoEvent, bool pagingEvent)
             {
                 if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)

@@ -1305,6 +1305,11 @@ namespace TFTV
                 //────────────────────────────────────────────────────────────
                 // 2. Replacement for ReUpdateVisibilityTowardsActorImpl
                 //────────────────────────────────────────────────────────────
+
+                // Resolved once: this prefix runs for every viewer/target pair each time an actor moves.
+                private static readonly MethodInfo IncrementKnownCounterImplMethod =
+                    AccessTools.Method(typeof(TacticalFactionVision), "IncrementKnownCounterImpl");
+
                 [HarmonyPrefix]
                 [HarmonyPatch("ReUpdateVisibilityTowardsActorImpl")]
                 public static bool ReUpdateVisibilityTowardsActorImplPrefix(
@@ -1375,8 +1380,7 @@ namespace TFTV
                         if (condition)
                         {
                             // Call IncrementKnownCounterImpl on targetActor.
-                            MethodInfo mIncrement = AccessTools.Method(__instance.GetType(), "IncrementKnownCounterImpl");
-                            __result = (bool)mIncrement.Invoke(__instance, new object[] { targetActor, KnownState.Revealed, 1, notifyChange, null });
+                            __result = (bool)IncrementKnownCounterImplMethod.Invoke(__instance, new object[] { targetActor, KnownState.Revealed, 1, notifyChange, null });
                         }
                         else
                         {

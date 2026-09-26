@@ -87,7 +87,7 @@ namespace TFTV.TFTVUI.Tactical
                         continue;
                     }
 
-                    foreach (MoveAbilityTargetData threatMove in GetThreatActorMoveTargets(threatActor, maxMoveRange))
+                    foreach (MoveAbilityTargetData threatMove in GetCachedThreatActorMoveTargets(threatActor, maxMoveRange))
                     {
                         if (!threatMove.IsPositionInRange(moveAndAttackRange) ||
                             !CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange))
@@ -276,6 +276,63 @@ namespace TFTV.TFTVUI.Tactical
                 return Utl.GreaterThanOrEqualTo(paralysisRatio, 0.25f, 1E-05f)
                     ? 0.25f
                     : 0f;
+            }
+
+            /// <summary>
+            /// Each threat's reachable tiles come from a pathfinding flood fill - by far the most
+            /// expensive part of this marker, and it used to run for every known melee enemy on every
+            /// hovered tile. The result does not depend on the hovered tile, only on where everyone
+            /// stands and on the map itself, so it is kept until one of those changes: any actor
+            /// moving (ActorMoved also covers deploying and spawning) or the map being updated
+            /// (destruction). The position and range are checked as well, as a belt and braces.
+            /// </summary>
+            private sealed class CachedThreatMoves
+            {
+                public Vector3 Position;
+                public float MaxMoveRange;
+                public List<MoveAbilityTargetData> Moves;
+            }
+
+            private static readonly Dictionary<TacticalActor, CachedThreatMoves> ThreatMovesCache = new Dictionary<TacticalActor, CachedThreatMoves>();
+            private static int _navigationVersion;
+            private static int _threatMovesCacheVersion = -1;
+
+            [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorMoved))]
+            internal static class TacticalLevelController_ActorMoved_InvalidateMeleeThreats
+            {
+                private static void Postfix()
+                {
+                    _navigationVersion++;
+                }
+            }
+
+            [HarmonyPatch(typeof(TacticalFactionVision), "OnMapUpdated")]
+            internal static class TacticalFactionVision_OnMapUpdated_InvalidateMeleeThreats
+            {
+                private static void Postfix()
+                {
+                    _navigationVersion++;
+                }
+            }
+
+            private static List<MoveAbilityTargetData> GetCachedThreatActorMoveTargets(TacticalActor actor, float maxMoveRange)
+            {
+                if (_threatMovesCacheVersion != _navigationVersion)
+                {
+                    ThreatMovesCache.Clear();
+                    _threatMovesCacheVersion = _navigationVersion;
+                }
+
+                if (ThreatMovesCache.TryGetValue(actor, out CachedThreatMoves cached)
+                    && cached.Position == actor.Pos
+                    && cached.MaxMoveRange == maxMoveRange)
+                {
+                    return cached.Moves;
+                }
+
+                List<MoveAbilityTargetData> moves = GetThreatActorMoveTargets(actor, maxMoveRange).ToList();
+                ThreatMovesCache[actor] = new CachedThreatMoves { Position = actor.Pos, MaxMoveRange = maxMoveRange, Moves = moves };
+                return moves;
             }
 
             private static IEnumerable<MoveAbilityTargetData> GetThreatActorMoveTargets(TacticalActor actor, float maxMoveRange)

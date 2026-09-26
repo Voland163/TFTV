@@ -813,10 +813,12 @@ namespace TFTV
             {
                 void Update()
                 {
-                    if (Camera.main != null)
+                    // Camera.main is a tag search on this Unity version, so read it once per frame.
+                    Camera camera = Camera.main;
+                    if (camera != null)
                     {
                         // Make the object face the camera but maintain its upright orientation
-                        Vector3 direction = transform.position - Camera.main.transform.position;
+                        Vector3 direction = transform.position - camera.transform.position;
                         direction.y = 0; // Lock the Y axis to prevent tilting
                         transform.rotation = Quaternion.LookRotation(direction);
                     }

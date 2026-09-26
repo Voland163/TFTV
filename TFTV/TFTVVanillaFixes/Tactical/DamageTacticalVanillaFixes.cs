@@ -22,17 +22,17 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         [HarmonyPatch(typeof(DamageAccumulation), nameof(DamageAccumulation.GenerateStandardDamageTargetData))]
         public static class TFTV_DamageAccumulation_GenerateStandardDamageTargetData
         {
+            // Resolved once: this runs for every body part a hit touches, and for damage previews.
+            private static readonly MethodInfo GetPureDamageBonusForMethod = typeof(DamageAccumulation).GetMethod("GetPureDamageBonusFor", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly MethodInfo GetSourceDamageMultiplierMethod = typeof(DamageAccumulation).GetMethod("GetSourceDamageMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly MethodInfo GetEffectiveArmorMethod = typeof(DamageAccumulation).GetMethod("GetEffectiveArmor", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly MethodInfo GetArmorStackMultiplierMethod = typeof(DamageAccumulation).GetMethod("GetArmorStackMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
 
             public static bool Prefix(DamageAccumulation __instance, ref DamageAccumulation.TargetData __result,
                 IDamageReceiver target, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit, out float damageAmountLeft)
             {
                 try
                 {
-
-                    MethodInfo GetPureDamageBonusForMethod = typeof(DamageAccumulation).GetMethod("GetPureDamageBonusFor", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MethodInfo GetSourceDamageMultiplierMethod = typeof(DamageAccumulation).GetMethod("GetSourceDamageMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MethodInfo GetEffectiveArmorMethod = typeof(DamageAccumulation).GetMethod("GetEffectiveArmor", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MethodInfo GetArmorStackMultiplierMethod = typeof(DamageAccumulation).GetMethod("GetArmorStackMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
 
                     float armorStackMultiplier = (float)GetArmorStackMultiplierMethod.Invoke(__instance, new object[] { target as IDamageBlocker, __instance.Source });
 

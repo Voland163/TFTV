@@ -58,11 +58,8 @@ namespace TFTV
             {
                 if (name.Equals("Options_NewGameDifficultyOption"))
                 {
-                    TFTVLogger.Always($"NamedValueStore_GetValue_Postfix() called ...");
-                    TFTVLogger.Always($"In: {name} - {__result}");
                     // TODO: read the selected difficulty from TFTV config
                     __result = TFTV_Difficulty;
-                    TFTVLogger.Always($"Out: {name} - {__result}");
                 }
             }
         }

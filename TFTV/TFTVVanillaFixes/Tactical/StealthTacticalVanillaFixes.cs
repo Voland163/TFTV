@@ -58,13 +58,21 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         [HarmonyPatch(typeof(TacticalAbility), "get_EquipmentWithTags")] //VERIFIED
         public static class TFTV_TacticalAbility_get_EquipmentWithTags
         {
+            // Resolved on first use: this getter is read whenever an ability's state is checked.
+            private static ShootAbilityDef _echoHeadShootAbilityDef;
+            private static GameTagDef _silencedWeaponTag;
+
             public static void Postfix(TacticalAbility __instance, ref Equipment __result)
             {
                 try
                 {
-                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
+                    if (_echoHeadShootAbilityDef == null) _echoHeadShootAbilityDef = DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef");
+
+                    if (__instance.TacticalAbilityDef == _echoHeadShootAbilityDef)
                     {
-                        if (__instance.SelectedEquipment != null && __instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
+                        if (_silencedWeaponTag == null) _silencedWeaponTag = DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef");
+
+                        if (__instance.SelectedEquipment != null && __instance.SelectedEquipment.GameTags.Contains(_silencedWeaponTag))
                         {
                             __result = null;
                         }

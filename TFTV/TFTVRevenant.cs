@@ -2508,7 +2508,7 @@ namespace TFTV
         internal class TFTVRevenantResearch
         {
 
-            private static readonly DefCache DefCache = new DefCache();
+            private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
             //   private static readonly DefRepository Repo = TFTVMain.Repo;
 
             public static bool RevenantCaptured = false;

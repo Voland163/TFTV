@@ -77,6 +77,8 @@ namespace TFTV
 
         public static class TFTV_HealAbility_ShouldReturnTarget_NanoKit_Patch
         {
+            private static readonly MethodInfo methodInfo = typeof(HealAbility).GetMethod("HealEffectConditionsMet", BindingFlags.NonPublic | BindingFlags.Static);
+
             public static void Postfix(HealAbility __instance, TacticalActor healer, TacticalActor targetActor, ref bool __result)
             {
                 try
@@ -86,8 +88,6 @@ namespace TFTV
                     if (__instance.HealAbilityDef.name.Equals("DoTMedkit"))
                     {
                         __result = false;
-
-                        MethodInfo methodInfo = typeof(HealAbility).GetMethod("HealEffectConditionsMet", BindingFlags.NonPublic | BindingFlags.Static);
 
                         foreach (HealAbilityDef.ConditionalHealEffect healEffect in __instance.HealAbilityDef.HealEffects)
                         {

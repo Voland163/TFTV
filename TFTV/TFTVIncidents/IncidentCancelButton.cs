@@ -285,7 +285,15 @@ namespace TFTV.TFTVIncidents
         /// Call after the grid has been resized: the layout is forced through first, because the
         /// responses are laid out by a layout group and their rects are stale until it runs.
         /// </summary>
-        internal static void PositionUnderChoices(UIModuleSiteEncounters module)
+        // Reused by the per-frame keeper so it does not allocate.
+        private static readonly Vector3[] _cornersBuffer = new Vector3[4];
+
+        /// <summary>
+        /// <paramref name="forceLayout"/> rebuilds the responses' layout first so a freshly filled
+        /// screen can be measured straight away. The per-frame keeper passes false: the canvas lays
+        /// itself out before rendering anyway, so forcing a full rebuild every frame was pure cost.
+        /// </summary>
+        internal static void PositionUnderChoices(UIModuleSiteEncounters module, bool forceLayout = true)
         {
             try
             {
@@ -302,11 +310,14 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                LayoutRebuilder.ForceRebuildLayoutImmediate(container);
+                if (forceLayout)
+                {
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(container);
+                }
 
                 RectTransform anchor = ResolveLeftmostChoiceRect(module) ?? container;
 
-                Vector3[] corners = new Vector3[4];
+                Vector3[] corners = _cornersBuffer;
                 anchor.GetWorldCorners(corners);
 
                 // Corner 0 is the bottom left in world space, whatever the rect's own anchors and
@@ -343,7 +354,7 @@ namespace TFTV.TFTVIncidents
         {
             RectTransform leftmost = null;
             float best = float.MaxValue;
-            Vector3[] corners = new Vector3[4];
+            Vector3[] corners = _cornersBuffer;
 
             foreach (SiteBaseChoiceButton button in module.ChoiceButtonsContainer
                          .GetComponentsInChildren<SiteBaseChoiceButton>(includeInactive: false))
@@ -404,7 +415,7 @@ namespace TFTV.TFTVIncidents
                         return;
                     }
 
-                    PositionUnderChoices(_module);
+                    PositionUnderChoices(_module, forceLayout: false);
                 }
                 catch (Exception e)
                 {

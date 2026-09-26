@@ -69,7 +69,7 @@ namespace TFTV
                 {
                     float numberOfMutations = 0;
 
-                    TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+                    TacticalActor base_TacticalActor = __instance.TacticalActor;
 
                     foreach (TacticalItem armourItem in base_TacticalActor.BodyState.GetArmourItems())
                     {

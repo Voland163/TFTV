@@ -767,7 +767,8 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                List<string> staleCompletedTimerIds = new List<string>();
+                List<string> staleCompletedTimerIds = _staleCompletedBuffer;
+                staleCompletedTimerIds.Clear();
 
                 foreach (GeoEventTimer timer in timers.Values)
                 {
@@ -795,20 +796,77 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
+            // Tick runs from GeoscapeEventSystem.Update, i.e. every geoscape frame, so its working
+            // collections are reused rather than allocated per frame.
+            private static readonly List<string> _staleCompletedBuffer = new List<string>();
+            private static readonly List<string> _toCompleteBuffer = new List<string>();
+            private static readonly HashSet<int> _activeSiteIdsBuffer = new HashSet<int>();
+            private static readonly List<int> _obsoleteVisualsBuffer = new List<int>();
+
+            /// <summary>
+            /// The controller and range last pushed into each site's visual. SetProgression writes to
+            /// renderer materials and the controller animates itself from its own Update, so the range
+            /// is only pushed when the controller is new (e.g. rebuilt after a tactical mission) or the
+            /// range has changed - not every frame.
+            /// </summary>
+            private sealed class AppliedProgression
+            {
+                public GeoActorProgressionVisualController Controller;
+                public TimeUnit Start;
+                public TimeUnit End;
+            }
+
+            private static readonly Dictionary<int, AppliedProgression> AppliedProgressionBySite = new Dictionary<int, AppliedProgression>();
+
+            // GeoscapeEventSystem and GeoLevelController share a GameObject; resolve it once per event system.
+            private static GeoscapeEventSystem _cachedLevelOwner;
+            private static GeoLevelController _cachedLevel;
+
+            private static GeoLevelController ResolveLevel(GeoscapeEventSystem eventSystem)
+            {
+                if (eventSystem == null)
+                {
+                    return null;
+                }
+
+                if (!ReferenceEquals(_cachedLevelOwner, eventSystem) || _cachedLevel == null)
+                {
+                    _cachedLevelOwner = eventSystem;
+                    _cachedLevel = eventSystem.gameObject != null ? eventSystem.gameObject.GetComponent<GeoLevelController>() : null;
+                }
+
+                return _cachedLevel;
+            }
+
             private static void RefreshAllVisuals(GeoLevelController level)
             {
-                if (level == null)
+                if (level == null || (ActiveByTimerId.Count == 0 && SiteProgressVisuals.Count == 0))
                 {
                     return;
                 }
 
-                HashSet<int> activeSiteIds = new HashSet<int>(ActiveByTimerId.Values.Select(v => v.SiteId));
+                HashSet<int> activeSiteIds = _activeSiteIdsBuffer;
+                activeSiteIds.Clear();
+                foreach (ActiveTimedProblem active in ActiveByTimerId.Values)
+                {
+                    activeSiteIds.Add(active.SiteId);
+                }
+
                 foreach (int siteId in activeSiteIds)
                 {
                     RefreshSiteVisual(level, siteId);
                 }
 
-                List<int> obsoleteVisuals = SiteProgressVisuals.Keys.Where(id => !activeSiteIds.Contains(id)).ToList();
+                List<int> obsoleteVisuals = _obsoleteVisualsBuffer;
+                obsoleteVisuals.Clear();
+                foreach (int siteId in SiteProgressVisuals.Keys)
+                {
+                    if (!activeSiteIds.Contains(siteId))
+                    {
+                        obsoleteVisuals.Add(siteId);
+                    }
+                }
+
                 foreach (int siteId in obsoleteVisuals)
                 {
                     DestroySiteVisual(siteId);
@@ -817,9 +875,23 @@ namespace TFTV.TFTVIncidents
 
             private static void RefreshSiteVisual(GeoLevelController level, int siteId)
             {
-                GeoSite site = level.Map.AllSites.FirstOrDefault(s => s.SiteId == siteId);
                 ActiveTimedProblem active = ActiveByTimerId.Values.FirstOrDefault(v => v.SiteId == siteId);
-                if (site == null || active == null)
+                if (active == null)
+                {
+                    DestroySiteVisual(siteId);
+                    return;
+                }
+
+                // Fast path, taken every frame once the visual exists: nothing to do unless the range moved.
+                if (SiteProgressVisuals.TryGetValue(siteId, out GeoActorProgressionVisualController existing) && existing != null
+                    && AppliedProgressionBySite.TryGetValue(siteId, out AppliedProgression applied)
+                    && ReferenceEquals(applied.Controller, existing) && applied.Start == active.StartAt && applied.End == active.EndAt)
+                {
+                    return;
+                }
+
+                GeoSite site = level.Map.AllSites.FirstOrDefault(s => s.SiteId == siteId);
+                if (site == null)
                 {
                     DestroySiteVisual(siteId);
                     return;
@@ -845,10 +917,13 @@ namespace TFTV.TFTVIncidents
 
                 controller.SetProgression(active.StartAt, active.EndAt, level.Timing);
                 controller.gameObject.SetActive(true);
+                AppliedProgressionBySite[siteId] = new AppliedProgression { Controller = controller, Start = active.StartAt, End = active.EndAt };
             }
 
             private static void DestroySiteVisual(int siteId)
             {
+                AppliedProgressionBySite.Remove(siteId);
+
                 if (!SiteProgressVisuals.TryGetValue(siteId, out GeoActorProgressionVisualController controller))
                 {
                     return;
@@ -870,14 +945,15 @@ namespace TFTV.TFTVIncidents
 
                 RehydrateFromTimers(eventSystem);
 
-                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                GeoLevelController level = ResolveLevel(eventSystem);
 
                 if(level == null) 
                 {
                     return;
                 }
 
-                List<string> toComplete = new List<string>();
+                List<string> toComplete = _toCompleteBuffer;
+                toComplete.Clear();
                 foreach (KeyValuePair<string, ActiveTimedProblem> kv in ActiveByTimerId)
                 {
                     GeoEventTimer timer = eventSystem.GetTimerById(kv.Key);

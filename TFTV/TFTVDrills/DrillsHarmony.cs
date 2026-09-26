@@ -1233,8 +1233,6 @@ namespace TFTV.TFTVDrills
                             float fractCost = actor?.CharacterStats?.ActionPoints?.Max.EndValue * 0.25f ?? 0f;
                             float currentAp = actor?.CharacterStats?.ActionPoints?.Value.EndValue ?? 0f;
 
-                            TFTVLogger.Always($"{actor.DisplayName} ap is {currentAp}, fractCost is {fractCost}");
-
                             if (currentAp > 0f && currentAp < fractCost)
                             {
                                 __result = true;
@@ -1701,12 +1699,18 @@ namespace TFTV.TFTVDrills
 
             private static readonly Stack<TacAIActor> _currentActors = new Stack<TacAIActor>();
 
+            // GetEnemyWeight runs for every enemy at every candidate position the AI scores, and
+            // ShouldApplyTauntMultiplier does a pathfinding query. The acting AI does not move during
+            // one evaluation, so the answer per taunting enemy is fixed for its duration.
+            private static readonly Dictionary<TacticalActorBase, bool> _tauntReachableThisEvaluation = new Dictionary<TacticalActorBase, bool>();
+
             [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.BeforeAIActorEvaluation))]
             private static class Patch_AIBlackboard_BeforeAIActorEvaluation
             {
                 private static void Prefix(TacAIActor aiActor)
                 {
                     _currentActors.Push(aiActor);
+                    _tauntReachableThisEvaluation.Clear();
                 }
             }
 
@@ -1719,6 +1723,8 @@ namespace TFTV.TFTVDrills
                     {
                         _currentActors.Pop();
                     }
+
+                    _tauntReachableThisEvaluation.Clear();
                 }
             }
 
@@ -1740,17 +1746,24 @@ namespace TFTV.TFTVDrills
                         }
 
                         TacAIActor currentAiActor = GetCurrentActor();
-                        if (!ShouldApplyTauntMultiplier(enemy, currentAiActor))
+                        if (!_tauntReachableThisEvaluation.TryGetValue(enemy, out bool applies))
                         {
+                            applies = ShouldApplyTauntMultiplier(enemy, currentAiActor);
+                            _tauntReachableThisEvaluation[enemy] = applies;
+
                             TacticalActorBase actingActor = currentAiActor != null ? currentAiActor.TacticalActor : null;
                             string actorName = actingActor != null ? actingActor.DisplayName : "unknown actor";
-                            TFTVLogger.Always($"Skipping taunt multiplier for {enemy?.DisplayName}; {actorName} cannot reach this turn.");
+                            TFTVLogger.Always(applies
+                                ? $"Taunt: {actorName} can reach {enemy.DisplayName}; multiplying its enemy weight by {Multiplier}."
+                                : $"Taunt: skipping multiplier for {enemy.DisplayName}; {actorName} cannot reach this turn.");
+                        }
+
+                        if (!applies)
+                        {
                             return;
                         }
 
-                        TFTVLogger.Always($"{enemy?.DisplayName} initial score is {__result}");
                         __result *= Multiplier;
-                        TFTVLogger.Always($"{enemy?.DisplayName} new score is {__result}");
                     }
                     catch (Exception e)
                     {
@@ -1841,7 +1854,6 @@ namespace TFTV.TFTVDrills
 
                     if (actor != null && actor.Status != null && actor.Status.HasStatus(_drawfireStatus))
                     {
-                        TFTVLogger.Always($"{actor.DisplayName} has drawFireStatus! should be aggroed");
                         return true;
                     }
 
@@ -2049,6 +2061,13 @@ namespace TFTV.TFTVDrills
             [HarmonyPatch(typeof(TacticalAbility), "TargetFilterPredicate")] //VERIFIED
             internal static class TacticalAbility_TargetFilterPredicate_Postfix
             {
+                // Resolved on first use rather than per call: this runs for every candidate target of
+                // every ability whenever targets are gathered, and most calls return straight away.
+                private static MindControlAbilityDef _mindControlAbilityDef;
+                private static ApplyStatusAbilityDef _inducePanicAbilityDef;
+                private static ApplyEffectAbilityDef _parasychosisAbilityDef;
+                private static DamageOverTimeStatusDef _poisonStatusDef;
+
                 static void Postfix(
                     TacticalAbility __instance,
                     TacticalTargetData targetData,
@@ -2070,12 +2089,17 @@ namespace TFTV.TFTVDrills
                         if (__result) return;
 
                         // Ability defs we care about
-                        var mindControlAbilityDef = DefCache.GetDef<MindControlAbilityDef>("Priest_MindControl_AbilityDef");
-                        var inducePanicAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("InducePanic_AbilityDef");
-                        var parasychosisAbilityDef = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
+                        if (_mindControlAbilityDef == null) _mindControlAbilityDef = DefCache.GetDef<MindControlAbilityDef>("Priest_MindControl_AbilityDef");
+                        if (_inducePanicAbilityDef == null) _inducePanicAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("InducePanic_AbilityDef");
+                        if (_parasychosisAbilityDef == null) _parasychosisAbilityDef = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
 
                         // Status defs / ability mods
-                        var poisonStatusDef = DefCache.GetDef<DamageOverTimeStatusDef>("Poison_DamageOverTimeStatusDef");
+                        if (_poisonStatusDef == null) _poisonStatusDef = DefCache.GetDef<DamageOverTimeStatusDef>("Poison_DamageOverTimeStatusDef");
+
+                        var mindControlAbilityDef = _mindControlAbilityDef;
+                        var inducePanicAbilityDef = _inducePanicAbilityDef;
+                        var parasychosisAbilityDef = _parasychosisAbilityDef;
+                        var poisonStatusDef = _poisonStatusDef;
 
                         var def = __instance != null ? __instance.TacticalAbilityDef : null;
                         if (def == null) return;
