@@ -4312,11 +4312,12 @@ namespace TFTV
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
                 //     TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+                // melee is TFTV's own damage type, which may not exist yet at this point in def creation
+                TFTVMeleeDamage.IncludeMeleeDamage(newStatus);
 
                 //  TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
 
@@ -5915,9 +5916,10 @@ namespace TFTV
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+                // melee is TFTV's own damage type, which may not exist yet at this point in def creation
+                TFTVMeleeDamage.IncludeMeleeDamage(newStatus);
 
                 newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
                 newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
@@ -5972,10 +5974,11 @@ namespace TFTV
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+                // melee is TFTV's own damage type, which may not exist yet at this point in def creation
+                TFTVMeleeDamage.IncludeMeleeDamage(newStatus);
 
                 newStatus.Visuals.DisplayName1.LocalizationKey = "ETERMES_VULNERABILITY_NAME";
                 newStatus.Visuals.Description.LocalizationKey = "ETERMES_VULNERABILITY_DESCRIPTION";
@@ -6030,9 +6033,10 @@ namespace TFTV
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+                // melee is TFTV's own damage type, which may not exist yet at this point in def creation
+                TFTVMeleeDamage.IncludeMeleeDamage(newStatus);
 
                 newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
                 newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");

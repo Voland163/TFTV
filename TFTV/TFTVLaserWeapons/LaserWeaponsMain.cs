@@ -377,11 +377,18 @@ namespace TFTV.LaserWeapons
             }
         }
 
+        // Set while vanilla TryLoadItemWithItem reloads a registered laser weapon with a legacy (original) clip:
+        // vanilla then adds the unloaded magazines to that clip's stack, so they must stay original clips
+        // instead of being converted to batteries (which would merge into the clip stack as the wrong item).
+        [ThreadStatic] private static bool _vanillaReloadWithOriginalClip;
+
         [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.TryLoadItemWithItem))]
         private static class GeoscapeReloadPatch
         {
             private static bool Prefix(UIInventoryList __instance, ICommonItem item, ICommonItem ammoItem, UIInventorySlot ammoSlot, ref bool __result)
             {
+                _vanillaReloadWithOriginalClip = false;
+
                 if (LaserAmmoShareHelper.BatteryPackDef == null)
                 {
                     return true;
@@ -393,7 +400,17 @@ namespace TFTV.LaserWeapons
                     return false;
                 }
 
+                _vanillaReloadWithOriginalClip = item?.ItemDef is WeaponDef weaponDef
+                    && LaserAmmoShareHelper.TryGetEntry(weaponDef, out var entry)
+                    && ammoItem?.ItemDef == entry.OriginalAmmoDef;
+
                 return true;
+            }
+
+            private static Exception Finalizer(Exception __exception)
+            {
+                _vanillaReloadWithOriginalClip = false;
+                return __exception;
             }
         }
 
@@ -409,6 +426,12 @@ namespace TFTV.LaserWeapons
 
                 if (!(__instance.ParentItem.ItemDef is WeaponDef weaponDef) || !LaserAmmoShareHelper.TryGetEntry(weaponDef, out var entry))
                 {
+                    return;
+                }
+
+                if (_vanillaReloadWithOriginalClip)
+                {
+                    // loaded magazines are original-clip items; leave them so vanilla re-stacks them with the same def
                     return;
                 }
 
@@ -445,7 +468,7 @@ namespace TFTV.LaserWeapons
                     ICommonItem battery = __instance.ParentItem.Create(LaserAmmoShareHelper.BatteryPackDef);
                     if (battery?.CommonItemData == null)
                     {
-                        continue;
+                        break; // 'continue' here would loop forever: remaining never changes
                     }
 
                     battery.CommonItemData.ModifyCharges(-battery.CommonItemData.CurrentCharges, false);

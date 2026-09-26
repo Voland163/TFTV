@@ -5,6 +5,8 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TFTV
 {
@@ -12,6 +14,75 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static bool VoidOmensImplemented = false;
+
+        /// <summary>
+        /// What a PROG event def looked like before ImplementDiplomaticPenalties changed it. The defs are process-global,
+        /// so this both stops a second patch while one is live (reload with the popup open, or the event firing again
+        /// before CompleteEvent) and lets Restore put back exactly what was there, vanilla outcomes included.
+        /// </summary>
+        private sealed class PatchedEventSnapshot
+        {
+            public List<GeoEventChoice> Choices;
+            public Dictionary<GeoEventChoice, List<OutcomeDiplomacyChange>> Diplomacy = new Dictionary<GeoEventChoice, List<OutcomeDiplomacyChange>>();
+            public Dictionary<GeoEventChoice, List<OutcomeSetDiplomaticObjective>> DiplomaticObjectives = new Dictionary<GeoEventChoice, List<OutcomeSetDiplomaticObjective>>();
+        }
+
+        private static readonly Dictionary<string, PatchedEventSnapshot> _patchedEvents = new Dictionary<string, PatchedEventSnapshot>();
+
+        private static readonly string[] _penaltyEventDefNames =
+        {
+            "PROG_AN2_GeoscapeEventDef", "PROG_NJ1_GeoscapeEventDef", "PROG_SY1_GeoscapeEventDef",
+            "PROG_AN4_GeoscapeEventDef", "PROG_NJ2_GeoscapeEventDef", "PROG_SY3_WIN_GeoscapeEventDef",
+            "PROG_AN6_GeoscapeEventDef", "PROG_AN6_2_GeoscapeEventDef", "PROG_NJ3_GeoscapeEventDef",
+            "PROG_SY4_T_GeoscapeEventDef", "PROG_SY4_P_GeoscapeEventDef"
+        };
+
+        private static PatchedEventSnapshot TakeSnapshot(GeoscapeEventDef eventDef)
+        {
+            PatchedEventSnapshot snapshot = new PatchedEventSnapshot
+            {
+                Choices = new List<GeoEventChoice>(eventDef.GeoscapeEventData.Choices)
+            };
+
+            foreach (GeoEventChoice choice in snapshot.Choices)
+            {
+                if (choice?.Outcome == null)
+                {
+                    continue;
+                }
+
+                if (choice.Outcome.Diplomacy != null)
+                {
+                    snapshot.Diplomacy[choice] = new List<OutcomeDiplomacyChange>(choice.Outcome.Diplomacy);
+                }
+
+                if (choice.Outcome.SetDiplomaticObjectives != null)
+                {
+                    snapshot.DiplomaticObjectives[choice] = new List<OutcomeSetDiplomaticObjective>(choice.Outcome.SetDiplomaticObjectives);
+                }
+            }
+
+            return snapshot;
+        }
+
+        private static void RestoreSnapshot(GeoscapeEventDef eventDef, PatchedEventSnapshot snapshot)
+        {
+            List<GeoEventChoice> choices = eventDef.GeoscapeEventData.Choices;
+            choices.Clear();
+            choices.AddRange(snapshot.Choices);
+
+            foreach (KeyValuePair<GeoEventChoice, List<OutcomeDiplomacyChange>> entry in snapshot.Diplomacy)
+            {
+                entry.Key.Outcome.Diplomacy.Clear();
+                entry.Key.Outcome.Diplomacy.AddRange(entry.Value);
+            }
+
+            foreach (KeyValuePair<GeoEventChoice, List<OutcomeSetDiplomaticObjective>> entry in snapshot.DiplomaticObjectives)
+            {
+                entry.Key.Outcome.SetDiplomaticObjectives.Clear();
+                entry.Key.Outcome.SetDiplomaticObjectives.AddRange(entry.Value);
+            }
+        }
 
 
 
@@ -136,6 +207,24 @@ namespace TFTV
 
                     string eventID = @event?.EventID ?? geoscapeEvent.EventID;
 
+                    GeoscapeEventDef penaltyEventDef = _penaltyEventDefNames
+                        .Select(name => DefCache.GetDef<GeoscapeEventDef>(name))
+                        .FirstOrDefault(def => def.EventID == eventID);
+
+                    if (penaltyEventDef == null)
+                    {
+                        return;
+                    }
+
+                    if (_patchedEvents.ContainsKey(eventID))
+                    {
+                        // already patched and not yet restored: patching again would add a second postpone choice
+                        // and double the penalties
+                        return;
+                    }
+
+                    _patchedEvents[eventID] = TakeSnapshot(penaltyEventDef);
+
                     if (eventID == ProgAnuSupportive.EventID)
                     {
                         ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.SetDiplomaticObjectives.Clear();
@@ -247,127 +336,26 @@ namespace TFTV
 
         public static void RestoreStateDiplomaticPenalties(GeoscapeEvent __instance)
         {
-
             try
             {
-
-                // TFTVConfig config = TFTVMain.Main.Config;
-                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                if (TFTVNewGameOptions.DiplomaticPenaltiesSetting)
+                // Undo exactly what ImplementDiplomaticPenalties changed. Restoring from the snapshot (rather than clearing
+                // lists) keeps the vanilla outcomes, e.g. the diplomacy change on each PROG_SY3_WIN choice.
+                if (__instance == null || !_patchedEvents.TryGetValue(__instance.EventID, out PatchedEventSnapshot snapshot))
                 {
-
-                    GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
-                    GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
-                    GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
-                    GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
-
-                    GeoscapeEventDef ProgAnuSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_AN2_GeoscapeEventDef");
-                    GeoscapeEventDef ProgNJSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ1_GeoscapeEventDef");
-                    GeoscapeEventDef ProgSynSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_SY1_GeoscapeEventDef");
-
-                    GeoscapeEventDef ProgAnuPact = DefCache.GetDef<GeoscapeEventDef>("PROG_AN4_GeoscapeEventDef");
-                    GeoscapeEventDef ProgNJPact = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ2_GeoscapeEventDef");
-                    GeoscapeEventDef ProgSynPact = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
-
-
-                    GeoscapeEventDef ProgAnuAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_GeoscapeEventDef");
-                    GeoscapeEventDef ProgAnuAllianceNoSynod = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_2_GeoscapeEventDef");
-                    GeoscapeEventDef ProgNJAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ3_GeoscapeEventDef");
-                    GeoscapeEventDef ProgSynAllianceTerra = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_T_GeoscapeEventDef");
-                    GeoscapeEventDef ProgSynAlliancePoly = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_P_GeoscapeEventDef");
-
-                    if (__instance.EventID == ProgAnuSupportive.EventID)
-                    {
-
-                        ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
-
-                        OutcomeSetDiplomaticObjective copyObjective = ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.SetDiplomaticObjectives[0];
-                        OutcomeSetDiplomaticObjective outcomeSetDiplomaticObjective = new OutcomeSetDiplomaticObjective() { Description = copyObjective.Description, EventID = copyObjective.EventID, WithFaction = copyObjective.WithFaction };
-                        ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.SetDiplomaticObjectives.Add(outcomeSetDiplomaticObjective);
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-                    else if (__instance.EventID == ProgAnuPact.EventID)
-                    {
-                        ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgAnuPact.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-
-                    }
-                    else if (__instance.EventID == ProgAnuAlliance.EventID)
-                    {
-                        ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
-                        ProgAnuAlliance.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-                    else if (__instance.EventID == ProgAnuAllianceNoSynod.EventID)
-                    {
-                        ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgAnuAllianceNoSynod.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-
-                    else if (__instance.EventID == ProgSynSupportive.EventID)
-                    {
-
-                        //Synedrion
-                        //Supportive Polyphonic
-                        ProgSynSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-
-                        //Supportive Terra
-                        ProgSynSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
-
-                        //Postpone
-                        ProgSynSupportive.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-                    else if (__instance.EventID == ProgSynPact.EventID)
-                    {
-
-                        //Aligned
-                        ProgSynPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgSynPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
-                        ProgSynPact.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Clear();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-                    else if (__instance.EventID == ProgSynAlliancePoly.EventID)
-                    {
-                        //Aliance Polyphonic             
-                        ProgSynAlliancePoly.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgSynAlliancePoly.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-
-                    else if (__instance.EventID == ProgSynAllianceTerra.EventID)
-                    {
-                        //Alliance Terra
-                        ProgSynAllianceTerra.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgSynAllianceTerra.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-                    else if (__instance.EventID == ProgNJSupportive.EventID)
-                    {
-                        ProgNJSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgNJSupportive.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-                    else if (__instance.EventID == ProgNJPact.EventID)
-                    {
-                        ProgNJPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgNJPact.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-
-                    else if (__instance.EventID == ProgNJAlliance.EventID)
-                    {
-                        ProgNJAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
-                        ProgNJAlliance.GeoscapeEventData.Choices.RemoveLast();
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
-                    }
-
+                    return;
                 }
+
+                GeoscapeEventDef penaltyEventDef = _penaltyEventDefNames
+                    .Select(name => DefCache.GetDef<GeoscapeEventDef>(name))
+                    .FirstOrDefault(def => def.EventID == __instance.EventID);
+
+                if (penaltyEventDef != null)
+                {
+                    RestoreSnapshot(penaltyEventDef, snapshot);
+                    TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                }
+
+                _patchedEvents.Remove(__instance.EventID);
             }
             catch (Exception e)
             {

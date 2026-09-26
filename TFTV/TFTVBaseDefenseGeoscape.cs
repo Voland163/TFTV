@@ -754,10 +754,14 @@ namespace TFTV
 
                             if (HasUndamagedContainment(phoenixBase) && RollContainmentBreach(phoenixBase.Site, timer))
                             {
-                                timer = Math.Max(timer - 12, 4);
-                                phoenixBase.Site.ExpiringTimerAt = TimeUnit.FromSeconds((float)(3600 * Math.Max(PhoenixBasesUnderAttack[siteID].First().Value - 12, 4)));
+                                // The stored value is the absolute end hour, not the hours remaining: take 12 h off the
+                                // remaining time with a 4 h floor (never extending a deadline that is already closer).
                                 string faction = PhoenixBasesUnderAttack[siteID].First().Key;
-                                PhoenixBasesUnderAttack[siteID][faction] = Math.Max(PhoenixBasesUnderAttack[siteID][faction] - 12, 4);
+                                double oldEnd = PhoenixBasesUnderAttack[siteID][faction];
+                                double nowHours = controller.Timing.Now.TimeSpan.TotalHours;
+                                double newEnd = Math.Min(oldEnd, Math.Max(oldEnd - 12, nowHours + 4));
+                                PhoenixBasesUnderAttack[siteID][faction] = newEnd;
+                                phoenixBase.Site.ExpiringTimerAt = TimeUnit.FromSeconds((float)(3600 * newEnd));
                                 phoenixBase.Site.RefreshVisuals();
                             }
                         }
@@ -957,7 +961,8 @@ namespace TFTV
                 {
                     try
                     {
-                        if (PandoransThatCanEscape == null || PandoransThatCanEscape != null && PandoransThatCanEscape.Count == 0)
+                        // per site: another base's entry must not make this lookup throw (KeyNotFound skipped the hourly hooks)
+                        if (PandoransThatCanEscape == null || !PandoransThatCanEscape.TryGetValue(geoSite.SiteId, out List<string> escapees) || escapees.Count == 0)
                         {
                             return false;
                         }
@@ -969,7 +974,7 @@ namespace TFTV
 
                         float deployValue = 0;
 
-                        foreach (string item in PandoransThatCanEscape[geoSite.SiteId])
+                        foreach (string item in escapees)
                         {
                             TacCharacterDef tacCharacterDef = (TacCharacterDef)Repo.GetDef(item);
                             deployValue += tacCharacterDef.DeploymentCost;
@@ -1411,13 +1416,13 @@ namespace TFTV
                             ContainmentBreach.wallsOfJericho = true;
                         }
 
-                        ContainmentBreach.BaseCanHaveContainmentBreach(phoenixBase);
+                        bool canBreach = ContainmentBreach.BaseCanHaveContainmentBreach(phoenixBase);
                         ContainmentBreach.AdjustUnderAttackEvent();
                         controller.EventSystem.TriggerGeoscapeEvent(_underAttackEventDef.EventID, context);
 
 
-
-                        if (PandoransThatCanEscape.Count > 0)
+                        // this base's captives, not any base's (another base can hold an escape entry)
+                        if (canBreach)
                         {
                             TFTVLogger.Always($"ContainmentBreach._pandoransThatCanEscape.Count > 0");
                             PurgePending.Add(phoenixBase.SiteId);
@@ -2232,6 +2237,11 @@ namespace TFTV
             }
 
 
+            // Original UniqueUnits of each (shared, process-global) mission-type participant entry, so the guards
+            // written for one base defense don't carry over to a later one that should have fewer or none.
+            private static readonly Dictionary<TacMissionTypeParticipantData, TacMissionTypeParticipantData.UniqueChatarcterBind[]> _originalUniqueUnits
+                = new Dictionary<TacMissionTypeParticipantData, TacMissionTypeParticipantData.UniqueChatarcterBind[]>();
+
             private static void AddMindFraggedSecurityGuardsToAlienDeployment(GeoMission geoMission, ref TacMissionTypeParticipantData participantData)
             {
                 try
@@ -2252,6 +2262,14 @@ namespace TFTV
                     {
                         return;
                     }
+
+                    // always start from the def's original content; the early returns below then mean "no guards"
+                    if (!_originalUniqueUnits.TryGetValue(participantData, out TacMissionTypeParticipantData.UniqueChatarcterBind[] originalUnits))
+                    {
+                        originalUnits = participantData.UniqueUnits;
+                        _originalUniqueUnits[participantData] = originalUnits;
+                    }
+                    participantData.UniqueUnits = originalUnits;
 
                     int timer = (int)_timer;
 

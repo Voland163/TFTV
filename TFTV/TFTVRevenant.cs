@@ -749,10 +749,38 @@ namespace TFTV
 
 
             }
+            // Tier-1 stat modifications of each class ability. The tier-2/3 branches below overwrite the shared def,
+            // so without this a later tier-1 Revenant in the same session got the earlier tier-2/3 bonuses.
+            private static readonly Dictionary<PassiveModifierAbilityDef, ItemStatModification[]> _tier1StatModifications =
+                new Dictionary<PassiveModifierAbilityDef, ItemStatModification[]>();
+
+            private static void ResetClassAbilityToTier1(PassiveModifierAbilityDef abilityDef)
+            {
+                if (abilityDef == null)
+                {
+                    return;
+                }
+
+                if (_tier1StatModifications.TryGetValue(abilityDef, out ItemStatModification[] tier1))
+                {
+                    abilityDef.StatModifications = tier1;
+                }
+                else
+                {
+                    // first call in the process, before any tier overwrite: this is the tier-1 value set at def creation
+                    _tier1StatModifications[abilityDef] = abilityDef.StatModifications;
+                }
+            }
+
             public static void AddRevenantClassAbility(TacticalActor tacticalActor, SpecializationDef specialization)
             {
                 try
                 {
+                    foreach (PassiveModifierAbilityDef classAbility in new[] { _revenantAssault, _revenantBerserker, _revenantHeavy,
+                        _revenantInfiltrator, _revenantPriest, _revenantSniper, _revenantTechnician })
+                    {
+                        ResetClassAbilityToTier1(classAbility);
+                    }
 
                     if (specialization == assaultSpecialization)
                     {
@@ -1199,7 +1227,9 @@ namespace TFTV
                             || scoreVirusDamage > 0 || scoreParalysisDamage > 0)
                         {
                             List<float> scoreList = new List<float> { scoreFireDamage, scoreAcidDamage, scoreBlastDamage, scoreBurstDamage, scoreHighDamage, scoreParalysisDamage, scoreVirusDamage };
-                            scoreList = scoreList.OrderByDescending(x => x).ToList();
+                            // only categories the squad actually used: a 0 score matches every unused category below
+                            // (last matching if wins), so a roll landing on one gave an unrelated resistance
+                            scoreList = scoreList.Where(x => x > 0).OrderByDescending(x => x).ToList();
                             int options = 0;
 
                             if (scoreList.Count > 2)

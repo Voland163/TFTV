@@ -219,6 +219,8 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                // the beam defs are process-global: start every mission/load neutral, like the buff tracking above
+                TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.BeamOriginal();
                 TFTVAncientsGeo.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
 
@@ -357,6 +359,7 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.BeamOriginal();
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.Tactical.Data.ClearDataOnMissionRestart();
 

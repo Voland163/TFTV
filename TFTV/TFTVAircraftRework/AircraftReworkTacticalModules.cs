@@ -347,14 +347,20 @@ namespace TFTV
         {
             try
             {
+                // Normalize the snapshot to full size: other readers (OnTacticalStart's log, direct [n] writes)
+                // index it without the ReadModuleSlot tolerance, so a null or short array would throw there.
                 if (InternalData.ModulesInTactical == null)
                 {
                     TFTVLogger.Always("[LoadInternalDataForTactical] no aircraft module snapshot in this save; treating every module as absent");
+                    InternalData.ModulesInTactical = new int[InternalData.ModulesInTacticalSlots];
                 }
                 else if (InternalData.ModulesInTactical.Length < InternalData.ModulesInTacticalSlots)
                 {
                     TFTVLogger.Always($"[LoadInternalDataForTactical] aircraft module snapshot has {InternalData.ModulesInTactical.Length} " +
                         $"slots, this build expects {InternalData.ModulesInTacticalSlots}; the missing ones read 0");
+                    int[] grown = new int[InternalData.ModulesInTacticalSlots];
+                    InternalData.ModulesInTactical.CopyTo(grown, 0);
+                    InternalData.ModulesInTactical = grown;
                 }
 
                 _thunderBirdScannerPresent = ReadModuleSlot(0);
