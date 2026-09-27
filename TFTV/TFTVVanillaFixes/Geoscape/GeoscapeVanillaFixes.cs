@@ -949,6 +949,53 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
             }
         }
 
+        /// <summary>
+        /// Fixes destroyed Pandoran bases becoming attackable again after loading a save (vanilla 1.30.3).
+        /// 1.30.3 added FixAlienBaseSitesWithoutActiveMission to LevelCrt: it gives a new assault mission to every
+        /// alien-owned AlienBase site without one. It doesn't check the site state, and a destroyed base keeps its
+        /// alien owner and has its mission cleared (GeoAlienBase.CleanBase), so every destroyed base got a fresh
+        /// mission on every load. Only Functioning bases get a mission now, which is the same condition vanilla uses
+        /// in ActivateBase and GeoAlienBaseMission.AfterMissionCompleted. Missions already saved onto destroyed
+        /// bases are cleared the same way CleanBase does it.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoLevelController), "FixAlienBaseSitesWithoutActiveMission")]
+        public static class GeoLevelController_FixAlienBaseSitesWithoutActiveMission_patch
+        {
+            public static bool Prefix(GeoLevelController __instance)
+            {
+                try
+                {
+                    foreach (GeoSite site in __instance.Map.SitesByType[GeoSiteType.AlienBase])
+                    {
+                        if (site.Owner == null || !site.Owner.IsAlienFaction)
+                        {
+                            continue;
+                        }
+
+                        if (site.State == GeoSiteState.Functioning)
+                        {
+                            if (site.ActiveMission == null)
+                            {
+                                site.CreateAlienBaseMission();
+                            }
+                        }
+                        else if (site.State == GeoSiteState.Destroyed && site.ActiveMission is GeoAlienBaseMission)
+                        {
+                            site.ActiveMission = null;
+                            TFTVLogger.Always($"[DestroyedAlienBase] Removed the assault mission from destroyed {site.LocalizedSiteName} (site {site.SiteId}).");
+                        }
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
+
         //fixes events reducing health to 0 and killing soldiers
         [HarmonyPatch(typeof(GeoFactionReward), "AddInjuriesToAllSoldiers")] //VERIFIED
         public static class TFTV_GeoFactionReward_AddInjuriesToAllSoldiers
