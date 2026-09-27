@@ -359,6 +359,7 @@
     <Compile Include="TFTVPhoenixBaseLayout.cs" />
     <Compile Include="TFTVPureAndForsaken.cs" />
     <Compile Include="TFTVResearch.cs" />
+    <Compile Include="TFTVResearchImages.cs" />
     <Compile Include="TFTVScavengers.cs" />
     <Compile Include="TFTVTacticalDeploymentEnemies.cs" />
     <Compile Include="TFTVVests.cs" />

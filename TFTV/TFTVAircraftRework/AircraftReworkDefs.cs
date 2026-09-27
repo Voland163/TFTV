@@ -1066,6 +1066,7 @@ namespace TFTV
                 scyllaCaptureModule.ViewElementDef.RevealText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_REVEAL";
                 scyllaCaptureModule.ViewElementDef.UnlockText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_REVEAL";
                 scyllaCaptureModule.ViewElementDef.CompleteText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_COMPLETE";
+                TFTVResearchImages.SetCustomImage(scyllaCaptureModule.ViewElementDef, "TFTV_Research_ScyllaCapture.jpg");
 
                 ExistingResearchRequirementDef existingResearchRequirementDef = DefCache.GetDef<ExistingResearchRequirementDef>("PX_Aircraft_EscapePods_ResearchDef_ExistingResearchRequirementDef_1");
                 existingResearchRequirementDef.ResearchID = "PX_Alien_Queen_ResearchDef";
@@ -1787,7 +1788,8 @@ namespace TFTV
                 ResearchViewElementDef backgroundViewElement = DefCache.GetDef<ResearchViewElementDef>("PX_ExperimentalKaosBuggyTechnology_ViewElementDef");
 
                 ResearchDef newResearch = TFTVCommonMethods.CreateResearch(
-                    name, 800, $"TFTV_{id.ToUpper()}_MODULE_RESEARCH", newResearchGuids, existingResearchRequirementDefs, null, null, backgroundViewElement);
+                    name, 800, $"TFTV_{id.ToUpper()}_MODULE_RESEARCH", newResearchGuids, existingResearchRequirementDefs, null, null, backgroundViewElement,
+                    customImageFileName: "TFTV_Research_MutogMenagerie.jpg");
 
                 string guid3 = "{0935D009-2AE0-4246-8B6F-346D122D38D5}";
 
@@ -2146,7 +2148,8 @@ namespace TFTV
                 ResearchViewElementDef backgroundViewElement = DefCache.GetDef<ResearchViewElementDef>("PX_ExperimentalScarabTechnology_ViewElementDef");
 
                 ResearchDef newResearch = TFTVCommonMethods.CreateResearch(
-                    name, 800, "TFTV_VEHICLE_HARNESS_MODULE_RESEARCH", newResearchGuids, existingResearchRequirementDefs, null, null, backgroundViewElement);
+                    name, 800, "TFTV_VEHICLE_HARNESS_MODULE_RESEARCH", newResearchGuids, existingResearchRequirementDefs, null, null, backgroundViewElement,
+                    customImageFileName: "TFTV_Research_EzekielsDream.jpg");
 
                 string guid3 = "{A5C7C767-ABBA-4B5A-9C7C-2A41EC6597CC}";
                 AddToResearchUnlock(newResearch, _vehicleHarnessModule, guid3);

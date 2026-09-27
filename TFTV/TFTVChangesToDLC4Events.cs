@@ -206,7 +206,7 @@ namespace TFTV
                     int cost = 300;
 
                     ResearchDef researchDefSource = DefCache.GetDef<ResearchDef>("PX_Alien_LiveMindfragger_ResearchDef");
-                    ResearchDef newResearch = TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
+                    ResearchDef newResearch = TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null, "TFTV_Research_DeliriumTreatment.jpg");
 
                     EncounterVariableResearchRequirementDef encounterVariableResearch =
                        TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(defName + "EncounterVariableResearchReq", "{D93A1ACE-1636-4908-95E6-3CA8E6ACA1F3}",
