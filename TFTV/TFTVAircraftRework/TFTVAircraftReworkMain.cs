@@ -21,8 +21,9 @@ namespace TFTV
     internal class TFTVAircraftReworkMain
     {
         /// <summary>
-        /// The master switch for the aircraft rework, the base rework and incidents. False on the
-        /// main branch, true for the closed beta.
+        /// The master switch for the aircraft rework, the base rework and incidents. The player picks
+        /// it on the new game screen and every save remembers it; it is fixed for a whole game launch
+        /// and switching it means restarting the game (see <see cref="AircraftReworkMode"/>).
         ///
         /// Every Harmony patch class belonging to those systems carries
         /// <c>static bool Prepare() =&gt; AircraftReworkOn;</c>. Harmony calls Prepare before it
@@ -30,13 +31,17 @@ namespace TFTV
         /// never applied at all - not applied and then made to no-op, which is what a guard inside
         /// each method would give, and which relies on every one of them remembering to check.
         ///
-        /// BaseReworkCheck.BaseReworkEnabled also requires this flag, so a save made during the
-        /// beta cannot switch the base rework back on when loaded on a main-branch build.
+        /// BaseReworkCheck.BaseReworkEnabled also requires this flag, so a campaign played without
+        /// the rework cannot switch the base rework on.
         ///
         /// Ground vehicle rework (TFTVVehicleRework) is deliberately not gated: ReworkVehicles is
         /// called unconditionally and ships on main. Only Vehicles/Ammo belongs to the beta.
+        ///
+        /// Must stay a public static field, written only by AircraftReworkMode.LoadAtStartup: the
+        /// TFTV Korean Localization mod reads it by reflection as a field and disables itself if it
+        /// can't.
         /// </summary>
-        public static bool AircraftReworkOn = true;
+        public static bool AircraftReworkOn = false;
         internal static readonly float _mistSpeedMalus = 0.2f;
         //  internal static readonly float _mistSpeedBuff = 0.5f;
         internal static readonly float _mistSpeedModuleBuff = 150;

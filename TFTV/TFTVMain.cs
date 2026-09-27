@@ -96,7 +96,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, AIRCRAFT REWORK CLOSED BETA Patch 26 20260831 release #1  v{MetaData.Version}";
+                string version = $"TFTV 1.0, Patch 26 20260927 release #1  v{MetaData.Version}";
 
                 //AIRCRAFT REWORK
 
@@ -116,6 +116,9 @@ namespace TFTV
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
                 TFTVLogger.Always(version);
+
+                // Before anything below: every def change and patch Prepare reads this mode.
+                AircraftReworkMode.LoadAtStartup();
 
               //  TFTVDefsInjectedOnlyOnce.Print();
                 TFTVRevertSGPatchBalance.RevertSGPatchBalanceChanges();

@@ -57,6 +57,8 @@ namespace TFTV
         private static ArrowPickerController _maximumEnemyForce = null;
         private static ArrowPickerController _enemyEscalationSpeed = null;
 
+        private static ArrowPickerController _aircraftReworkBeta = null;
+
         // Eldritch warning gate (hardest difficulty confirmation)
         private static bool _eldritchWarningInProgress = false;
         private static bool _eldritchWarningAccepted = false;
@@ -1201,7 +1203,7 @@ float lengthScale, List<ModSettingController> optionsType = null)
 
 
 
-
+                        HelperMethods.InstantiateArrowPickerController("AircraftReworkBeta", _optionsBool, ConvertBoolToInt(AircraftReworkMode.SelectedForNewGame), OnAircraftReworkBetaValueChangedCallback, 0.5f);
                         HelperMethods.InstantiateArrowPickerController("StartingFaction", _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
                         HelperMethods.InstantiateArrowPickerController("StartingBase", _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback, 1f);
                         HelperMethods.InstantiateArrowPickerController("StartingSquad", _optionsStartingSquad, (int)(TFTVNewGameOptions.startingSquadCharacters), OnStartingSquadValueChangedCallback, 1f);
@@ -1320,6 +1322,36 @@ float lengthScale, List<ModSettingController> optionsType = null)
                     {
                         TFTVLogger.Error(e);
                         throw;
+                    }
+                }
+
+                /// <summary>
+                /// Also called with the answer to the prompt shown on entering the screen, before or
+                /// after the row exists, so the controller may be null.
+                /// </summary>
+                internal static void OnAircraftReworkBetaValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        AircraftReworkMode.SelectedForNewGame = newValue == 0;
+
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        if (arrowPickerController.CurrentIndex != newValue)
+                        {
+                            // Private setter; only differs when the value comes from the prompt.
+                            AccessTools.Property(typeof(ArrowPickerController), nameof(ArrowPickerController.CurrentIndex)).SetValue(arrowPickerController, newValue);
+                        }
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        _aircraftReworkBeta = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
                     }
                 }
 
@@ -2384,6 +2416,19 @@ float lengthScale, List<ModSettingController> optionsType = null)
                     throw;
                 }
             }
+
+            private static void Postfix()
+            {
+                try
+                {
+                    AircraftReworkMode.ShowNewGamePrompt(on =>
+                        UIStateNewGeoscapeGameSettings_InitFullContent_patch.OnAircraftReworkBetaValueChangedCallback(on ? 0 : 1, _aircraftReworkBeta));
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
         }
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "BindSecondaryOptions")] //VERIFIED
@@ -2543,6 +2588,12 @@ float lengthScale, List<ModSettingController> optionsType = null)
                     {
                         _suppressNextOnConfirm = false;
                         return true;
+                    }
+
+                    // Before the Eldritch warnings: no point accepting those if the game has to restart.
+                    if (!AircraftReworkMode.CanStartNewGame())
+                    {
+                        return false;
                     }
 
                     // Only gate when pressing Start Game AND hardest difficulty is selected.

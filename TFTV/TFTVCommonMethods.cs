@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
+using Base.Serialization;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
@@ -438,10 +439,19 @@ namespace TFTV
         [HarmonyPatch(typeof(PhoenixSaveManager), nameof(PhoenixSaveManager.LoadGame))]
         public static class BG_PhoenixSaveManager_ClearInternalData_patch
         {
-            public static void Prefix()
+            public static bool Prefix(PPSavegameMetaData metaData, ref IEnumerator<NextUpdate> __result)
             {
                 try
                 {
+                    // Checked before the clears below, so a refused load leaves the running campaign
+                    // as it was. An empty coroutine is what vanilla LoadGame itself amounts to when it
+                    // refuses an incompatible save.
+                    if (!AircraftReworkMode.CanLoad(metaData))
+                    {
+                        __result = Enumerable.Empty<NextUpdate>().GetEnumerator();
+                        return false;
+                    }
+
                     TFTVLogger.Always("LoadGame method invoked");
                     ClearInternalVariablesOnStateChangeAndLoad();
                     VariablesClearedOnlyOnLoad();
@@ -450,6 +460,8 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
+
+                return true;
             }
         }
 
