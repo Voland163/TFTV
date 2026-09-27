@@ -621,7 +621,7 @@ namespace TFTV
                     string gUID = "14E1635F-6663-41C8-B04E-A8C91890BC5B";
                     string gUID2 = "0E7D8BB6-1139-4CE3-9402-D3F490838E55";
 
-                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(id, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(id, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource, "TFTV_Research_LivingCrystal.jpg");
 
                     ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
                     ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[2];
@@ -675,7 +675,7 @@ namespace TFTV
                     string gUID = "1BFAE176-45F4-4A8B-A1A7-8CE89CA2B224";
                     string gUID2 = "BF1A9ABD-B6F7-48CD-BE20-217C338FF421";
 
-                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(id, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(id, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource, "TFTV_Research_ProteanMutane.jpg");
 
                     ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
                     ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[2];
@@ -908,7 +908,7 @@ namespace TFTV
                     string gUID2 = "DD59BCB8-F197-4A3D-A8AD-6B1D0B9CB958";
                     ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
 
-                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(ancientAutomataResearchName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(ancientAutomataResearchName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource, "TFTV_Research_AncientAutomata.jpg");
 
                     ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
                     ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[1];
@@ -944,7 +944,7 @@ namespace TFTV
                     string gUID2 = "05BA677D-52E4-4A16-B050-130EEDBB956D";
                     ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
 
-                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+                    ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource, "TFTV_Research_ExoticMaterials.jpg");
 
                     ExistingResearchRequirementDef requirementDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef("47BA0BD6-F622-4EC7-A49B-B93C0A955D3C", "AncientAutomataResearch");
 

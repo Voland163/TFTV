@@ -2627,7 +2627,7 @@ namespace TFTV
                     int cost = 200;
 
                     ResearchDef revenantCaptureResearch =
-                        TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
+                        TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null, "TFTV_Research_CapturedRevenant.jpg");
 
                     string revenantVariable = RevenantCapturedVariable;
 
@@ -2666,7 +2666,7 @@ namespace TFTV
                     int cost = 400;
 
                     ResearchDef enoughRevenantsKilledResearch =
-                        TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
+                        TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null, "TFTV_Research_ProjectOsiris.jpg");
 
                     string revenantVariable = RevenantsDestroyed;
 

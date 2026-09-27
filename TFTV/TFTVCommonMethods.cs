@@ -705,7 +705,7 @@ namespace TFTV
 
         public static ResearchDef CreateResearch(string id, int cost, string key, List<string> guids, ResearchRequirementDef[] revealRequirements,
                 ResearchRequirementDef[] unlockRequirements, ResearchRewardDef[] rewards, ResearchViewElementDef imageSource, ResearchContainerOperation containerOperationReveal = ResearchContainerOperation.ALL,
-                ResearchContainerOperation containerOperationUnlock = ResearchContainerOperation.ALL, ResearchTagDef[] tags = null)
+                ResearchContainerOperation containerOperationUnlock = ResearchContainerOperation.ALL, ResearchTagDef[] tags = null, string customImageFileName = null)
 
         {
             try
@@ -716,7 +716,7 @@ namespace TFTV
                 string keyComplete = key + "_COMPLETE";
                 string keyBenefits = key + "_BENEFITS";
 
-                ResearchDef research = CreateNewPXResearch(id, cost, guids[0], guids[1], keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+                ResearchDef research = CreateNewPXResearch(id, cost, guids[0], guids[1], keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource, customImageFileName);
 
 
                 if (revealRequirements != null)
@@ -780,7 +780,9 @@ namespace TFTV
 
         }
 
-        public static ResearchDef CreateNewPXResearch(string id, int cost, string gUID, string gUID2, string name, string reveal, string unlock, string complete, string benefits, ResearchViewElementDef imageSource)
+        /// <param name="imageSource">Vanilla research whose background to reuse; null keeps the SDI one.</param>
+        /// <param name="customImageFileName">JPG in Assets/Textures to use as the background instead, if it exists; see TFTVResearchImages.</param>
+        public static ResearchDef CreateNewPXResearch(string id, int cost, string gUID, string gUID2, string name, string reveal, string unlock, string complete, string benefits, ResearchViewElementDef imageSource, string customImageFileName = null)
 
         {
             try
@@ -811,6 +813,8 @@ namespace TFTV
                 {
                     researchViewDef.ResearchIcon = imageSource.ResearchIcon;
                 }
+
+                TFTVResearchImages.SetCustomImage(researchViewDef, customImageFileName);
 
                 researchDef.ViewElementDef = researchViewDef;
 
