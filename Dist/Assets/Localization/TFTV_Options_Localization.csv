@@ -285,3 +285,32 @@ KEY_ENEMY_ESCALATION_SPEED_RAPID,Text,,Rapid,,,,,,Ускоренно,,
 KEY_ENEMY_ESCALATION_SPEED_RUTHLESS,Text,,Ruthless,,,,,,Жестоко,,
 KEY_ENEMY_ESCALATION_SPEED_RELENTLESS,Text,,Relentless,,,,,,Безжалостно,,
 KEY_ENEMY_ESCALATION_SPEED_IMMEDIATE,Text,,Immediate,,,,,,Немедленно,,
+KEY_AircraftReworkBeta,Text,,AIRCRAFT REWORK BETA,,,,,,,,
+KEY_AircraftReworkBeta_DESCRIPTION,Text,,"Play this campaign with the AIRCRAFT REWORK BETA. The game runs with one setting at a time: starting a campaign with the other setting requires restarting Phoenix Point. Saves remember the setting they were made with.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_NEW_GAME_PROMPT,Text,,"Would you like to try the AIRCRAFT REWORK BETA in this campaign?
+
+It replaces Festering Skies air combat and changes much of the Geoscape:
+- Aircraft carry modules instead of weapons (scanners, speed and range, passenger space, clinics, capture drones and faction modules) that give bonuses on the Geoscape and in missions. Aircraft also need maintenance.
+- Phoenix bases have to be explored and activated, and can be kept as Outposts. Personnel, food and living space, power and training work differently.
+- Incidents at Havens, and faction Affinities for your operatives.
+- Ground vehicles use ammunition and laser weapons use batteries.
+
+This is a beta: expect bugs and balance changes. You can still change this in the options before starting. Starting a campaign with a different setting than the one the game is running with requires a restart.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_RESTART_TO_ENABLE,Text,,"The game is running without the AIRCRAFT REWORK BETA. Phoenix Point has to be restarted to start a campaign with it.
+
+Switch the AIRCRAFT REWORK BETA ON and restart the game now? Once it has restarted, start the new game again.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_RESTART_TO_DISABLE,Text,,"The game is running with the AIRCRAFT REWORK BETA. Phoenix Point has to be restarted to start a campaign without it.
+
+Switch the AIRCRAFT REWORK BETA OFF and restart the game now? Once it has restarted, start the new game again.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_SAVE_NEEDS_ON,Text,,"This save was made with the AIRCRAFT REWORK BETA, but the game is running without it. Phoenix Point has to be restarted to load it.
+
+Switch the AIRCRAFT REWORK BETA ON and restart the game now? Unsaved progress will be lost. Once it has restarted, load the save again.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_SAVE_NEEDS_OFF,Text,,"This save was made without the AIRCRAFT REWORK BETA, but the game is running with it. Phoenix Point has to be restarted to load it.
+
+Switch the AIRCRAFT REWORK BETA OFF and restart the game now? Unsaved progress will be lost. Once it has restarted, load the save again.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_SWITCH_FAILED,Text,,"The AIRCRAFT REWORK BETA setting could not be saved, so the game was not restarted. See TFTV.log for details.",,,,,,,,
+TFTV_AIRCRAFT_REWORK_LEGACY_SAVE_PROMPT,Text,,"This save was made before TFTV recorded whether a campaign uses the AIRCRAFT REWORK BETA, and TFTV could not read the save file to find out.
+
+Was this campaign played with the AIRCRAFT REWORK BETA? (If your aircraft carried modules instead of Festering Skies air combat weapons, answer Yes.)
+
+Please answer carefully: playing a campaign with the wrong setting can break it. You will be asked every time you load a save made before this setting existed.",,,,,,,,

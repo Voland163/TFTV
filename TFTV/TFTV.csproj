@@ -146,6 +146,7 @@
     <Compile Include="TFTVAircraftRework\AircraftReworkGeoscape.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkHelpers.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkMissionDeployment.cs" />
+    <Compile Include="TFTVAircraftRework\AircraftReworkMode.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkTacticalModules.cs" />
     <Compile Include="TFTVAircraftRework\Healing.cs" />
     <Compile Include="TFTVAircraftRework\PassengerModules.cs" />
