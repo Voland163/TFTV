@@ -998,7 +998,7 @@ namespace TFTV
 
                         GeoPhoenixBase phoenixBase = geoSite.GetComponent<GeoPhoenixBase>();
                         PhoenixFacilityDef securityStationDef = DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef");
-                        int securityValue = phoenixBase.SoldiersInBase.Count();
+                        int securityValue = ExcludeHiddenPersonnel(phoenixBase.SoldiersInBase).Count(); // operatives only: personnel are no security
 
                         if (phoenixBase.Layout.Facilities.Any(f => f.Def == securityStationDef && f.IsWorking))
                         {
