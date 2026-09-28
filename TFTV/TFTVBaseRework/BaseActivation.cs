@@ -31,6 +31,9 @@ namespace TFTV.TFTVBaseRework
             public const string PendingBaseUpgradeTag = "PX_REWORK_PENDING_BASE_UPGRADE";
             public const string FirstVisitPreviewTagPrefix = "PX_REWORK_FIRST_VISIT_PREVIEW:";
             public const string LootResultTagPrefix = "PX_REWORK_LOOT_RESULT:";
+            // Followed by the GeoCharacter id of a personnel member spent on activating this outpost or
+            // base. See PersonnelData.ConsumePersonnelForBaseActivation.
+            public const string StaffTagPrefix = "PX_REWORK_STAFF:";
         }
 
         internal enum PendingBaseAction
@@ -368,8 +371,8 @@ namespace TFTV.TFTVBaseRework
                     if (BaseReworkCheck.BaseReworkEnabled)
                     {
                         bool consumed = chosenPersonnel != null && chosenPersonnel.Count > 0
-                            ? PersonnelData.TryConsumeSelectedPersonnelForBaseActivation(faction, chosenPersonnel, requiredPersonnel)
-                            : PersonnelData.TryConsumePersonnelForBaseActivation(faction, requiredPersonnel);
+                            ? PersonnelData.TryConsumeSelectedPersonnelForBaseActivation(faction, chosenPersonnel, requiredPersonnel, site)
+                            : PersonnelData.TryConsumePersonnelForBaseActivation(faction, requiredPersonnel, site);
 
                         if (!consumed)
                         {
@@ -500,6 +503,7 @@ namespace TFTV.TFTVBaseRework
                             faction.ActivatePhoenixBase(site, true);
                         }
 
+                        // An upgraded outpost keeps its staff tags, so the base records everyone spent on it.
                         site.SiteTags.Remove(PhoenixBaseReworkState.OutpostTag);
                     }
 

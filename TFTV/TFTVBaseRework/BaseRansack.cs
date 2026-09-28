@@ -6,6 +6,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace TFTV.TFTVBaseRework
@@ -96,6 +97,12 @@ namespace TFTV.TFTVBaseRework
                     });
 
                 faction.Wallet.Give(payout, OperationReason.Gift);
+
+                if (site.SiteTags.Contains(BaseActivation.PhoenixBaseReworkState.OutpostTag))
+                {
+                    DismantleOutpost(site, faction);
+                }
+
                 site.DestroySite();
 
                 GameUtl.GetMessageBox().ShowSimplePrompt(
@@ -110,6 +117,39 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        /// <summary>
+        /// DestroySite alone leaves an outpost Phoenix-owned and tagged, and the Activate ability and the
+        /// arrival hook both let an outpost through whatever its state, so it could be ransacked again
+        /// and again. Hand it back to the environment, as an inactive base is, and return its staff.
+        /// </summary>
+        private static void DismantleOutpost(GeoSite site, GeoPhoenixFaction faction)
+        {
+            // Nobody should be stationed at an outpost, but don't strand anyone on a site we no longer own.
+            GeoSite fallback = faction.Bases
+                .Select(phoenixBase => phoenixBase?.Site)
+                .FirstOrDefault(other => other != null && other != site
+                    && !other.SiteTags.Contains(BaseActivation.PhoenixBaseReworkState.OutpostTag));
 
+            foreach (GeoCharacter character in site.GetAllCharacters().Where(c => c?.Faction == faction).ToList())
+            {
+                if (fallback == null)
+                {
+                    TFTVLogger.Always($"[BaseRansack] No base to move {character.DisplayName} to from {site.LocalizedSiteName}.");
+                    continue;
+                }
+
+                site.RemoveCharacter(character);
+                fallback.AddCharacter(character);
+                TFTVLogger.Always($"[BaseRansack] Moved {character.DisplayName} from {site.LocalizedSiteName} to {fallback.LocalizedSiteName}.");
+            }
+
+            site.SiteTags.Remove(BaseActivation.PhoenixBaseReworkState.OutpostTag);
+            site.Owner = site.GeoLevel.EnvironmentFaction;
+
+            // After the hand-back, so replacement personnel for an old outpost can't be placed on it.
+            int returned = PersonnelData.ReturnSiteStaff(site, faction, BaseActivation.PhoenixBaseVisitFlow.GetOutpostPersonnelCost());
+
+            TFTVLogger.Always($"[BaseRansack] Dismantled the outpost at {site.LocalizedSiteName}; {returned} personnel returned to the pool.");
+        }
     }
 }

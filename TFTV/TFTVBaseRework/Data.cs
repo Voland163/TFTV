@@ -532,13 +532,13 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
-        /// Spends exactly the personnel the player picked. They are dismissed for good, as with the
-        /// automatic selection.
+        /// Spends exactly the personnel the player picked, as with the automatic selection.
         /// </summary>
         internal static bool TryConsumeSelectedPersonnelForBaseActivation(
             GeoPhoenixFaction faction,
             IList<PersonnelInfo> selection,
-            int requiredPersonnel)
+            int requiredPersonnel,
+            GeoSite staffedSite = null)
         {
             if (!BaseReworkCheck.BaseReworkEnabled || faction == null || requiredPersonnel <= 0 || selection == null)
             {
@@ -559,11 +559,11 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
-            ConsumePersonnelForBaseActivation(faction, toConsume);
+            ConsumePersonnelForBaseActivation(faction, toConsume, staffedSite);
             return true;
         }
 
-        internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
+        internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel, GeoSite staffedSite = null)
         {
             if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
             {
@@ -576,17 +576,111 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
-            ConsumePersonnelForBaseActivation(faction, toConsume);
+            ConsumePersonnelForBaseActivation(faction, toConsume, staffedSite);
             return true;
         }
 
-        private static void ConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, IEnumerable<PersonnelInfo> toConsume)
+        /// <summary>
+        /// Personnel spent on an outpost or a base leave the pool but are not killed: they stay alive
+        /// and hidden, and the site they were spent on records their ids (see
+        /// <see cref="BaseActivation.PhoenixBaseReworkState.StaffTagPrefix"/>). Ransacking an outpost
+        /// gives them back through <see cref="ReturnSiteStaff"/>, and so can anything else that
+        /// should, such as losing a base.
+        ///
+        /// Being out of the pool, they eat no food, take no living space and show up nowhere. They
+        /// physically stay at whichever base held them while they were in the pool, never on the site
+        /// they staff (the site is not yet Phoenix's when they are spent), so losing that site does
+        /// not touch them. Losing the base they physically sit in would, as it would the pool.
+        /// </summary>
+        private static void ConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, IEnumerable<PersonnelInfo> toConsume, GeoSite staffedSite)
         {
             foreach (PersonnelInfo person in toConsume)
             {
                 RemovePersonnel(faction, person);
+
+                if (staffedSite != null)
+                {
+                    staffedSite.SiteTags.Add(BaseActivation.PhoenixBaseReworkState.StaffTagPrefix + person.Character.Id);
+                    TFTVLogger.Always($"{LogPrefix} {person.Character.DisplayName} (id {person.Character.Id}) now staffs {staffedSite.LocalizedSiteName}.");
+                    continue;
+                }
+
                 faction.KillCharacter(person.Character, CharacterDeathReason.Dismissed);
             }
+        }
+
+        private static List<string> GetSiteStaffTags(GeoSite site)
+        {
+            return site?.SiteTags?
+                .Where(tag => tag != null && tag.StartsWith(BaseActivation.PhoenixBaseReworkState.StaffTagPrefix))
+                .ToList() ?? new List<string>();
+        }
+
+        private static GeoCharacter FindSiteStaffer(GeoPhoenixFaction faction, string tag)
+        {
+            if (!int.TryParse(tag.Substring(BaseActivation.PhoenixBaseReworkState.StaffTagPrefix.Length), out int id))
+            {
+                return null;
+            }
+
+            return faction.Characters.FirstOrDefault(character => character != null && character.Id == id);
+        }
+
+        /// <summary>
+        /// The personnel spent on activating this outpost or base who still exist.
+        /// </summary>
+        internal static List<GeoCharacter> GetSiteStaff(GeoSite site, GeoPhoenixFaction faction)
+        {
+            if (site == null || faction == null)
+            {
+                return new List<GeoCharacter>();
+            }
+
+            return GetSiteStaffTags(site)
+                .Select(tag => FindSiteStaffer(faction, tag))
+                .Where(character => character != null)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Puts the personnel spent on this outpost or base back in the pool as Unassigned, and forgets
+        /// them on the site. A site activated before staff were recorded has nobody to give back, so it
+        /// gets <paramref name="unrecordedStaff"/> fresh personnel instead. Returns how many came back.
+        /// </summary>
+        internal static int ReturnSiteStaff(GeoSite site, GeoPhoenixFaction faction, int unrecordedStaff)
+        {
+            if (!BaseReworkCheck.BaseReworkEnabled || site == null || faction == null)
+            {
+                return 0;
+            }
+
+            List<string> tags = GetSiteStaffTags(site);
+            int returned = 0;
+
+            foreach (string tag in tags)
+            {
+                site.SiteTags.Remove(tag);
+
+                GeoCharacter character = FindSiteStaffer(faction, tag);
+                if (character == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} Staffer '{tag}' of {site.LocalizedSiteName} no longer exists.");
+                    continue;
+                }
+
+                AttachCharacter(character);
+                returned++;
+                TFTVLogger.Always($"{LogPrefix} {character.DisplayName} returned to the personnel pool from {site.LocalizedSiteName}.");
+            }
+
+            int missing = tags.Count > 0 ? tags.Count - returned : unrecordedStaff;
+
+            if (missing > 0)
+            {
+                returned += AddIncidentPersonnelReward(faction, missing);
+            }
+
+            return returned;
         }
 
         private static int GetBaseActivationPriority(PersonnelAssignment assignment)
