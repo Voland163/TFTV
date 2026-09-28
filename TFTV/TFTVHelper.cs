@@ -1,6 +1,7 @@
 ﻿using Base.Defs;
 using I2.Loc;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -98,9 +99,13 @@ namespace TFTV
                 {
                     localizationChanged |= AddLocalizationFromCSV(MissionObjectivesLocalizationFileName, null, false);
                 }
-                if (TFTVAircraftReworkMain.AircraftReworkOn && File.Exists(Path.Combine(LocalizationDirectory, AircraftReworkLocalizationFileName)))
+                // Loaded with the rework off too: features that run in both modes keep their text here
+                // (hints, incidents, the capture module, the TFTV_VANILLA_* keys RestoreVanillaLocKeys
+                // reads...). What must stay beta-only is its rework wording for vanilla keys, so with
+                // the rework off it may only add keys, never cover one the game already has.
+                if (File.Exists(Path.Combine(LocalizationDirectory, AircraftReworkLocalizationFileName)))
                 {
-                    localizationChanged |= AddLocalizationFromCSV(AircraftReworkLocalizationFileName, null, false);
+                    localizationChanged |= AddLocalizationFromCSV(AircraftReworkLocalizationFileName, null, false, TFTVAircraftReworkMain.AircraftReworkOn);
                 }
 
                 if (File.Exists(Path.Combine(LocalizationDirectory, BaseReworkPersonnelLocalizationFileName)))
@@ -152,7 +157,12 @@ namespace TFTV
             }
         }
 
-        public static bool AddLocalizationFromCSV(string LocalizationFileName, string Category = null, bool localizeImmediately = true)
+        /// <param name="overrideOtherSources">
+        /// Import_CSV only skips a key its own source already has, so a key that lives in another
+        /// source (most vanilla text) gets a new term here that takes precedence over it. False
+        /// removes those terms again, leaving only the keys nobody else defines.
+        /// </param>
+        public static bool AddLocalizationFromCSV(string LocalizationFileName, string Category = null, bool localizeImmediately = true, bool overrideOtherSources = true)
         {
             try
             {
@@ -169,6 +179,22 @@ namespace TFTV
                 {
                     int numBefore = SourceToChange.mTerms.Count;
                     _ = SourceToChange.Import_CSV(string.Empty, CSVstring, eSpreadsheetUpdateMode.AddNewTerms, ',');
+                    if (!overrideOtherSources)
+                    {
+                        // New terms are appended, so everything past numBefore came from this file.
+                        List<string> overriding = SourceToChange.mTerms.Skip(numBefore)
+                            .Select(term => term.Term)
+                            .Where(term => LocalizationManager.Sources.Any(source => source != SourceToChange && source.ContainsTerm(term)))
+                            .ToList();
+                        foreach (string term in overriding)
+                        {
+                            SourceToChange.RemoveTerm(term);
+                        }
+                        if (overriding.Count > 0)
+                        {
+                            TFTVLogger.Always($"Skipped {overriding.Count} terms from {LocalizationFileName} that would override existing text: {string.Join(", ", overriding)}");
+                        }
+                    }
                     int numAfter = SourceToChange.mTerms.Count;
                     int termsAdded = numAfter - numBefore;
                     if (localizeImmediately && termsAdded > 0)
