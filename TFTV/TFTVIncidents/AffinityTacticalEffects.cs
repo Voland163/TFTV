@@ -210,11 +210,19 @@ namespace TFTV.TFTVIncidents
             /// in Haven Defense missions, drawn from the same pool as the others.
             ///
             /// The defenders' deployment is a point budget: at mission start the spawner keeps drawing
-            /// weighted-random units from the haven's pool while the next draw still fits the remaining
-            /// points, and stops at the first one that does not. Adding points would only buy more
-            /// defenders on average, so instead, each time the spawner is about to stop, this grants
-            /// exactly the points the unit it just drew costs - once per rank. Each bonus defender is
-            /// then an ordinary draw from the pool, so it is the same kind and level as the rest.
+            /// weighted-random units from the haven's pool until the points run out. Adding points would
+            /// only buy more defenders on average, so instead, each time the spawner is about to stop,
+            /// this grants exactly the points of one more ordinary draw - once per rank. Each bonus
+            /// defender is then a normal draw from the pool, so it is the same kind and level as the rest.
+            ///
+            /// The spawner stops in one of two ways, and both are covered:
+            ///   - nothing left to draw: the candidate filter drops every unit costing more than
+            ///     DeploymentPointsLeft, so GenerateNextActorToDeploy returns null. The bonus then
+            ///     draws again with the budget briefly raised past the dearest unit, and trims the
+            ///     grant to what the drawn unit costs. This is the usual case.
+            ///   - a draw the turn's points can't pay for: DeploymentPointsLeft also counts the
+            ///     reinforcement budget, so a draw can pass the filter and still fail the turn-0
+            ///     check in GetDeploymentPointsForTurn. The bonus grants that shortfall.
             ///
             /// Initial deployment only: DeployForTurn(0) runs once, from TacMission.OnLevelStart, on a
             /// fresh mission (a loaded save restores the spawns instead). The rank is read from the
@@ -225,6 +233,9 @@ namespace TFTV.TFTVIncidents
             {
                 private static readonly AccessTools.FieldRef<TacParticipantSpawn, ActorDeployData> NextDeploymentRef =
                     AccessTools.FieldRefAccess<TacParticipantSpawn, ActorDeployData>("_nextDeployment");
+
+                private static readonly AccessTools.FieldRef<TacParticipantSpawn, List<ActorDeployData>> ActorDeployDataRef =
+                    AccessTools.FieldRefAccess<TacParticipantSpawn, List<ActorDeployData>>("_actorDeployData");
 
                 private static readonly MethodInfo GenerateNextActorToDeployMethod =
                     AccessTools.Method(typeof(TacParticipantSpawn), "GenerateNextActorToDeploy");
@@ -237,7 +248,9 @@ namespace TFTV.TFTVIncidents
                 private static TacParticipantSpawn _spawn;
                 private static int _bonusRemaining;
                 private static int _bonusSpawned;
+                private static bool _pending;
                 private static float _pendingGrant;
+                private static bool _inRedraw;
 
                 private static int GetSquadRank(TacMission tacMission)
                 {
@@ -317,15 +330,43 @@ namespace TFTV.TFTVIncidents
                 /// <summary>
                 /// The bonus is for defenders. If the draw that would use it is a civilian, draw again.
                 /// </summary>
-                private static ActorDeployData EnsureDefenderDrawn(TacParticipantSpawn spawn, ActorDeployData next)
+                private static ActorDeployData EnsureDefenderDrawn(TacParticipantSpawn spawn, ActorDeployData next, List<ActorDeployData> ignoreActors)
                 {
-                    for (int attempt = 0; attempt < MaxRedraws && next != null && IsCivilian(next); attempt++)
+                    _inRedraw = true;
+                    try
                     {
-                        next = GenerateNextActorToDeployMethod?.Invoke(spawn, new object[] { new List<ActorDeployData>(), false }) as ActorDeployData;
-                        NextDeploymentRef(spawn) = next;
+                        for (int attempt = 0; attempt < MaxRedraws && next != null && IsCivilian(next); attempt++)
+                        {
+                            next = GenerateNextActorToDeployMethod?.Invoke(spawn, new object[] { ignoreActors ?? new List<ActorDeployData>(), false }) as ActorDeployData;
+                        }
+                    }
+                    finally
+                    {
+                        _inRedraw = false;
                     }
 
                     return next != null && !IsCivilian(next) ? next : null;
+                }
+
+                /// <summary>
+                /// Turn-0 points the spawner checks a draw against: GetDeploymentPointsForTurn(0).
+                /// </summary>
+                private static float GetInitialPointsLeft(TacParticipantSpawn spawn)
+                {
+                    return spawn.MissionFactionData.InitialDeploymentPoints - spawn.DeploymentPointsUsed;
+                }
+
+                private static void Grant(TacParticipantSpawn spawn, ActorDeployData unit, float grant)
+                {
+                    spawn.MissionFactionData.InitialDeploymentPoints += grant;
+                    _pending = true;
+                    _pendingGrant = grant;
+                    TFTVLogger.Always($"{DiagTag} Granted {grant} deployment points for an extra Haven defender: {unit?.GetName()} (cost {unit?.DeployCost}).");
+                }
+
+                private static bool IsBonusDue(TacParticipantSpawn spawn)
+                {
+                    return !_inRedraw && _spawn != null && _spawn == spawn && _bonusRemaining > 0 && !_pending;
                 }
 
                 [HarmonyPatch(typeof(TacParticipantSpawn), nameof(TacParticipantSpawn.DeployForTurn))]
@@ -338,7 +379,9 @@ namespace TFTV.TFTVIncidents
                         try
                         {
                             _spawn = null;
+                            _pending = false;
                             _pendingGrant = 0f;
+                            _inRedraw = false;
                             _bonusSpawned = 0;
                             _bonusRemaining = GetBonusDefenders(__instance, turnNumber);
 
@@ -362,7 +405,7 @@ namespace TFTV.TFTVIncidents
                             {
                                 // Points granted for a defender that then could not be placed would otherwise
                                 // be left over for reinforcements.
-                                if (_pendingGrant > 0f)
+                                if (_pending)
                                 {
                                     __instance.MissionFactionData.InitialDeploymentPoints -= _pendingGrant;
                                 }
@@ -378,7 +421,9 @@ namespace TFTV.TFTVIncidents
                         finally
                         {
                             _spawn = null;
+                            _pending = false;
                             _pendingGrant = 0f;
+                            _inRedraw = false;
                             _bonusRemaining = 0;
                         }
 
@@ -395,7 +440,7 @@ namespace TFTV.TFTVIncidents
                     {
                         try
                         {
-                            if (_spawn == null || _spawn != __instance || _bonusRemaining <= 0 || _pendingGrant > 0f)
+                            if (!IsBonusDue(__instance))
                             {
                                 return;
                             }
@@ -407,21 +452,77 @@ namespace TFTV.TFTVIncidents
                                 return;
                             }
 
-                            next = EnsureDefenderDrawn(__instance, next);
-                            if (next == null)
+                            ActorDeployData defender = EnsureDefenderDrawn(__instance, next, null);
+                            if (defender == null)
                             {
                                 return;
                             }
 
-                            float grant = next.DeployCost - __result;
-                            if (grant <= 0f)
-                            {
-                                return;
-                            }
+                            NextDeploymentRef(__instance) = defender;
 
-                            __instance.MissionFactionData.InitialDeploymentPoints += grant;
+                            float grant = defender.DeployCost - __result;
+                            Grant(__instance, defender, grant);
                             __result += grant;
-                            _pendingGrant = grant;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(TacParticipantSpawn), "GenerateNextActorToDeploy")]
+                internal static class TacParticipantSpawn_GenerateNextActorToDeploy_Patch
+                {
+                    static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+                    private static void Postfix(TacParticipantSpawn __instance, List<ActorDeployData> ignoreActors, bool isReinforcement, ref ActorDeployData __result)
+                    {
+                        try
+                        {
+                            if (__result != null || isReinforcement || !IsBonusDue(__instance))
+                            {
+                                return;
+                            }
+
+                            // Nothing the haven can still afford. Draw again as if it could afford anything in
+                            // its pool, so the pick keeps the pool's own weights, caps and limits.
+                            List<ActorDeployData> pool = ActorDeployDataRef(__instance);
+                            float dearest = pool?
+                                .Where(d => d != null && !IsCivilian(d))
+                                .Select(d => d.DeployCost)
+                                .DefaultIfEmpty(0f)
+                                .Max() ?? 0f;
+
+                            if (dearest <= 0f)
+                            {
+                                return;
+                            }
+
+                            __instance.MissionFactionData.InitialDeploymentPoints += dearest;
+                            ActorDeployData defender;
+
+                            _inRedraw = true;
+                            try
+                            {
+                                defender = GenerateNextActorToDeployMethod?.Invoke(__instance, new object[] { ignoreActors, false }) as ActorDeployData;
+                                defender = EnsureDefenderDrawn(__instance, defender, ignoreActors);
+                            }
+                            finally
+                            {
+                                _inRedraw = false;
+                                __instance.MissionFactionData.InitialDeploymentPoints -= dearest;
+                            }
+
+                            if (defender == null)
+                            {
+                                TFTVLogger.Always($"{DiagTag} No Haven defender left in the pool to draw for the bonus.");
+                                return;
+                            }
+
+                            // Exactly what this one unit costs, on top of whatever the haven had left.
+                            Grant(__instance, defender, Mathf.Max(0f, defender.DeployCost - GetInitialPointsLeft(__instance)));
+                            __result = defender;
                         }
                         catch (Exception e)
                         {
@@ -437,11 +538,12 @@ namespace TFTV.TFTVIncidents
 
                     private static void Postfix(TacParticipantSpawn __instance, ActorDeployData actorData)
                     {
-                        if (_spawn == null || _spawn != __instance || _pendingGrant <= 0f)
+                        if (_spawn == null || _spawn != __instance || !_pending)
                         {
                             return;
                         }
 
+                        _pending = false;
                         _pendingGrant = 0f;
                         _bonusRemaining--;
                         _bonusSpawned++;
