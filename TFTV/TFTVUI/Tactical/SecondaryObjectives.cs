@@ -687,12 +687,18 @@ namespace TFTV.TFTVUI.Tactical
 
                 while (elapsedTime < duration)
                 {
+                    // The HUD can be torn down mid-fade (the battle summary does it), and a destroyed
+                    // Graphic throws on every write.
+                    if (graphic == null) yield break;
+
                     elapsedTime += Time.deltaTime;
                     float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / duration);
                     color.a = newAlpha;
                     graphic.color = color;
                     yield return null; // Wait for the next frame
                 }
+
+                if (graphic == null) yield break;
 
                 // Ensure the final alpha is set
                 color.a = targetAlpha;

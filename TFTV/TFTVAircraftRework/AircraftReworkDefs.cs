@@ -1268,10 +1268,9 @@ namespace TFTV
 
         /// <summary>
         /// The rework's localization file overrides a handful of vanilla keys (the aircraft
-        /// durability label, the personnel tooltips of the base rework, and so on). Those files are
-        /// loaded whatever <see cref="TFTVAircraftReworkMain.AircraftReworkOn"/> says, so with the
-        /// rework off the main branch would describe mechanics it does not have. Put the vanilla
-        /// wording back in that case.
+        /// durability label, the personnel tooltips of the base rework, and so on). With the rework
+        /// off, Helper.Initialize already keeps that file from covering any existing key; this is a
+        /// second line for the ones that describe mechanics the main branch does not have.
         /// </summary>
         private static void RestoreVanillaLocKeys()
         {

@@ -1849,6 +1849,13 @@ namespace TFTV.TFTVDrills
 
                 _snapBraceAPCostStatus.EffectName = "SnapBraceFreeDeployShield";
                 _snapBraceAPCostStatus.SingleInstance = true;
+
+                // The source is Rapid Clearance's (itself Quick Aim's) "until end of turn" discount, so
+                // the clone expired as the first turn ended. The ability only applies it when it is
+                // added - on deployment or on loading a save - so Snap Brace then did nothing for the
+                // rest of the mission, until the next load. It has to last as long as the ability.
+                _snapBraceAPCostStatus.DurationTurns = -1;
+                _snapBraceAPCostStatus.ExpireOnEndOfTurn = false;
                 _snapBraceAPCostStatus.AbilityCostModification.TargetAbilityTagDef = _snapBraceDeployShieldTag;
                 _snapBraceAPCostStatus.AbilityCostModification.SkillTagCullFilter = null;
                 _snapBraceAPCostStatus.AbilityCostModification.EquipmentTagDef = null;

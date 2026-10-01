@@ -402,31 +402,64 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
         [HarmonyPatch(typeof(UIStatePhoenixBaseLayout), "ShowBaseOnGeoscape")]
         internal static class LocatePhoenixBaseFocusPatch
         {
+            // 1.30 remembered the last selected aircraft as an index into VisibleVehicles; 1.30.3
+            // replaced it with the aircraft itself. Looking up the old name gave null and the click threw.
+            private static readonly FieldInfo _lastSelectedVehicleActor = AccessTools.Field(typeof(GeoscapeView), "_lastSelectedVehicleActor");
+            private static readonly FieldInfo _lastSelectedVehicleIndex = AccessTools.Field(typeof(GeoscapeView), "_lastSelectedVehicle");
+
+            // 1.30.3 also gave ChaseTarget a third parameter, so it's called by reflection to work
+            // whatever the SDK we build against says.
+            private static readonly MethodInfo _chaseTarget = AccessTools.Method(typeof(GeoscapeView), "ChaseTarget");
+
             private static bool Prefix(UIStatePhoenixBaseLayout __instance, GeoPhoenixBase ____base)
             {
-                GeoLevelController geoLevelController = ____base.Site.GeoLevel;
-
-                GeoscapeView view = geoLevelController.View;
-
-                GeoVehicle currentVehicle = view.SelectedActor as GeoVehicle;
-
-                if (currentVehicle == null || !currentVehicle.IsOwnedByViewer)
+                try
                 {
-                    currentVehicle = geoLevelController.PhoenixFaction.Vehicles.FirstOrDefault<GeoVehicle>();
-                }
-                if (currentVehicle == null)
-                {
-                    view.ChaseTarget(____base.Site, false);
+                    GeoLevelController geoLevelController = ____base.Site.GeoLevel;
+
+                    GeoscapeView view = geoLevelController.View;
+
+                    GeoVehicle currentVehicle = view.SelectedActor as GeoVehicle;
+
+                    if (currentVehicle == null || !currentVehicle.IsOwnedByViewer)
+                    {
+                        currentVehicle = geoLevelController.PhoenixFaction.Vehicles.FirstOrDefault<GeoVehicle>();
+                    }
+                    if (currentVehicle == null)
+                    {
+                        if (_chaseTarget == null)
+                        {
+                            return true;
+                        }
+
+                        object[] args = _chaseTarget.GetParameters()
+                            .Select((parameter, index) => index == 0 ? (object)____base.Site : false)
+                            .ToArray();
+                        _chaseTarget.Invoke(view, args);
+                        return false;
+                    }
+
+                    if (_lastSelectedVehicleActor != null)
+                    {
+                        _lastSelectedVehicleActor.SetValue(view, currentVehicle);
+                    }
+                    else if (_lastSelectedVehicleIndex != null)
+                    {
+                        int currentVehicleIndex = view.VisibleVehicles.ToList().IndexOf(currentVehicle);
+                        if (currentVehicleIndex >= 0)
+                        {
+                            _lastSelectedVehicleIndex.SetValue(view, currentVehicleIndex);
+                        }
+                    }
+
+                    view.SelectActorAndVehicle(____base.Site, false);
                     return false;
                 }
-                List<GeoVehicle> visibleVehicles = view.VisibleVehicles.ToList();
-                int currentVehicleIndex = visibleVehicles.IndexOf(currentVehicle);
-                if (currentVehicleIndex >= 0)
+                catch (Exception e)
                 {
-                    AccessTools.Field(typeof(GeoscapeView), "_lastSelectedVehicle").SetValue(view, currentVehicleIndex);
+                    TFTVLogger.Error(e);
+                    return true;
                 }
-                view.SelectActorAndVehicle(____base.Site, false);
-                return false;
             }
         }
     }

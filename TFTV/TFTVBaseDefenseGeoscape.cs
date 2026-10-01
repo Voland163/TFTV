@@ -73,6 +73,20 @@ namespace TFTV
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color brightRed = new Color32(255, 0, 0, 255);
+
+        /// <summary>
+        /// Base-rework personnel (the pool, and those spent on activating bases) are hidden characters
+        /// who live in a base but can never be deployed, so they must not count as a base's defenders.
+        /// </summary>
+        private static IEnumerable<GeoCharacter> ExcludeHiddenPersonnel(IEnumerable<GeoCharacter> characters)
+        {
+            return characters.Where(c => c != null && !GeoCharacterFilter.HiddenOperativeMarkerFilter.ShouldHide(c));
+        }
+
+        private static int CountDefenders(GeoSite site)
+        {
+            return ExcludeHiddenPersonnel(site.GetAllCharacters()).Count();
+        }
         internal static GeoSite KludgeSite = null;
         public static HashSet<int> PurgePending = new HashSet<int>();
 
@@ -984,7 +998,7 @@ namespace TFTV
 
                         GeoPhoenixBase phoenixBase = geoSite.GetComponent<GeoPhoenixBase>();
                         PhoenixFacilityDef securityStationDef = DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef");
-                        int securityValue = phoenixBase.SoldiersInBase.Count();
+                        int securityValue = ExcludeHiddenPersonnel(phoenixBase.SoldiersInBase).Count(); // operatives only: personnel are no security
 
                         if (phoenixBase.Layout.Facilities.Any(f => f.Def == securityStationDef && f.IsWorking))
                         {
@@ -3153,41 +3167,45 @@ namespace TFTV
 
                                     if (geoMission.Site.CharactersCount > 0)
                                     {
-                                        List<GeoSite> phoenixBases = new List<GeoSite>();
+                                        // Nearest base first; an outpost only if nothing else is left, since
+                                        // operatives can't be managed from one.
+                                        GeoSite refuge = geoMission.Site.GeoLevel.PhoenixFaction.Bases
+                                            .Select(phoenixBase => phoenixBase?.Site)
+                                            .Where(s => s != null && s != geoMission.Site)
+                                            .OrderBy(s => s.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
+                                            .ThenBy(s => (s.WorldPosition - geoMission.Site.WorldPosition).magnitude)
+                                            .FirstOrDefault();
 
-                                        foreach (GeoPhoenixBase phoenixBase in geoMission.Site.GeoLevel.PhoenixFaction.Bases)
+                                        List<GeoCharacter> charactersToMove = geoMission.Site.GetAllCharacters().ToList();
+
+                                        if (refuge == null)
                                         {
-                                            // TFTVLogger.Always($"Phoenix base is {phoenixBase.Site.LocalizedSiteName}");
-                                            phoenixBases.Add(phoenixBase.Site);
-
+                                            // That was the last base: the game is lost, and there is nowhere to go.
+                                            TFTVLogger.Always($"[BaseDefense] {geoMission.Site.LocalizedSiteName} was the last Phoenix base; {charactersToMove.Count} characters there are lost with it.");
                                         }
-
-                                        phoenixBases.Remove(geoMission.Site);
-
-                                        phoenixBases = phoenixBases.OrderBy(b => (b.WorldPosition - geoMission.Site.WorldPosition).magnitude).ToList();
-
-                                        List<GeoCharacter> charactersToMove = new List<GeoCharacter>();
-
-                                        foreach (GeoCharacter character in geoMission.Site.GetAllCharacters())
+                                        else
                                         {
-                                            charactersToMove.Add(character);
-                                            // TFTVLogger.Always($"character to move {character.DisplayName}");
+                                            foreach (GeoCharacter geoCharacter in charactersToMove)
+                                            {
+                                                geoMission.Site.RemoveCharacter(geoCharacter);
+                                                refuge.AddCharacter(geoCharacter);
+                                            }
 
+                                            TFTVLogger.Always($"[BaseDefense] Moved {charactersToMove.Count} characters from {geoMission.Site.LocalizedSiteName} to {refuge.LocalizedSiteName}.");
+
+                                            // Personnel are hidden everywhere else, so name only the operatives.
+                                            List<string> escapedOperatives = ExcludeHiddenPersonnel(charactersToMove)
+                                                .Select(c => c.DisplayName)
+                                                .ToList();
+
+                                            if (escapedOperatives.Count > 0)
+                                            {
+                                                description.text += " " + TFTVCommonMethods.FormatKey(
+                                                    "KEY_TFTV_BASE_DEFENSE_ESCAPED_TO",
+                                                    TFTVCommonMethods.JoinNames(escapedOperatives),
+                                                    refuge.LocalizedSiteName);
+                                            }
                                         }
-
-                                        foreach (GeoCharacter geoCharacter in charactersToMove)
-                                        {
-                                            geoMission.Site.RemoveCharacter(geoCharacter);
-                                            phoenixBases.First().AddCharacter(geoCharacter);
-                                            //  TFTVLogger.Always($"{geoCharacter.DisplayName} moved to {phoenixBases.First().LocalizedSiteName}");
-                                            //  description.text += $" {geoCharacter.DisplayName} escaped to {phoenixBases.First().LocalizedSiteName}.";
-                                        }
-
-                                        description.text += " " + TFTVCommonMethods.FormatKey(
-                                            "KEY_TFTV_BASE_DEFENSE_ESCAPED_TO",
-                                            TFTVCommonMethods.JoinNames(
-                                                charactersToMove.Select(c => c.DisplayName)),
-                                            phoenixBases.First().LocalizedSiteName);
                                     }
 
                                 }
@@ -3389,7 +3407,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (site.GetComponent<GeoPhoenixBase>() != null && site.ActiveMission != null && site.CharactersCount > 0 &&
+                    if (site.GetComponent<GeoPhoenixBase>() != null && site.ActiveMission != null && CountDefenders(site) > 0 &&
                         (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
                     {
 
@@ -3420,7 +3438,7 @@ namespace TFTV
         {
             try
             {
-                if (target.Actor is GeoSite site && site.ActiveMission != null && site.CharactersCount > 0
+                if (target.Actor is GeoSite site && site.ActiveMission != null && CountDefenders(site) > 0
                       &&
                       (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
                 {
@@ -3646,7 +3664,7 @@ namespace TFTV
 
                         List<IGeoCharacterContainer> characterContainers = __instance.GetDeploymentSources(__instance.Site.Owner);
 
-                        IEnumerable<GeoCharacter> deployment = characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters());
+                        IEnumerable<GeoCharacter> deployment = ExcludeHiddenPersonnel(characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters()));
 
                         if (deployment.Count() == 0 && progress >= 1)
                         {
@@ -3907,13 +3925,13 @@ namespace TFTV
                             TFTVLogger.Always("Closing modal because mission is not in play");
                         }
 
-                        if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && geoSite.CharactersCount == 0)
+                        if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && CountDefenders(geoSite) == 0)
                         {
                             float progress = GetAttackProgress(geoSite);
 
                             List<IGeoCharacterContainer> characterContainers = geoMission.GetDeploymentSources(geoSite.Owner);
 
-                            IEnumerable<GeoCharacter> deployment = characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters());
+                            IEnumerable<GeoCharacter> deployment = ExcludeHiddenPersonnel(characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters()));
 
 
                             if (deployment.Count() == 0 && progress < 1)
