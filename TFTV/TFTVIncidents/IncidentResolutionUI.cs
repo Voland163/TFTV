@@ -525,7 +525,7 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                if (__instance == null || geoEvent?.Context == null || pagingEvent)
+                if (__instance == null || geoEvent?.Context == null)
                 {
                     return;
                 }
@@ -536,6 +536,9 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
+                // Clean up before the paging check: an event with more than one description page shows
+                // its first page as a paging event, and if an incident was started without a closing
+                // screen the module still carries its crew row, cancel button and payoff strip.
                 RemovePreviousRows(parent);
                 IncidentIntroTutorialPanel.ClearPanel(parent);   // ADD THIS LINE
                 ApproachIconTooltipTrigger.DestroyTooltip();
@@ -545,7 +548,7 @@ namespace TFTV.TFTVIncidents
                 LeaderAbilityIcons.Clear();
                 ResetSelectedLeaderContext(null, null);
 
-                if (!IsIncidentIntroEvent(geoEvent))
+                if (pagingEvent || !IsIncidentIntroEvent(geoEvent))
                 {
                     return;
                 }
