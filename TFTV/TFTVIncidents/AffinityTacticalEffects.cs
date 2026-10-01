@@ -3,18 +3,23 @@ using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.Missions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using static PhoenixPoint.Common.Levels.Missions.TacMissionTypeParticipantData;
 
 namespace TFTV.TFTVIncidents
 {
@@ -201,142 +206,246 @@ namespace TFTV.TFTVIncidents
 
 
             /// <summary>
-            /// Need to wire this to PsychoSociology benefit 2, and change description to increase haven defense deployment by 50% per rank.
+            /// Psycho-Sociology tactical benefit 2: one more friendly Haven defender per affinity rank
+            /// in Haven Defense missions, drawn from the same pool as the others.
+            ///
+            /// The defenders' deployment is a point budget: at mission start the spawner keeps drawing
+            /// weighted-random units from the haven's pool while the next draw still fits the remaining
+            /// points, and stops at the first one that does not. Adding points would only buy more
+            /// defenders on average, so instead, each time the spawner is about to stop, this grants
+            /// exactly the points the unit it just drew costs - once per rank. Each bonus defender is
+            /// then an ordinary draw from the pool, so it is the same kind and level as the rest.
+            ///
+            /// Initial deployment only: DeployForTurn(0) runs once, from TacMission.OnLevelStart, on a
+            /// fresh mission (a loaded save restores the spawns instead). The rank is read from the
+            /// Phoenix squad's deployment data rather than from Phoenix actors, because participants
+            /// deploy in the order the mission's rules set and the squad may not be on the map yet.
             /// </summary>
-            [HarmonyPatch(typeof(DeploymentRuleData), "CalculateDeployment")]
-            public static class DeploymentRuleData_CalculateDeployment_PsychoSociologyBonus_Patch
+            internal static class HavenDefenderBonus
             {
-                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+                private static readonly AccessTools.FieldRef<TacParticipantSpawn, ActorDeployData> NextDeploymentRef =
+                    AccessTools.FieldRefAccess<TacParticipantSpawn, ActorDeployData>("_nextDeployment");
 
-                private static int GetAffinityRankForApproach(GeoCharacter character, LeaderSelection.AffinityApproach approach)
+                private static readonly MethodInfo GenerateNextActorToDeployMethod =
+                    AccessTools.Method(typeof(TacParticipantSpawn), "GenerateNextActorToDeploy");
+
+                /// <summary>How many times a civilian draw is re-rolled before a bonus is given up.</summary>
+                private const int MaxRedraws = 10;
+
+                // The spawn being deployed with a bonus, and its bookkeeping. Only ever set for the
+                // duration of one DeployForTurn call.
+                private static TacParticipantSpawn _spawn;
+                private static int _bonusRemaining;
+                private static int _bonusSpawned;
+                private static float _pendingGrant;
+
+                private static int GetSquadRank(TacMission tacMission)
                 {
-                    if (character?.Progression?.Abilities == null)
+                    PassiveModifierAbilityDef[] track = GetApproachAbilities(LeaderSelection.AffinityApproach.PsychoSociology);
+                    TacMissionFactionData phoenix = tacMission?.MissionData?.MissionParticipants?
+                        .FirstOrDefault(p => p != null && p.ParticipantKind == TacMissionParticipant.Player);
+
+                    if (track == null || phoenix?.ActorDeployData == null)
                     {
                         return 0;
                     }
 
-                    PassiveModifierAbilityDef[] affinityTrack = GetApproachAbilities(approach);
-                    if (affinityTrack == null || affinityTrack.Length < 3)
-                    {
-                        return 0;
-                    }
+                    int bestRank = 0;
 
-                    for (int i = affinityTrack.Length - 1; i >= 0; i--)
+                    foreach (ActorDeployData deployData in phoenix.ActorDeployData)
                     {
-                        PassiveModifierAbilityDef def = affinityTrack[i];
-                        if (def != null && character.Progression.Abilities.Contains(def))
+                        TacticalAbilityDef[] abilities = (deployData?.ActorInstance as TacCharacterData)?.Abilites;
+                        if (abilities == null)
                         {
-                            return i + 1;
-                        }
-                    }
-
-                    return 0;
-                }
-
-                private static int GetBestGeoRankForTacticalBenefit(
-                    GeoLevelController level,
-                    GeoMission mission,
-                    LeaderSelection.AffinityApproach approach,
-                    int requiredOption)
-                {
-                    try
-                    {
-
-
-                        if (level == null || mission?.Squad?.Soldiers == null)
-                        {
-                            return 0;
+                            continue;
                         }
 
-                        int selectedOption = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoice(level, approach);
-                        if (selectedOption != requiredOption)
+                        for (int i = track.Length - 1; i >= bestRank; i--)
                         {
-                            return 0;
-                        }
-
-                        int bestRank = 0;
-
-                        foreach (GeoCharacter soldier in mission.Squad.Soldiers)
-                        {
-                            int rank = GetAffinityRankForApproach(soldier, approach);
-                            if (rank > bestRank)
+                            if (track[i] != null && abilities.Contains(track[i]))
                             {
-                                bestRank = rank;
+                                bestRank = i + 1;
+                                break;
                             }
                         }
-
-                        return bestRank;
                     }
-                    catch (Exception e)
+
+                    return bestRank;
+                }
+
+                private static int GetBonusDefenders(TacParticipantSpawn spawn, int turnNumber)
+                {
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled
+                        || turnNumber != 0
+                        || spawn?.MissionFactionData == null
+                        || spawn.ParticipantKind != TacMissionParticipant.Residents)
                     {
-                        TFTVLogger.Error(e);
                         return 0;
+                    }
+
+                    if (spawn.MissionFactionData.InitialDeploymentPoints <= 0f
+                        || spawn.TacMission?.MissionData?.MissionType?.MissionTags == null
+                        || HavenDefenseTag == null
+                        || !spawn.TacMission.MissionData.MissionType.MissionTags.Contains(HavenDefenseTag))
+                    {
+                        return 0;
+                    }
+
+                    // Haven defenders are hostile under Void Omen #5 - more of them would only help the enemy.
+                    if (TFTVVoidOmens.VoidOmensCheck[5])
+                    {
+                        TFTVLogger.Always($"{DiagTag} Skipping Psycho-Sociology haven-defense bonus: haven defenders are hostile (VO#5 active).");
+                        return 0;
+                    }
+
+                    if (Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach.PsychoSociology) != 2)
+                    {
+                        return 0;
+                    }
+
+                    return GetSquadRank(spawn.TacMission);
+                }
+
+                private static bool IsCivilian(ActorDeployData deployData)
+                {
+                    GameTagDef[] tags = deployData?.ActorInstance?.GameTags
+                        ?? (deployData?.InstanceDef as TacCharacterDef)?.Data?.GameTags;
+
+                    return tags != null && CivilianTag != null && tags.Contains(CivilianTag);
+                }
+
+                /// <summary>
+                /// The bonus is for defenders. If the draw that would use it is a civilian, draw again.
+                /// </summary>
+                private static ActorDeployData EnsureDefenderDrawn(TacParticipantSpawn spawn, ActorDeployData next)
+                {
+                    for (int attempt = 0; attempt < MaxRedraws && next != null && IsCivilian(next); attempt++)
+                    {
+                        next = GenerateNextActorToDeployMethod?.Invoke(spawn, new object[] { new List<ActorDeployData>(), false }) as ActorDeployData;
+                        NextDeploymentRef(spawn) = next;
+                    }
+
+                    return next != null && !IsCivilian(next) ? next : null;
+                }
+
+                [HarmonyPatch(typeof(TacParticipantSpawn), nameof(TacParticipantSpawn.DeployForTurn))]
+                internal static class TacParticipantSpawn_DeployForTurn_Patch
+                {
+                    static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+                    private static void Prefix(TacParticipantSpawn __instance, int turnNumber)
+                    {
+                        try
+                        {
+                            _spawn = null;
+                            _pendingGrant = 0f;
+                            _bonusSpawned = 0;
+                            _bonusRemaining = GetBonusDefenders(__instance, turnNumber);
+
+                            if (_bonusRemaining > 0)
+                            {
+                                _spawn = __instance;
+                                TFTVLogger.Always($"{DiagTag} Psycho-Sociology tactical benefit (rank {_bonusRemaining}): deploying {_bonusRemaining} extra Haven defender(s).");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+
+                    private static Exception Finalizer(TacParticipantSpawn __instance, Exception __exception)
+                    {
+                        try
+                        {
+                            if (_spawn != null && _spawn == __instance)
+                            {
+                                // Points granted for a defender that then could not be placed would otherwise
+                                // be left over for reinforcements.
+                                if (_pendingGrant > 0f)
+                                {
+                                    __instance.MissionFactionData.InitialDeploymentPoints -= _pendingGrant;
+                                }
+
+                                TFTVLogger.Always($"{DiagTag} Psycho-Sociology tactical benefit deployed {_bonusSpawned} extra Haven defender(s)" +
+                                    (_bonusRemaining > 0 ? $"; {_bonusRemaining} could not be placed." : "."));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                        finally
+                        {
+                            _spawn = null;
+                            _pendingGrant = 0f;
+                            _bonusRemaining = 0;
+                        }
+
+                        return __exception;
                     }
                 }
 
-
-
-                public static void Postfix(GeoMission mission, TacMissionTypeParticipantData participant, ref int __result)
+                [HarmonyPatch(typeof(TacParticipantSpawn), "GetDeploymentPointsForTurn")]
+                internal static class TacParticipantSpawn_GetDeploymentPointsForTurn_Patch
                 {
-                    try
+                    static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+                    private static void Postfix(TacParticipantSpawn __instance, ref float __result)
                     {
-                        if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
+                        try
                         {
-                            return;
-                        }
+                            if (_spawn == null || _spawn != __instance || _bonusRemaining <= 0 || _pendingGrant > 0f)
+                            {
+                                return;
+                            }
 
-                        // The site owner check below identifies the defenders of the attacked site.
-                        // On havens that is the human faction, but on alien nests, lairs and citadels
-                        // the site owner is the Pandoran faction, so without this tag check the bonus
-                        // would double the enemy deployment instead.
-                        if (mission?.MissionDef?.Tags == null
-                            || HavenDefenseTag == null
-                            || !mission.MissionDef.Tags.Contains(HavenDefenseTag))
+                            ActorDeployData next = NextDeploymentRef(__instance);
+                            if (next == null || next.DeployCost <= __result)
+                            {
+                                // The haven's own budget still covers it: not our turn yet.
+                                return;
+                            }
+
+                            next = EnsureDefenderDrawn(__instance, next);
+                            if (next == null)
+                            {
+                                return;
+                            }
+
+                            float grant = next.DeployCost - __result;
+                            if (grant <= 0f)
+                            {
+                                return;
+                            }
+
+                            __instance.MissionFactionData.InitialDeploymentPoints += grant;
+                            __result += grant;
+                            _pendingGrant = grant;
+                        }
+                        catch (Exception e)
                         {
-                            return;
+                            TFTVLogger.Error(e);
                         }
-
-                        TFTVLogger.Always($"{DiagTag} Calculating Psycho-Sociology bonus for haven defense deployment. Initial deployment: {__result}, participant: {participant?.ParticipantKind.ToString() ?? "null"}");
-
-                        if (__result <= 0 || participant == null || mission?.Site?.Owner?.Def == null)
-                        {
-                            return;
-                        }
-
-                        if (participant.FactionDef != mission.Site.Owner.Def.PPFactionDef)
-                        {
-                            return;
-                        }
-
-                        // Haven defenders are hostile under Void Omen #5 – boosting their deployment
-                        // count would only benefit the enemy.
-                        if (TFTVVoidOmens.VoidOmensCheck[5])
-                        {
-                            TFTVLogger.Always($"{DiagTag} Skipping Psycho-Sociology haven-defense deployment bonus: haven defenders are hostile (VO#5 active).");
-                            return;
-                        }
-
-                        GeoLevelController level = mission.Site.GeoLevel;
-                        int bestRank = GetBestGeoRankForTacticalBenefit(
-                            level,
-                            mission,
-                            LeaderSelection.AffinityApproach.PsychoSociology,
-                            requiredOption: 2);
-
-                        if (bestRank <= 0)
-                        {
-                            return;
-                        }
-
-                        int originalDeployment = __result;
-                        __result += Mathf.RoundToInt(originalDeployment * 0.5f * bestRank);
-
-                        TFTVLogger.Always(
-                            $"{DiagTag} Psycho-Sociology tactical benefit increased Haven defender deployment from {originalDeployment} to {__result} (rank {bestRank}).");
                     }
-                    catch (Exception e)
+                }
+
+                [HarmonyPatch(typeof(TacParticipantSpawn), "ActorSpawned")]
+                internal static class TacParticipantSpawn_ActorSpawned_Patch
+                {
+                    static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+                    private static void Postfix(TacParticipantSpawn __instance, ActorDeployData actorData)
                     {
-                        TFTVLogger.Error(e);
+                        if (_spawn == null || _spawn != __instance || _pendingGrant <= 0f)
+                        {
+                            return;
+                        }
+
+                        _pendingGrant = 0f;
+                        _bonusRemaining--;
+                        _bonusSpawned++;
+                        TFTVLogger.Always($"{DiagTag} Extra Haven defender deployed: {actorData?.GetName()} (cost {actorData?.DeployCost}).");
                     }
                 }
             }

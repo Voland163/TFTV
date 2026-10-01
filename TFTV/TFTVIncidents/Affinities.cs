@@ -815,7 +815,7 @@ int option)
                     case LeaderSelection.AffinityApproach.PsychoSociology:
                         return option == 1
                             ? LocalizeAndFormat(KeyPsychoTacOpt1, 2 * r)
-                            : LocalizeAndFormat(KeyPsychoTacOpt2, 50 * r);
+                            : LocalizeAndFormat(KeyPsychoTacOpt2, r);
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
