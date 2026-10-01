@@ -361,7 +361,7 @@ namespace TFTV.TFTVIncidents
                     spawn.MissionFactionData.InitialDeploymentPoints += grant;
                     _pending = true;
                     _pendingGrant = grant;
-                    TFTVLogger.Always($"{DiagTag} Granted {grant} deployment points for an extra Haven defender: {unit?.GetName()} (cost {unit?.DeployCost}).");
+                    TFTVLogger.Always($"{DiagTag} Granted {grant} deployment points for an extra Haven defender: {unit?.InstanceDef?.name ?? unit?.GetName()} (cost {unit?.DeployCost}).");
                 }
 
                 private static bool IsBonusDue(TacParticipantSpawn spawn)
@@ -547,7 +547,7 @@ namespace TFTV.TFTVIncidents
                         _pendingGrant = 0f;
                         _bonusRemaining--;
                         _bonusSpawned++;
-                        TFTVLogger.Always($"{DiagTag} Extra Haven defender deployed: {actorData?.GetName()} (cost {actorData?.DeployCost}).");
+                        TFTVLogger.Always($"{DiagTag} Extra Haven defender deployed: {actorData?.InstanceDef?.name ?? actorData?.GetName()} (cost {actorData?.DeployCost}).");
                     }
                 }
             }
