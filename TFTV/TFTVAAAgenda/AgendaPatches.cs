@@ -907,25 +907,14 @@ namespace TFTV.AgendaTracker
     )]
         internal static class UIModuleFactionAgendaTracker_OrderElements_Patch
         {
-            // ETAs within the same hour are treated as equal.
-            private const long EtaBucketSizeTicks = TimeSpan.TicksPerHour;
-
             [HarmonyPrefix]
             private static bool Prefix(
-                GeoscapeViewContext ____context,
                 List<UIFactionDataTrackerElement> ____currentTrackedElements)
             {
-                long currentGeoscapeTicks =
-                    ____context.Level.Timing.Now.DateTime.Ticks;
-
                 List<UIFactionDataTrackerElement> orderedElements =
                     ____currentTrackedElements
                         // Ascending: lowest/soonest ETA appears first.
-                        .OrderBy(element =>
-                            GetCompletionTimeBucket(
-                                element,
-                                currentGeoscapeTicks
-                            ))
+                        .OrderBy(GetDisplayedHoursLeft)
                         // Deterministic ordering within the same ETA bucket.
                         .ThenBy(
                             element => element.TrackedName.text,
@@ -948,17 +937,23 @@ namespace TFTV.AgendaTracker
                 return false;
             }
 
-            private static long GetCompletionTimeBucket(
-                UIFactionDataTrackerElement element,
-                long currentGeoscapeTicks)
+            /// <summary>
+            /// The time left as the row shows it: UIUtil.FormatTimeRemaining rounds up to whole hours.
+            ///
+            /// Rows that look equal must sort equal, so the name decides between them and they stay
+            /// put. Sorting on completion time rounded to the nearest hour did not do that: some rows'
+            /// time left moves in whole-hour steps while the clock runs on, so two rows showing the same
+            /// ETA kept crossing a half-hour boundary at different moments and swapped places.
+            /// </summary>
+            private static int GetDisplayedHoursLeft(UIFactionDataTrackerElement element)
             {
-                long estimatedCompletionTicks =
-                    currentGeoscapeTicks +
-                    element.CurrentTimeLeft.TimeSpan.Ticks;
+                TimeUnit timeLeft = element.CurrentTimeLeft;
+                if (timeLeft == TimeUnit.Invalid || timeLeft == TimeUnit.Max)
+                {
+                    return int.MaxValue;
+                }
 
-                // Round the estimated completion time to the nearest hour.
-                return (estimatedCompletionTicks + EtaBucketSizeTicks / 2L) /
-                       EtaBucketSizeTicks;
+                return Mathf.CeilToInt((float)timeLeft.TimeSpan.TotalHours);
             }
         }
     }
