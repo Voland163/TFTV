@@ -256,8 +256,11 @@ namespace TFTV.TFTVBaseRework
             }
 
             if (character == null) return null;
-            var id = PersonnelData.GetPersonnelByUnitId(character.Id)?.Id ?? 0;
-            return RecruitSessions.FirstOrDefault(s => s.PersonnelId == id || s.GeoUnitId == character.Id);
+            // PersonnelId 0 means "not set" - sessions restored from older code had it unset, and a
+            // character with no pool record (any field operative) resolves to 0 too, so matching on it
+            // handed a field operative somebody else's training session.
+            int id = PersonnelData.GetPersonnelByUnitId(character.Id)?.Id ?? 0;
+            return RecruitSessions.FirstOrDefault(s => s.GeoUnitId == character.Id || (id > 0 && s.PersonnelId == id));
         }
 
         public static double GetRecruitRemainingHours(GeoCharacter character, GeoLevelController level)
@@ -1234,6 +1237,15 @@ namespace TFTV.TFTVBaseRework
                 {
                     GeoCharacter character = level.PhoenixFaction?.Characters?.FirstOrDefault(s => s.Id == save.GeoUnitId);
 
+                    if (character == null)
+                    {
+                        // The trainee no longer exists, so there is nothing to finish training. Dropping
+                        // the session is the only sensible outcome; it used to throw here instead.
+                        TFTVLogger.Always($"[Training] Skipping saved training session for unit {save.GeoUnitId}: " +
+                            $"no such character in the Phoenix faction (Completed={save.Completed}, Target={save.MainSpecName} {save.TargetLevel}).");
+                        continue;
+                    }
+
                     SpecializationDef spec = null;
                     if (!string.IsNullOrEmpty(save.MainSpecName))
                     {
@@ -1242,6 +1254,7 @@ namespace TFTV.TFTVBaseRework
 
                     RecruitSessions.Add(new RecruitTrainingSession
                     {
+                        PersonnelId = character.Id,
                         Character = character,
                         GeoUnitId = character.Id,
                         TargetSpecialization = spec,
