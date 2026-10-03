@@ -269,6 +269,11 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"{research.ResearchID} completed by {research.Faction}");
 
+                    if (research.Faction == research.Faction?.GeoLevel?.PhoenixFaction)
+                    {
+                        TFTVBaseRework.TrainingFacilityRework.ApplyResearchSpeedupToActiveTraining(research.Faction.GeoLevel);
+                    }
+
                     GeoLevelController controller = research.Faction.GeoLevel;
                     GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
                     ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");

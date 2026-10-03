@@ -64,6 +64,10 @@ namespace TFTV.TFTVBaseRework
             public int SpPaid;
             public bool WasDismissed;
 
+            // The research duration reduction this session's DurationHours reflects (1 = none).
+            // 0 means not recorded (older saves); it is then inferred from DurationHours.
+            public float DurationFactor;
+
             public double ProgressFraction(double currentHour)
             {
                 if (Completed) return 1d;
@@ -207,7 +211,8 @@ namespace TFTV.TFTVBaseRework
                     StartLevel = startLevel,
                     VirtualLevelAchieved = startLevel,
                     SpPaid = spCost,
-                    WasDismissed = wasDismissed
+                    WasDismissed = wasDismissed,
+                    DurationFactor = GetDurationReductionFactor(faction)
                 };
 
                 RecruitSessions.Add(recruitSession);
@@ -610,17 +615,90 @@ namespace TFTV.TFTVBaseRework
         #region Helpers / Internal
         private static float CalculateEffectiveDurationHours(GeoPhoenixFaction faction, int targetLevel, int startLevel = 1)
         {
+            float durationHours = GetBaseDurationHours(targetLevel, startLevel) * GetDurationReductionFactor(faction);
+            TFTVLogger.Always($"[Training] CalculateEffectiveDurationHours: targetLevel={targetLevel} startLevel={startLevel} durationHours={durationHours:0.0}");
+            return durationHours;
+        }
+
+        private static float GetBaseDurationHours(int targetLevel, int startLevel)
+        {
             int levelsToGain = Math.Max(1, targetLevel - startLevel);
-            float durationHours = DurationPerAdditionalLevel * 24f * levelsToGain;
+            return DurationPerAdditionalLevel * 24f * levelsToGain;
+        }
+
+        /// <summary>The product of the duration reductions from the researches completed so far.</summary>
+        private static float GetDurationReductionFactor(GeoPhoenixFaction faction)
+        {
+            float factor = 1f;
             if (faction?.Research != null)
             {
                 foreach (var kv in DurationReductionResearch)
                 {
-                    if (faction.Research.HasCompleted(kv.Key)) durationHours *= (1f - kv.Value);
+                    if (faction.Research.HasCompleted(kv.Key)) factor *= (1f - kv.Value);
                 }
             }
-            TFTVLogger.Always($"[Training] CalculateEffectiveDurationHours: targetLevel={targetLevel} startLevel={startLevel} levelsToGain={levelsToGain} durationHours={durationHours:0.0}");
-            return durationHours;
+            return factor;
+        }
+
+        /// <summary>
+        /// Gives training already under way the benefit of a duration-reducing research completed since
+        /// it started (New Jericho Combat Training, Proto-Civilisation). Only the time still to go is
+        /// shortened - by the same proportion a new session would get - and the time already trained
+        /// stands.
+        ///
+        /// Sessions from saves made before the factor was recorded have it inferred from their stored
+        /// duration against the base for their levels, which is exactly what it was computed from.
+        /// </summary>
+        internal static void ApplyResearchSpeedupToActiveTraining(GeoLevelController level)
+        {
+            try
+            {
+                GeoPhoenixFaction faction = level?.PhoenixFaction;
+                if (!BaseReworkCheck.BaseReworkEnabled || faction == null || RecruitSessions.Count == 0)
+                {
+                    return;
+                }
+
+                float current = GetDurationReductionFactor(faction);
+                double currentHour = level.Timing.Now.TimeSpan.TotalHours;
+
+                foreach (RecruitTrainingSession session in RecruitSessions)
+                {
+                    if (session == null || session.Completed || session.DurationHours <= 0d)
+                    {
+                        continue;
+                    }
+
+                    float applied = session.DurationFactor;
+                    if (applied <= 0f)
+                    {
+                        float baseHours = GetBaseDurationHours(session.TargetLevel, session.StartLevel);
+                        applied = baseHours > 0f ? Math.Max(0.01f, Math.Min(1f, (float)(session.DurationHours / baseHours))) : 1f;
+                    }
+
+                    if (current >= applied - 0.0001f)
+                    {
+                        session.DurationFactor = applied;
+                        continue;
+                    }
+
+                    double remaining = session.StartHour + session.DurationHours - currentHour;
+                    if (remaining > 0d)
+                    {
+                        double shortened = remaining * (current / applied);
+                        session.DurationHours = (currentHour - session.StartHour) + shortened;
+
+                        TFTVLogger.Always($"[Training] Research speedup for {session.Character?.DisplayName}: " +
+                            $"{remaining:0.0}h left -> {shortened:0.0}h (factor {applied:0.###} -> {current:0.###}).");
+                    }
+
+                    session.DurationFactor = current;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         internal static bool IsValidFacility(GeoPhoenixFacility facility)
@@ -971,6 +1049,8 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
+            ApplyResearchSpeedupToActiveTraining(level);
+
             try { AdvanceAllTraining(level, 1); }
             catch (Exception e) { TFTVLogger.Error(e); }
         }
@@ -1116,6 +1196,7 @@ namespace TFTV.TFTVBaseRework
             public int SpPaid;
             public bool WasDismissed;
             public int StartLevel; // added later: 0 in older saves, reconstructed on load
+            public float DurationFactor; // added later: 0 in older saves, inferred when next needed
         }
 
         public static List<RecruitTrainingSessionSave> CreateRecruitSessionsSnapshot()
@@ -1134,7 +1215,8 @@ namespace TFTV.TFTVBaseRework
                     Completed = s.Completed,
                     SpPaid = s.SpPaid,
                     WasDismissed = s.WasDismissed,
-                    StartLevel = s.StartLevel
+                    StartLevel = s.StartLevel,
+                    DurationFactor = s.DurationFactor
                 });
             }
             return list;
@@ -1174,13 +1256,17 @@ namespace TFTV.TFTVBaseRework
                         // operative keeps its original level until the training is finalized.
                         StartLevel = save.StartLevel > 0
                             ? save.StartLevel
-                            : (save.WasDismissed ? (character.LevelProgression?.Level ?? 1) : 1)
+                            : (save.WasDismissed ? (character.LevelProgression?.Level ?? 1) : 1),
+                        DurationFactor = save.DurationFactor
                     });
 
                     TFTVLogger.Always($"[Training] Session restored: PersonnelId={character.Id} {character.DisplayName} TargetLevel={save.TargetLevel} SpPaid={save.SpPaid} WasDismissed={save.WasDismissed} Completed={save.Completed}");
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
+
+            // Research completed while these were running, before this was applied live.
+            ApplyResearchSpeedupToActiveTraining(level);
         }
         #endregion
 
