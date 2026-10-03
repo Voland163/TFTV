@@ -440,27 +440,29 @@ namespace TFTV.TFTVIncidents
         ///
         /// Picking a benefit does not close the panel - the encounter's own button does, and the panel
         /// goes with the screen. While this holder is up it is the only one a pad can move through, so
-        /// that button has to be in it too, after the benefits; without it a controller could choose a
-        /// benefit but never leave the screen.
+        /// that button has to be in it too. It is laid out the way the screen is: the benefits are a
+        /// column on the right, so up and down run through them, and the close button sits to their left
+        /// in the centre, so left goes to it and right comes back.
         /// </summary>
         private static void SetupControllerNavigation(GameObject panelRoot, UIModuleSiteEncounters module)
         {
             try
             {
-                List<Selectable> buttons = new List<Selectable>();
+                List<Selectable> benefits = new List<Selectable>();
                 foreach (Button button in panelRoot.GetComponentsInChildren<Button>(includeInactive: false))
                 {
                     if (button != null)
                     {
-                        buttons.Add(button);
+                        benefits.Add(button);
                     }
                 }
 
-                if (buttons.Count == 0)
+                if (benefits.Count == 0)
                 {
                     return;
                 }
 
+                List<Selectable> closeButtons = new List<Selectable>();
                 if (module?.ChoiceButtonsContainer != null)
                 {
                     foreach (SiteBaseChoiceButton choice in module.ChoiceButtonsContainer
@@ -470,9 +472,9 @@ namespace TFTV.TFTVIncidents
                             ? (choice.Button.BaseButton ?? choice.Button.GetComponent<Selectable>())
                             : choice?.GetComponent<Selectable>();
 
-                        if (selectable != null && !buttons.Contains(selectable))
+                        if (selectable != null && !benefits.Contains(selectable) && !closeButtons.Contains(selectable))
                         {
-                            buttons.Add(selectable);
+                            closeButtons.Add(selectable);
                         }
                     }
                 }
@@ -485,12 +487,93 @@ namespace TFTV.TFTVIncidents
                 UINavigationalElementsHolder holder = ControllerNav.EnsureHolder(holderObject);
                 holderObject.SetActive(true);
 
-                if (ControllerNav.Apply(holder, buttons, NavigationHolderMode.Vertical, rootPriority: 200, loop: false))
+                // Benefits first, so they take focus on open; the close buttons as one more row.
+                List<IList<Selectable>> rows = new List<IList<Selectable>>();
+                foreach (Selectable benefit in benefits)
                 {
-                    ControllerNav.Focus(holder);
+                    rows.Add(new List<Selectable> { benefit });
                 }
+                if (closeButtons.Count > 0)
+                {
+                    rows.Add(closeButtons);
+                }
+
+                if (!ControllerNav.ApplyRows(holder, rows, rootPriority: 200))
+                {
+                    return;
+                }
+
+                // The close buttons belong to the encounter screen and outlive this panel.
+                NavigationRestorer restorer = panelRoot.AddComponent<NavigationRestorer>();
+                foreach (Selectable close in closeButtons)
+                {
+                    restorer.Remember(close);
+                }
+
+                LinkBenefitsBesideClose(benefits, closeButtons);
+                ControllerNav.Focus(holder);
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        /// <summary>
+        /// Puts back the links of selectables this panel borrowed from the encounter screen when the
+        /// panel goes, so the next encounter does not inherit links to buttons that no longer exist.
+        /// </summary>
+        private sealed class NavigationRestorer : MonoBehaviour
+        {
+            private readonly Dictionary<Selectable, Navigation> _original = new Dictionary<Selectable, Navigation>();
+
+            internal void Remember(Selectable selectable)
+            {
+                if (selectable != null && !_original.ContainsKey(selectable))
+                {
+                    _original[selectable] = selectable.navigation;
+                }
+            }
+
+            private void OnDestroy()
+            {
+                foreach (KeyValuePair<Selectable, Navigation> entry in _original)
+                {
+                    if (entry.Key != null)
+                    {
+                        entry.Key.navigation = entry.Value;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Overrides the row links ApplyRows wrote with the screen's real layout: benefits a column on the
+        /// right, the close buttons to their left. Nothing loops, so a press past either end is free to
+        /// leave the holder.
+        /// </summary>
+        private static void LinkBenefitsBesideClose(List<Selectable> benefits, List<Selectable> closeButtons)
+        {
+            Selectable firstClose = closeButtons.Count > 0 ? closeButtons[closeButtons.Count - 1] : null;
+
+            for (int i = 0; i < benefits.Count; i++)
+            {
+                Navigation navigation = benefits[i].navigation;
+                navigation.mode = Navigation.Mode.Explicit;
+                navigation.selectOnUp = i > 0 ? benefits[i - 1] : null;
+                navigation.selectOnDown = i < benefits.Count - 1 ? benefits[i + 1] : null;
+                navigation.selectOnLeft = firstClose;
+                navigation.selectOnRight = null;
+                benefits[i].navigation = navigation;
+            }
+
+            for (int i = 0; i < closeButtons.Count; i++)
+            {
+                Navigation navigation = closeButtons[i].navigation;
+                navigation.mode = Navigation.Mode.Explicit;
+                navigation.selectOnUp = null;
+                navigation.selectOnDown = null;
+                navigation.selectOnLeft = i > 0 ? closeButtons[i - 1] : null;
+                navigation.selectOnRight = i < closeButtons.Count - 1 ? closeButtons[i + 1] : benefits[0];
+                closeButtons[i].navigation = navigation;
+            }
         }
 
         private static void CreateBenefitSelector(
