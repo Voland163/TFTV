@@ -318,6 +318,7 @@
     <Compile Include="TFTVVanillaFixes\Tactical\ParalysisDamageTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\PortraitsTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\PreventDuplicateShredTacticalVanillaFixes.cs" />
+    <Compile Include="TFTVVanillaFixes\Tactical\ShootOriginsTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\StealthTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\ToBeSortedOutTactical.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\TurretAmmoRefillTacticalVanillaFixes.cs" />
