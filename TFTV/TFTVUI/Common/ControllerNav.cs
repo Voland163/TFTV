@@ -219,6 +219,8 @@ namespace TFTV.TFTVUI.Common
                     return false;
                 }
 
+                RememberOriginal(holder, flattened);
+
                 holder.InteractableContainers = null;
                 holder.NavigationMode = NavigationHolderMode.Grid;
                 holder.GridColumns = 1;
@@ -239,6 +241,87 @@ namespace TFTV.TFTVUI.Common
             {
                 TFTVLogger.Error(ex);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// How a holder was set up before <see cref="ApplyRowsToExistingHolder"/> first took it over, and
+        /// the links its elements had then.
+        /// </summary>
+        private sealed class HolderOriginal
+        {
+            public List<GameObject> Containers;
+            public List<Selectable> FixedElements;
+            public NavigationHolderMode Mode;
+            public int GridColumns;
+            public readonly Dictionary<Selectable, Navigation> Links = new Dictionary<Selectable, Navigation>();
+        }
+
+        private static readonly Dictionary<UINavigationalElementsHolder, HolderOriginal> _takenOver =
+            new Dictionary<UINavigationalElementsHolder, HolderOriginal>();
+
+        private static void RememberOriginal(UINavigationalElementsHolder holder, List<Selectable> elements)
+        {
+            if (!_takenOver.TryGetValue(holder, out HolderOriginal original))
+            {
+                original = new HolderOriginal
+                {
+                    Containers = holder.InteractableContainers,
+                    FixedElements = holder.FixedInteractableElements != null
+                        ? new List<Selectable>(holder.FixedInteractableElements)
+                        : null,
+                    Mode = holder.NavigationMode,
+                    GridColumns = holder.GridColumns
+                };
+                _takenOver[holder] = original;
+            }
+
+            // Only the first time an element is seen: later calls see the links written here.
+            foreach (Selectable element in elements)
+            {
+                if (element != null && !original.Links.ContainsKey(element))
+                {
+                    original.Links[element] = element.navigation;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Hands a holder taken over by <see cref="ApplyRowsToExistingHolder"/> back the way the game set it
+        /// up: its containers, element list, mode and grid width, and the original links of the elements
+        /// that are still alive. Does nothing for a holder that was never taken over.
+        ///
+        /// Call before the owning screen reuses the holder for something else. Its next refresh would
+        /// otherwise still walk the mod's element list - including elements already being torn down,
+        /// which the game's grid layout does not survive (it reads each element's parent).
+        /// </summary>
+        internal static void RestoreExistingHolder(UINavigationalElementsHolder holder)
+        {
+            try
+            {
+                if (holder == null || !_takenOver.TryGetValue(holder, out HolderOriginal original))
+                {
+                    return;
+                }
+
+                _takenOver.Remove(holder);
+
+                foreach (KeyValuePair<Selectable, Navigation> link in original.Links)
+                {
+                    if (link.Key != null)
+                    {
+                        link.Key.navigation = link.Value;
+                    }
+                }
+
+                holder.InteractableContainers = original.Containers;
+                holder.FixedInteractableElements = original.FixedElements;
+                holder.NavigationMode = original.Mode;
+                holder.GridColumns = original.GridColumns;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
             }
         }
 
