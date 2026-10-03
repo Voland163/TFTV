@@ -1259,8 +1259,11 @@ namespace TFTV.TFTVDrills
             }
 
 
-            //With Snap Brace active, Deploy Shield costs 0 AP
-            [HarmonyPatch(typeof(TacticalAbility), "get_ActionPointCost")] //VERIFIED
+            //With the legacy Snap Brace drill (characters who took it before the rework), Deploy Shield costs 0 AP.
+            //On FractActionPointCost, not ActionPointCost: ActionPointCost is derived from it, and it is what the
+            //ability tooltip and the weapon card show - patching ActionPointCost made the use free while the UI
+            //still said 1 AP.
+            [HarmonyPatch(typeof(TacticalAbility), "get_FractActionPointCost")]
             static class TacticalAbility_ActionPointCost_SnapBrace_Patch
             {
                 static void Postfix(TacticalAbility __instance, ref float __result)
