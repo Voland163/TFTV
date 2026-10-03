@@ -2,6 +2,7 @@
 using HarmonyLib;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections;
@@ -430,15 +431,19 @@ namespace TFTV.TFTVIncidents
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
 
-            SetupControllerNavigation(root);
+            SetupControllerNavigation(root, module);
         }
 
         /// <summary>
         /// The benefit choice is the active decision while this panel is up, so its buttons outrank the
-        /// encounter screen's own holder underneath and take focus on open. The panel is destroyed when
-        /// the choice is made, which unregisters the holder and hands navigation back.
+        /// encounter screen's own holder underneath and take focus on open.
+        ///
+        /// Picking a benefit does not close the panel - the encounter's own button does, and the panel
+        /// goes with the screen. While this holder is up it is the only one a pad can move through, so
+        /// that button has to be in it too, after the benefits; without it a controller could choose a
+        /// benefit but never leave the screen.
         /// </summary>
-        private static void SetupControllerNavigation(GameObject panelRoot)
+        private static void SetupControllerNavigation(GameObject panelRoot, UIModuleSiteEncounters module)
         {
             try
             {
@@ -454,6 +459,22 @@ namespace TFTV.TFTVIncidents
                 if (buttons.Count == 0)
                 {
                     return;
+                }
+
+                if (module?.ChoiceButtonsContainer != null)
+                {
+                    foreach (SiteBaseChoiceButton choice in module.ChoiceButtonsContainer
+                                 .GetComponentsInChildren<SiteBaseChoiceButton>(includeInactive: false))
+                    {
+                        Selectable selectable = choice?.Button != null
+                            ? (choice.Button.BaseButton ?? choice.Button.GetComponent<Selectable>())
+                            : choice?.GetComponent<Selectable>();
+
+                        if (selectable != null && !buttons.Contains(selectable))
+                        {
+                            buttons.Add(selectable);
+                        }
+                    }
                 }
 
                 GameObject holderObject = new GameObject("TFTV_AffinityChoiceNav", typeof(RectTransform));
