@@ -488,6 +488,7 @@ namespace TFTV.TFTVIncidents
                 RestoreChoiceButtons(module);
                 CleanupChoiceButtonDecorations(module);
                 IncidentCancelButton.Remove(module);
+                ControllerNav.RestoreExistingHolder(module?.InteractableElementsHolder);
             }
 
             /// <summary>
@@ -505,6 +506,13 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
+                    // Before anything else, paging pages included: with a controller, vanilla
+                    // SetEncounter refreshes this holder, and if an incident left it pointing at its
+                    // own crew cards and cancel button - the cancel button already unparented on its
+                    // way out - the refresh throws, the encounter is never finished, and the player is
+                    // left on a screen with no way out.
+                    ControllerNav.RestoreExistingHolder(__instance?.InteractableElementsHolder);
+
                     if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled || __instance == null || pagingEvent)
                     {
                         return;
