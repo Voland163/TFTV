@@ -9,6 +9,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -611,7 +612,7 @@ namespace TFTV
                                 abilityToAdd.ViewElementDef.Description.Localize());
 
 
-                            GameUtl.GetMessageBox().ShowSimplePrompt(messagePrompt, MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                            ShowPromptAfterCureConfirmation(messagePrompt);
 
                             TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.Localize());
 
@@ -638,7 +639,7 @@ namespace TFTV
                             "KEY_DELIRIUM_PERK_PROMPT_NO_PERK",
                             __instance.GetName());
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt(messagePromptNoPerk, MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                        ShowPromptAfterCureConfirmation(messagePromptNoPerk);
                     }
                 }
 
@@ -649,6 +650,40 @@ namespace TFTV
             }
         }
 
+
+        /// <summary>
+        /// Shows a treatment side-effect prompt once the treatment's confirmation box has closed.
+        ///
+        /// CureCorruption runs from inside that box's callback. MessageBox.OnPromptResult invokes the
+        /// callback and then switches its input blocker off - so a prompt opened from the callback
+        /// was left on screen with the blocker off, the soldier screen underneath kept handling input
+        /// every frame, and the game lagged until it was closed. One frame later the confirmation has
+        /// finished closing and the prompt opens normally.
+        /// </summary>
+        private static void ShowPromptAfterCureConfirmation(string message)
+        {
+            try
+            {
+                PhoenixGame game = GameUtl.GameComponent<PhoenixGame>();
+                if (game?.Timing == null)
+                {
+                    GameUtl.GetMessageBox().ShowSimplePrompt(message, MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                    return;
+                }
+
+                game.Timing.Start(ShowPromptNextFrame(message));
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static IEnumerator<NextUpdate> ShowPromptNextFrame(string message)
+        {
+            yield return NextUpdate.NextFrame;
+            GameUtl.GetMessageBox().ShowSimplePrompt(message, MessageBoxIcon.None, MessageBoxButtons.OK, null);
+        }
 
         public static void RemoveDeliriumPerksGeoMissionApplyMissionResults(GeoMission geoMission, TacMissionResult result, GeoSquad squad)
         {
