@@ -4,6 +4,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -47,6 +48,10 @@ namespace TFTV
             public TacticalLevelController Controller;
             public readonly List<TacParticipantSpawn> HeldSpawns = new List<TacParticipantSpawn>();
             public bool SaveWasEnabled = true;
+
+            // The game-wide save manager the phase switched off; it outlives the level, so the teardown can still
+            // reach it when the controller is going away.
+            public PhoenixSaveManager SaveManager;
             public TFTVTactical DeferredMod;
             public bool TacticalStartDeferred;
             public int? DeferredTurnNumber;
@@ -135,8 +140,9 @@ namespace TFTV
                 SecurityGuardsSpawnedDuringDeployment = false;
                 ResetPlacementCaches();
 
-                _pending.SaveWasEnabled = controller.GameController.SaveManager.IsSaveEnabled;
-                controller.GameController.SaveManager.IsSaveEnabled = false;
+                _pending.SaveManager = controller.GameController.SaveManager;
+                _pending.SaveWasEnabled = _pending.SaveManager.IsSaveEnabled;
+                _pending.SaveManager.IsSaveEnabled = false;
             }
             catch (Exception e)
             {
@@ -159,8 +165,13 @@ namespace TFTV
 
             // The level may have re-enabled saving since BeginPhase; if so remember that and hold it off again.
             // Never read a false here as the original: BeginPhase is what set it.
-            _pending.SaveWasEnabled |= controller.GameController.SaveManager.IsSaveEnabled;
-            controller.GameController.SaveManager.IsSaveEnabled = false;
+            if (_pending.SaveManager == null)
+            {
+                _pending.SaveManager = controller.GameController.SaveManager;
+            }
+
+            _pending.SaveWasEnabled |= _pending.SaveManager.IsSaveEnabled;
+            _pending.SaveManager.IsSaveEnabled = false;
 
             TFTVLogger.Always($"[DeploymentPhase] OnTacticalStart deferred until deployment is confirmed");
             return true;
@@ -214,7 +225,7 @@ namespace TFTV
                 {
                     // Only now, with every side on the map, may objectives be judged again.
                     _pending = null;
-                    controller.GameController.SaveManager.IsSaveEnabled = pending.SaveWasEnabled;
+                    RestoreSaving(pending);
                 }
 
                 LogEnemyPlacement(controller);
@@ -237,6 +248,25 @@ namespace TFTV
                 // UIModuleObjectives.Init, which evaluates and redraws. A frame later, since this can run from inside
                 // that state's own End Turn handling.
                 controller.StartCoroutine(ResetViewStateNextFrame(controller));
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Gives the save manager back the state the phase found it in. Every way out of the phase - DEPLOY, and
+        /// the level going away before it - comes through here.
+        /// </summary>
+        private static void RestoreSaving(PendingDeployment pending)
+        {
+            try
+            {
+                if (pending?.SaveManager != null)
+                {
+                    pending.SaveManager.IsSaveEnabled = pending.SaveWasEnabled;
+                }
             }
             catch (Exception e)
             {
@@ -396,11 +426,16 @@ namespace TFTV
                 DestroyReserveStrip();
 
                 // Only Update destroys this once the phase is over, so still pending here means the level is
-                // going away mid-phase (a load, a quit): drop the hold with it.
-                if (IsPending(Controller))
+                // going away mid-phase (a load, a restart, a quit): drop the hold with it, and give back the saving
+                // the phase took from the game-wide save manager, or the next level could not save. Compared by
+                // reference: mid-teardown, Unity's null check may already call the controller destroyed.
+                if (_pending != null && ReferenceEquals(_pending.Controller, Controller))
                 {
+                    PendingDeployment pending = _pending;
                     _pending = null;
                     SecurityGuardsSpawnedDuringDeployment = false;
+                    RestoreSaving(pending);
+                    TFTVLogger.Always($"[DeploymentPhase] level left before deployment; restored saving enabled = {pending.SaveWasEnabled}");
                 }
             }
         }
