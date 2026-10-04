@@ -226,6 +226,7 @@ namespace TFTV
                     // Only now, with every side on the map, may objectives be judged again.
                     _pending = null;
                     RestoreSaving(pending);
+                    ResetPlacementCaches();
                 }
 
                 LogEnemyPlacement(controller);
@@ -361,6 +362,11 @@ namespace TFTV
             private bool _labelled;
             private bool _failed;
 
+            // The relabel searches every loaded object; try it a few times a second, and not forever.
+            private float _nextLabelTry;
+            private int _labelTries;
+            private const int MaxLabelTries = 80;
+
             private void Update()
             {
                 try
@@ -385,9 +391,15 @@ namespace TFTV
                         return;
                     }
 
-                    if (!_labelled)
+                    if (!_labelled && _labelTries < MaxLabelTries && Time.unscaledTime >= _nextLabelTry)
                     {
+                        _nextLabelTry = Time.unscaledTime + 0.25f;
                         _labelled = TryRelabelEndTurnButton();
+
+                        if (!_labelled && ++_labelTries == MaxLabelTries)
+                        {
+                            TFTVLogger.Always($"[DeploymentPhase] End Turn button not found; it keeps its label");
+                        }
                     }
 
                     if (!_shown)
@@ -435,6 +447,7 @@ namespace TFTV
                     _pending = null;
                     SecurityGuardsSpawnedDuringDeployment = false;
                     RestoreSaving(pending);
+                    ResetPlacementCaches();
                     TFTVLogger.Always($"[DeploymentPhase] level left before deployment; restored saving enabled = {pending.SaveWasEnabled}");
                 }
             }
@@ -649,7 +662,7 @@ namespace TFTV
                 try
                 {
                     // At level start, and later for reserve units brought in during the phase.
-                    if (__instance.ParticipantKind != TacMissionParticipant.Player || !IsPending(__instance.TacMission.TacticalLevel)
+                    if (_pending == null || __instance.ParticipantKind != TacMissionParticipant.Player || !IsPending(__instance.TacMission.TacticalLevel)
                         || _pending.Releasing || !(__result is TacticalActor actor) || deploymentData == null)
                     {
                         return;
@@ -721,7 +734,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (!__result && IsHeld(__instance))
+                    if (!__result && _pending != null && IsHeld(__instance))
                     {
                         __result = true;
                     }
@@ -769,7 +782,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (IsPending(GameOverConditionController(__instance)))
+                    if (_pending != null && IsPending(GameOverConditionController(__instance)))
                     {
                         __result = false;
                         return false;

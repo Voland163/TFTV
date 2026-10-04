@@ -80,16 +80,39 @@ namespace TFTV
         /// vehicle may use grunt tiles and a grunt vehicle tiles wherever it physically fits. Fit is then the game's
         /// own GetValidSpawnPosition, with the unit's real size, followed by TFTV's checks: clearance from enemies
         /// already on the map and (base defense) no 3x3/5x5 unit on an upper floor. Spots inside the base map's
-        /// sealed rooms never get this far: BaseDefenseSpawnCull removes them from the zones themselves.
+        /// sealed rooms never get this far: the GetOrderedSpawnPositions patch below removes them from the zones.
+        ///
+        /// Each zone tile costs the game a physics check, so the result is cached per unit until something on the
+        /// map moves (MarkSpotsDirty). Callers only read the list.
         /// </summary>
         private static List<DeploySpot> GetFreeDeploySpots(ActorDeployData data)
         {
-            List<DeploySpot> spots = new List<DeploySpot>();
-
             if (_pending?.PlayerSpawn == null || data == null)
             {
-                return spots;
+                return new List<DeploySpot>();
             }
+
+            if (_spotCache.TryGetValue(data, out List<DeploySpot> cached))
+            {
+                return cached;
+            }
+
+            List<DeploySpot> spots = ComputeFreeDeploySpots(data);
+
+            // Not while a benched unit's GameObject is still waiting for its end-of-frame destroy: its colliders
+            // would still be blocking the spots it stood on.
+            if (Time.frameCount > _markersDirtyFrame)
+            {
+                _spotCache[data] = spots;
+            }
+
+            return spots;
+        }
+
+        private static List<DeploySpot> ComputeFreeDeploySpots(ActorDeployData data)
+        {
+            List<DeploySpot> spots = new List<DeploySpot>();
+            HashSet<Vector3Int> taken = new HashSet<Vector3Int>();
 
             List<TacticalDeployZone> zones = PlayerZones();
             List<TacticalDeployZone> eligible = EligibleZones(zones, data);
@@ -126,7 +149,7 @@ namespace TFTV
                 // GetValidSpawnPosition hands back the zone's shared cache, so copy it before the next call.
                 foreach (Vector3 pos in zone.GetValidSpawnPosition(data.ComponentSetDef, data.DeploymentTags, zone.GetOrderedSpawnPositions(false)).ToList())
                 {
-                    if (spots.Any(s => (s.Pos - pos).sqrMagnitude < 0.01f) || hostiles.Any(h => (h - pos).magnitude < clearance))
+                    if (!taken.Add(SpotKey(pos)) || hostiles.Any(h => (h - pos).magnitude < clearance))
                     {
                         continue;
                     }
@@ -150,9 +173,20 @@ namespace TFTV
             return spots;
         }
 
+        // Free spots per unit, valid until something moves; and the base's ground floor height, per phase.
+        private static readonly Dictionary<ActorDeployData, List<DeploySpot>> _spotCache = new Dictionary<ActorDeployData, List<DeploySpot>>();
+        private static float? _groundFloorY;
+
+        private static Vector3Int SpotKey(Vector3 pos)
+        {
+            return new Vector3Int(Mathf.RoundToInt(pos.x * 10f), Mathf.RoundToInt(pos.y * 10f), Mathf.RoundToInt(pos.z * 10f));
+        }
+
         private static void ResetPlacementCaches()
         {
             _loggedSpotSummaries.Clear();
+            _spotCache.Clear();
+            _groundFloorY = null;
         }
 
         /// <summary>
@@ -162,7 +196,8 @@ namespace TFTV
         /// room is not a solid, and its navmesh connects through), so the area is cut by hand, at every height:
         /// x -15.5..-0.5, z 19.5..25.5 (the in-game console's grid positions there read e.g. (-14.5, 2.4, 20.5)).
         /// Applied where the game reads a zone's spawn positions, so vanilla spawning, TFTV's and placement all
-        /// skip it.
+        /// skip it. Runs on every mission's spawns, so it asks "base defense?" first (cached per level) and only
+        /// then looks at the positions.
         /// </summary>
         [HarmonyPatch(typeof(TacticalDeployZone), nameof(TacticalDeployZone.GetOrderedSpawnPositions))]
         internal static class TacticalDeployZone_GetOrderedSpawnPositions_BaseDefenseSealedRooms_Patch
@@ -170,6 +205,8 @@ namespace TFTV
             private const float MinX = -15.5f, MaxX = -0.5f, MinZ = 19.5f, MaxZ = 25.5f, Margin = 0.01f;
 
             private static readonly HashSet<TacticalDeployZone> _loggedZones = new HashSet<TacticalDeployZone>();
+            private static TacticalLevelController _checkedLevel;
+            private static bool _checkedLevelIsBaseDefense;
 
             private static bool InSealedRooms(Vector3 pos)
             {
@@ -180,12 +217,12 @@ namespace TFTV
             {
                 try
                 {
-                    if (__result == null || __result.Count == 0 || !__result.Any(InSealedRooms))
+                    if (__result == null || __result.Count == 0 || !IsBaseDefenseLevel(__instance.TacticalLevel))
                     {
                         return;
                     }
 
-                    if (IsBaseDefenseLevel(__instance.TacticalLevel))
+                    if (__result.Any(InSealedRooms))
                     {
                         int before = __result.Count;
 
@@ -206,8 +243,21 @@ namespace TFTV
 
             private static bool IsBaseDefenseLevel(TacticalLevelController controller)
             {
-                TacMissionTypeDef missionType = controller?.TacMission?.MissionData?.MissionType;
-                return missionType != null && missionType.Tags.Contains(TFTVMain.Shared.SharedGameTags.BaseDefenseMissionTag);
+                if (!ReferenceEquals(controller, _checkedLevel))
+                {
+                    TacMissionTypeDef missionType = controller?.TacMission?.MissionData?.MissionType;
+
+                    // Only remember a definite answer: too early in loading there is no mission to ask yet.
+                    if (missionType == null)
+                    {
+                        return false;
+                    }
+
+                    _checkedLevel = controller;
+                    _checkedLevelIsBaseDefense = missionType.Tags.Contains(TFTVMain.Shared.SharedGameTags.BaseDefenseMissionTag);
+                }
+
+                return _checkedLevelIsBaseDefense;
             }
         }
 
@@ -252,6 +302,11 @@ namespace TFTV
         /// </summary>
         private static float GroundFloorY(List<TacticalDeployZone> zones)
         {
+            if (_groundFloorY.HasValue)
+            {
+                return _groundFloorY.Value;
+            }
+
             float lowest = float.MaxValue;
 
             foreach (TacticalDeployZone zone in zones)
@@ -262,7 +317,8 @@ namespace TFTV
                 }
             }
 
-            return lowest == float.MaxValue ? 0f : lowest;
+            _groundFloorY = lowest == float.MaxValue ? 0f : lowest;
+            return _groundFloorY.Value;
         }
 
         private static ActorDeploymentTagDef[] _largeSizeTags;
@@ -553,6 +609,7 @@ namespace TFTV
         {
             _markersDirty = true;
             _markersDirtyFrame = Time.frameCount;
+            _spotCache.Clear();
         }
 
         /// <summary>

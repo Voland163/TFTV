@@ -261,9 +261,20 @@ namespace TFTV
 
         // ---------------------------------------------------------------- cards
 
+        private static SquadMemberScrollerController _squadBar;
+
+        /// <summary>
+        /// The HUD's squad bar. FindObjectsOfTypeAll scans every loaded object, so the answer is kept until Unity
+        /// reports it destroyed (a new level).
+        /// </summary>
         private static SquadMemberScrollerController SquadBar()
         {
-            return Resources.FindObjectsOfTypeAll<SquadMemberScrollerController>().FirstOrDefault(s => s != null && s.gameObject.scene.IsValid());
+            if (_squadBar == null)
+            {
+                _squadBar = Resources.FindObjectsOfTypeAll<SquadMemberScrollerController>().FirstOrDefault(s => s != null && s.gameObject.scene.IsValid());
+            }
+
+            return _squadBar;
         }
 
         private static SquadMemberScrollerElement SquadBarElement(SquadMemberScrollerController squadBar, TacticalActor actor)
@@ -406,6 +417,11 @@ namespace TFTV
         /// </summary>
         private static void RenderNextCard(TacticalLevelController controller)
         {
+            if (_cardRenderActor == null && _cardRenderQueue.Count == 0)
+            {
+                return;
+            }
+
             SquadMemberScrollerController squadBar = SquadBar();
 
             if (squadBar == null)
@@ -500,18 +516,23 @@ namespace TFTV
             }
         }
 
+        private static float _nextGuardScan;
+
         /// <summary>
         /// The guards arrive asynchronously (their assets load first). Any Phoenix unit on the map that is not a
         /// squad member is one; give it a deploy entry from the guard template, so placement can size its spots.
+        /// Looked for twice a second rather than every frame - they arrive once, a moment after the phase opens.
         /// </summary>
         private static void RegisterSecurityGuards(TacticalLevelController controller)
         {
             try
             {
-                if (_pending == null || !_pending.GuardsRequested || _pending.PlayerSpawn == null)
+                if (_pending == null || !_pending.GuardsRequested || _pending.PlayerSpawn == null || Time.unscaledTime < _nextGuardScan)
                 {
                     return;
                 }
+
+                _nextGuardScan = Time.unscaledTime + 0.5f;
 
                 foreach (TacticalActor actor in _pending.PlayerSpawn.TacticalFaction.TacticalActors)
                 {

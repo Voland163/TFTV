@@ -315,16 +315,16 @@ Was this campaign played with the AIRCRAFT REWORK BETA? (If your aircraft carrie
 
 Please answer carefully: playing a campaign with the wrong setting can break it. You will be asked every time you load a save made before this setting existed.",,,,,,,,
 KEY_PlayerDeploymentPhase,Text,,CHOOSE DEPLOYMENT POSITIONS,,,,,,,,
-KEY_PlayerDeploymentPhase_DESCRIPTION,Text,,"At the start of a mission, place your operatives anywhere in your deployment zone before enemies and other factions arrive. They then arrive around the positions you chose. Confirm with the End Turn button, which reads DEPLOY during placement; your first turn then carries on as normal. Not used in tutorials or when loading a save.",,,,,,,,
+KEY_PlayerDeploymentPhase_DESCRIPTION,Text,,"At the start of a mission, place your operatives anywhere in your deployment zone before enemies and other factions are deployed. They are then deployed around the positions you chose. Confirm with the End Turn button, which reads DEPLOY during placement; your first turn then carries on as normal. Not used in tutorials or when loading a save.",,,,,,,,
 TFTV_DEPLOYMENT_PHASE_PROMPT,Text,,"<b>DEPLOYMENT</b>
 
-Enemies and other factions have not arrived yet.
+Enemies and other factions have not been deployed yet.
 
 Select an operative: the green squares show where they can be placed. Select a square to move them there. Moving and abilities are unavailable until you deploy.
 
 Anyone who did not fit waits in the RESERVE on the left: click their card, then a square to bring them in, or a deployed unit to swap places. Right-click a unit to send it to the reserve. Whoever is still in the reserve when you deploy sits this mission out.
 
-Press DEPLOY (the End Turn button) when ready. Everyone else then arrives and your turn begins.",,,,,,,,
+Press DEPLOY (the End Turn button) when ready. Everyone else is then deployed and your turn begins.",,,,,,,,
 TFTV_DEPLOYMENT_PHASE_CONFIRM,Text,,DEPLOY,,,,,,,,
 TFTV_DEPLOYMENT_RESERVE_TITLE,Text,,RESERVE,,,,,,,,
 TFTV_DEPLOYMENT_RESERVE_EMPTY,Text,,Everyone is deployed.,,,,,,,,
