@@ -1271,6 +1271,7 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("TFTVSuppression", _optionsBool, ConvertBoolToInt(config.TFTVSuppression), OnTFTVSuppressionValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                       
                         HelperMethods.InstantiateArrowPickerController("ShowMeleeThreatMarkers", _optionsBool, ConvertBoolToInt(config.ShowMeleeThreatMarkers), OnShowMeleeThreatMarkersValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("PlayerDeploymentPhase", _optionsBool, ConvertBoolToInt(config.PlayerDeploymentPhase), OnPlayerDeploymentPhaseValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         if (TFTVNewGameOptions.IsReworkEnabled())
                         {
                             HelperMethods.InstantiateArrowPickerController("ShowBaseReworkHints", _optionsBool, ConvertBoolToInt(config.ShowBaseReworkHints), OnShowBaseReworkHintsValueChangedCallback, 0.5f, _anytimeOptionsSettings);
@@ -2145,6 +2146,21 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
                         config.ShowMeleeThreatMarkers = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnPlayerDeploymentPhaseValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.PlayerDeploymentPhase = option;
                     }
                     catch (Exception e)
                     {

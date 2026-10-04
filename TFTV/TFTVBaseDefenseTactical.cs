@@ -1006,7 +1006,16 @@ namespace TFTV
                     }
 
                     Consoles.GetConsoles();
-                    GoldShiftSetup();
+
+                    // The deployment phase spawns the guards as it opens, so the player can place them too.
+                    if (TFTVPlayerDeploymentPhase.SecurityGuardsSpawnedDuringDeployment)
+                    {
+                        TFTVPlayerDeploymentPhase.SecurityGuardsSpawnedDuringDeployment = false;
+                    }
+                    else
+                    {
+                        GoldShiftSetup();
+                    }
 
                     if (Breach)
                     {
@@ -2804,7 +2813,10 @@ namespace TFTV
                 {
                     try
                     {
-                        if (turnNumber != 0 || !missionTypeDef.Tags.Contains(baseDefenseTag) || !controller.Factions.Any(f => f.TacticalFactionDef.MatchesShortName("aln")))
+                        // The deployment phase's placement may use any player zone; the team split only shapes the
+                        // initial deployment.
+                        if (TFTVPlayerDeploymentPhase.IgnoreBaseDefenseTeamZones
+                            || turnNumber != 0 || !missionTypeDef.Tags.Contains(baseDefenseTag) || !controller.Factions.Any(f => f.TacticalFactionDef.MatchesShortName("aln")))
                         {
                             return results;
 

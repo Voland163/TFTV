@@ -189,6 +189,12 @@ namespace TFTV
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
 
+            // Runs again from the deployment phase's release, once the held-back factions have spawned.
+            if (TFTVPlayerDeploymentPhase.TryDeferTacticalStart(this, tacController))
+            {
+                return;
+            }
+
             /// ModMain is accesible at any time
 
             TFTVLogger.Always("OnTacticalStarted");
@@ -490,6 +496,12 @@ namespace TFTV
         {
             try
             {
+                // Runs again from the deployment phase's release, once the held-back factions have spawned.
+                if (TFTVPlayerDeploymentPhase.TryDeferNewTurn(this, Controller, turnNumber))
+                {
+                    return;
+                }
+
                 TFTVLogger.Always($"The turn is {turnNumber} for faction{Controller?.CurrentFaction?.Faction?.FactionDef?.GetName()}");
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))

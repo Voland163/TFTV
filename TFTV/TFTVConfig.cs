@@ -28,9 +28,9 @@ namespace TFTV
 
 
         public bool SkipMovies = true;
-        public bool Trading = false;
+        public bool Trading = true;
         public bool LimitedRaiding = true;
-        public bool DisableTacSaves = true;
+        public bool DisableTacSaves = false;
         public enum DifficultyOnTactical
         {
             GEOSCAPE, STORY, ROOKIE, VETERAN, HERO, LEGEND, ETERMES
@@ -53,8 +53,9 @@ namespace TFTV
         public bool HandGrenadeScatter = true;
         public bool EquipBeforeAmbush = true;
         public bool TFTVSuppression = false;
-        public bool ShowMeleeThreatMarkers = false;
+        public bool ShowMeleeThreatMarkers = true;
         public bool ShowBaseReworkHints = true;
+        public bool PlayerDeploymentPhase = false;
         
 
         //Cheat options:
