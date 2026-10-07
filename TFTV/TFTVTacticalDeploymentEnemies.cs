@@ -2,8 +2,10 @@
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
@@ -328,13 +330,57 @@ namespace TFTV
             }
         }
 
+        private static MissionTagDef _havenDefenseTag;
+
+        /// <summary>The haven's own side (defenders and civilians) in a haven defense mission.</summary>
+        private static bool IsHavenDefenseResidents(TacParticipantSpawn spawn)
+        {
+            if (spawn == null || spawn.ParticipantKind != TacMissionParticipant.Residents)
+            {
+                return false;
+            }
+
+            if (_havenDefenseTag == null)
+            {
+                _havenDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypeHavenDefense_MissionTagDef");
+            }
+
+            var missionTags = spawn.TacMission?.MissionData?.MissionType?.MissionTags;
+            return _havenDefenseTag != null && missionTags != null && missionTags.Contains(_havenDefenseTag);
+        }
+
+        /// <summary>
+        /// Haven defenders on Phoenix's side. The undesirables limits are there to keep enemy squads
+        /// fair, so they don't apply to them. Under Void Omen #5 haven defenders are hostile, and the
+        /// limits apply as to any enemy.
+        /// </summary>
+        private static bool IsFriendlyHavenDefenders(TacParticipantSpawn spawn)
+        {
+            return IsHavenDefenseResidents(spawn) && !TFTVVoidOmens.VoidOmensCheck[5];
+        }
+
         [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleActorDeployments")] //VERIFIED
         public static class TFTV_TacParticipantSpawn_GetEligibleActorDeployments
         {
             public static IEnumerable<ActorDeployData> Postfix(IEnumerable<ActorDeployData> results, TacParticipantSpawn __instance)
             {
+                bool havenDefense = IsHavenDefenseResidents(__instance);
+                bool ignoreLimits = havenDefense && IsFriendlyHavenDefenders(__instance);
+
                 foreach (ActorDeployData actorDeployData in results)
                 {
+                    // Haven defenders are people: no vehicles (Aspida, Armadillo...) and no Mutogs.
+                    if (havenDefense && actorDeployData.InstanceDef is TacCharacterDef havenUnit && (havenUnit.IsVehicle || havenUnit.IsMutog))
+                    {
+                        continue;
+                    }
+
+                    if (ignoreLimits)
+                    {
+                        yield return actorDeployData;
+                        continue;
+                    }
+
                     if (actorDeployData.InstanceData != null)
                     {
                         TacticalFaction tacticalFaction = __instance.TacticalFaction;
@@ -377,7 +423,11 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"DoSpawnActor: {deploymentData?.InstanceDef?.name}, Turn number:{turnNumber} Faction: {__instance?.TacticalFaction}");
 
-                        UnDesirableActorCheck(tacCharacterDef, __instance.TacticalFaction, turnNumber, true);
+                        // Friendly haven defenders neither use nor count toward the enemy's undesirables limits.
+                        if (!IsFriendlyHavenDefenders(__instance))
+                        {
+                            UnDesirableActorCheck(tacCharacterDef, __instance.TacticalFaction, turnNumber, true);
+                        }
                     }
                 }
                 catch (Exception e)

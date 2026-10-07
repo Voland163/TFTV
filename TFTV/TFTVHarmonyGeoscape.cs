@@ -216,6 +216,7 @@ namespace TFTV
                     TFTVAugmentations.NJReactionToMutationsGeoAlienFactionUpdateFactionDaily(__instance);
                     TFTVODIandVoidOmenRoll.ApplyNewODIGeoAlienFactionFactionDailyUpdate(__instance, ____evolutionProgress);
                     TFTVPandoranProgress.AddPandoranEvolutionPointsGeoAlienFactionUpdateFactionDaily(__instance);
+                    TFTVPandoranColonyRange.AbandonColoniesWithoutTargets(__instance);
                 }
                 catch (Exception e)
                 {

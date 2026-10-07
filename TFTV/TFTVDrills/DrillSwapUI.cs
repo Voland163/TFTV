@@ -234,6 +234,7 @@ namespace TFTV.TFTVDrills
 
                 if (!hasTrainingFacility)
                 {
+                    TFTVLogger.Always($"[Drills] Training Facility requirement shown for {character?.DisplayName} ({original.name}). Training Facilities: {DrillsUnlock.DescribeTrainingFacilities(phoenixFaction)}");
                     UIBuilder.CreateTrainingFacilityOverlay(panelRect);
                 }
 

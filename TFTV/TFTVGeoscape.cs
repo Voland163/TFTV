@@ -63,6 +63,7 @@ namespace TFTV
         public bool StrongerPandoransSettingInstance;
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
         public bool NoSecondChances;
+        public bool DeploymentPromptHidden;
         public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
 
         public float RansackResourcesMultiplierInstance;
@@ -312,6 +313,7 @@ namespace TFTV
                 StrongerPandoransSettingInstance = TFTVNewGameOptions.StrongerPandoransSetting,
                 ImpossibleWeaponsAdjustmentsSettingInstance = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 NoSecondChances = TFTVNewGameOptions.NoSecondChances,
+                DeploymentPromptHidden = TFTVPlayerDeploymentPhase.PromptHidden,
                 EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 RansackResourcesMultiplierInstance = TFTVNewGameOptions.RansackResourcesMultiplier,
                 InitialLootLevelInstance = TFTVNewGameOptions.InitialLootLevel,
@@ -356,6 +358,8 @@ namespace TFTV
 
                 TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithDisabledBodyParts;
+                // Kept if a mission just ticked it: this is the pre-mission snapshot.
+                TFTVPlayerDeploymentPhase.PromptHidden = TFTVPlayerDeploymentPhase.PromptHidden || data.DeploymentPromptHidden;
                 TFTVBehemothAndRaids.targetsForBehemoth = data.targetsForBehemoth;
                 TFTVBehemothAndRaids.flyersAndHavens = data.flyersAndHavens;
                 TFTVBehemothAndRaids.checkHammerfall = data.checkHammerfall;
@@ -624,6 +628,8 @@ namespace TFTV
             TFTVMain main = (TFTVMain)Main;
             GeoLevelController gsController = Controller;
             TFTVConfig config = TFTVMain.Main.Config;
+
+            TFTVPlayerDeploymentPhase.PromptHidden = false;
 
             if (BaseReworkCheck.BaseReworkEnabled)
             {

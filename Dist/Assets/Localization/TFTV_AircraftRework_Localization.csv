@@ -370,7 +370,7 @@ KEY_AFFINITY_COMPUTE_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally)
 
 - Aircraft speed increased by 10% per Affinity Rank.
 OR
-- Receive 4h per Affinity Rank advance warning of possible attacks on Havens.
+- Receive 12h per Affinity Rank advance warning of possible attacks on Havens.
 
 Tactical Benefits (choose one globally):
 
@@ -385,7 +385,7 @@ Base Duty Benefits (always active, do not scale with rank):
 
 - Скорость самолета больше на 10% за каждый уровень Способностей.
 ИЛИ
-- Предупреждение об возможной атаке на Убежище придет заранее (+4 часа за каждый уровень Способностей).
+- Предупреждение об возможной атаке на Убежище придет заранее (+12 часов за каждый уровень Способностей).
 
 Тактические Бонусы (выберите один общий):
 

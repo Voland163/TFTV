@@ -1264,33 +1264,29 @@ namespace TFTV
                         __instance.VehicleHealthText.text = $"{maintenancePercentage}%";
 
                         //   __instance.VehicleHealthText.text = baseObject.Stats.HitPoints.ToString() + "/" + baseObject.Stats.MaxHitPoints;
-                        List<GeoVehicleEquipmentUIData> list = baseObject.Modules.Select((GeoVehicleEquipment m) => m?.CreateUIData()).ToList();
-                        // List<GeoVehicleEquipmentUIData> list2 = baseObject.Modules.Select((GeoVehicleEquipment m) => m?.CreateUIData()).ToList();
-                        if (list.Count >= 1)
-                        {
-                            __instance.WeaponSlot01.SetItem(list[0]);
-                        }
-                        else
-                        {
-                            __instance.WeaponSlot01.ResetItem();
-                        }
+                        // Only the fitted modules get a square: empty module spaces are not shown.
+                        List<GeoVehicleEquipmentUIData> list = baseObject.Modules.Where(m => m != null).Select(m => m.CreateUIData()).ToList();
+                        GeoVehicleRosterEquipmentSlot[] slots = { __instance.WeaponSlot01, __instance.WeaponSlot02, __instance.ModuleSlot };
 
-                        if (list.Count >= 2)
+                        for (int i = 0; i < slots.Length; i++)
                         {
-                            __instance.WeaponSlot02.SetItem(list[1]);
-                        }
-                        else
-                        {
-                            __instance.WeaponSlot02.ResetItem();
-                        }
+                            if (slots[i] == null)
+                            {
+                                continue;
+                            }
 
-                        if (list.Count >= 3)
-                        {
-                            __instance.ModuleSlot.SetItem(list[2]);
-                        }
-                        else
-                        {
-                            __instance.ModuleSlot.ResetItem();
+                            bool fitted = i < list.Count;
+
+                            if (fitted)
+                            {
+                                slots[i].SetItem(list[i]);
+                            }
+                            else
+                            {
+                                slots[i].ResetItem();
+                            }
+
+                            slots[i].gameObject.SetActive(fitted);
                         }
                     }
 

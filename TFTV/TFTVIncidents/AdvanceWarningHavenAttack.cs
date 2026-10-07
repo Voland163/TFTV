@@ -26,10 +26,22 @@ namespace TFTV.TFTVIncidents
             return string.IsNullOrEmpty(site.LocalizedSiteName) ? site.name : site.LocalizedSiteName;
         }
 
+        /// <summary>
+        /// Called from the state-change/load reset hub. The markers are a cache of the current campaign's
+        /// colonies, so they must not survive into another save (site ids are reused between campaigns),
+        /// and they are rebuilt as soon as the geoscape draws its first haven instead of waiting an hour.
+        /// </summary>
+        internal static void ClearOnStateChangeAndLoad()
+        {
+            HavenAttackRiskService.Invalidate();
+        }
+
         internal static void RefreshForCurrentHour(GeoLevelController level)
         {
             try
             {
+                HavenAttackRiskService.MarkRebuilt();
+
                 if (level == null || !TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
                     HavenAttackRiskService.Clear();
@@ -59,6 +71,8 @@ namespace TFTV.TFTVIncidents
         internal enum RiskWindow
         {
             None,
+            Hours36,
+            Hours24,
             Hours12,
             Hours8,
             Hours4
@@ -68,13 +82,27 @@ namespace TFTV.TFTVIncidents
         {
             private static readonly Dictionary<int, RiskWindow> SiteRiskById = new Dictionary<int, RiskWindow>();
             private static int _currentLeadHours;
+            private static bool _needsRebuild;
 
             public static int CurrentLeadHours => _currentLeadHours;
+
+            public static bool NeedsRebuild => _needsRebuild;
 
             public static void Clear()
             {
                 _currentLeadHours = 0;
                 SiteRiskById.Clear();
+            }
+
+            public static void Invalidate()
+            {
+                Clear();
+                _needsRebuild = true;
+            }
+
+            public static void MarkRebuilt()
+            {
+                _needsRebuild = false;
             }
 
             public static RiskWindow GetRisk(GeoSite site)
@@ -185,6 +213,16 @@ namespace TFTV.TFTVIncidents
                     return RiskWindow.Hours12;
                 }
 
+                if (hoursUntilAttackRoll <= 24)
+                {
+                    return RiskWindow.Hours24;
+                }
+
+                if (hoursUntilAttackRoll <= 36)
+                {
+                    return RiskWindow.Hours36;
+                }
+
                 return RiskWindow.None;
             }
         }
@@ -198,6 +236,8 @@ namespace TFTV.TFTVIncidents
             private const string RiskWindowHoursKey = "KEY_TFTV_HAVEN_ATTACK_RISK_HOURS";
             private static readonly Color Hours8Color = new Color(1f, 0.6f, 0.1f, 1f);
             private static readonly Color Hours12Color = new Color(1f, 0.92f, 0.2f, 1f);
+            private static readonly Color Hours24Color = new Color(1f, 0.96f, 0.6f, 1f);
+            private static readonly Color Hours36Color = new Color(1f, 1f, 1f, 1f);
 
             /// <summary>
             /// Per-controller marker bookkeeping. This runs from GeoSiteVisualsController.Update, i.e.
@@ -347,6 +387,14 @@ namespace TFTV.TFTVIncidents
                         textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 8);
                         textMesh.color = Hours8Color;
                         break;
+                    case RiskWindow.Hours24:
+                        textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 24);
+                        textMesh.color = Hours24Color;
+                        break;
+                    case RiskWindow.Hours36:
+                        textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 36);
+                        textMesh.color = Hours36Color;
+                        break;
                     default:
                         textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 12);
                         textMesh.color = Hours12Color;
@@ -436,6 +484,12 @@ namespace TFTV.TFTVIncidents
                 if (site == null || site.Type != GeoSiteType.Haven)
                 {
                     return;
+                }
+
+                // First haven drawn after a load or a return from tactical: rebuild now rather than at the next hour.
+                if (HavenAttackRiskService.NeedsRebuild)
+                {
+                    RefreshForCurrentHour(site.GeoLevel);
                 }
 
                 int leadHours = HavenAttackRiskService.CurrentLeadHours;

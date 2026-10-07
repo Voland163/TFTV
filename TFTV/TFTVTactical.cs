@@ -56,6 +56,7 @@ namespace TFTV
         public string AircraftViewElement;
 
         public bool Update35TacticalCheck;
+        public bool DeploymentPromptHidden;
         public bool StrongerPandoransTactical;
         public bool NerfAncientsWeaponsTactical;
         public bool StaminaSetToZeroAfterInjury;
@@ -329,6 +330,7 @@ namespace TFTV
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
                 TFTVCapturePandorans.ContainmentSpaceAvailable = data.AvailableContainment;
                 TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
+                TFTVPlayerDeploymentPhase.PromptHidden = TFTVPlayerDeploymentPhase.PromptHidden || data.DeploymentPromptHidden;
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
                 TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = data.StaminaSetToZeroAfterInjury;
@@ -461,6 +463,7 @@ namespace TFTV
                 ScyllaCaptureModule = TFTVCapturePandorans.ScyllaCaptureModulePresent,
                 AvailableContainment = TFTVCapturePandorans.ContainmentSpaceAvailable,
                 Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
+                DeploymentPromptHidden = TFTVPlayerDeploymentPhase.PromptHidden,
                 NerfAncientsWeaponsTactical = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
                 StaminaSetToZeroAfterInjury = TFTVNewGameOptions.StaminaPenaltyFromInjurySetting,

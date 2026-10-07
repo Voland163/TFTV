@@ -1326,6 +1326,7 @@ namespace TFTV
                 AdjustMistSentinelDetection();
                 Create_StarvedAbility();
                 TFTVUI.Tactical.SecondaryObjectivesTactical.Defs.CreateDefs();
+                TFTVUI.Tactical.InfoViewBodyParts.LimbSideLabels.ApplyToSlotDefs();
                 AdjustColorDefs();
                 ReduceMyrmidonDeploymentCost();
                 ChangeArchaelogyLab();

@@ -269,6 +269,8 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
+                string trainingFacilities = DrillsUnlock.DescribeTrainingFacilities(phoenixFaction);
+
                 int currSP = Reflection.GetPrivate<int>(ui, "_currentSkillPoints");
                 int currFP = Reflection.GetPrivate<int>(ui, "_currentFactionPoints");
                 int originalCurrSP = currSP;
@@ -340,6 +342,8 @@ namespace TFTV.TFTVDrills
                     Reflection.SetPrivate(ui, "_currentSkillPoints", currSP);
                     Reflection.SetPrivate(ui, "_currentFactionPoints", currFP);
                 }
+
+                TFTVLogger.Always($"[Drills] {character.DisplayName} learned {replacement.name} (slot of {original.name}). Training Facilities: {trainingFacilities}");
 
                 if (replacedExisting && TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {

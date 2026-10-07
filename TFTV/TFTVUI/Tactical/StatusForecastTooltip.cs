@@ -170,11 +170,11 @@ namespace TFTV.TFTVUI.Tactical
         {
             HorizontalLayoutGroup layout = AddRow(parent);
 
-            Text label = AddText(layout.transform, row.Label.ToUpper(), font, BodyFontSize, BodyColor, TextAnchor.MiddleLeft);
+            Text label = AddText(layout.transform, row.Label.ToUpper(), font, BodyFontSize, row.Muted ? MutedColor : BodyColor, TextAnchor.MiddleLeft);
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
             label.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
 
-            Text value = AddText(layout.transform, row.Value, font, BodyFontSize, row.IsLoss ? LossColor : BodyColor, TextAnchor.MiddleRight);
+            Text value = AddText(layout.transform, row.Value, font, BodyFontSize, row.Muted ? MutedColor : row.IsLoss ? LossColor : BodyColor, TextAnchor.MiddleRight);
             value.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             if (row.HasLevel)

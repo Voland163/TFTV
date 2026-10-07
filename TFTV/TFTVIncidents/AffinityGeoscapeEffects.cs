@@ -570,7 +570,7 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                int leadHours = bestRosterRank * 4;
+                int leadHours = bestRosterRank * 12;
 
 
                 return leadHours;
