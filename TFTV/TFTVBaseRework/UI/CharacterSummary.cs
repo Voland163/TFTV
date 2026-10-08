@@ -106,7 +106,7 @@ namespace TFTV.TFTVBaseRework
                 return null;
             }
 
-            TrainingFacilityRework.GetStatGains(levelsGained, out int strength, out int willpower, out int speed);
+            TrainingFacilityRework.GetStatGains(character, levelsGained, out int strength, out int willpower, out int speed);
 
             // Against the attributes as the character screen reports them, not Progression.Strength,
             // which counts upgrades bought and would read as a fall from 21 to 7.

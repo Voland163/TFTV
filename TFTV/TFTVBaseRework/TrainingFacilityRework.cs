@@ -146,14 +146,38 @@ namespace TFTV.TFTVBaseRework
             speed = levels * SpeedPerLevel;
         }
 
-        public static string GetStatGainDescription(int levelsGained)
+        /// <summary>
+        /// The stat gains training would actually give this character: the per-level figures, cut
+        /// down so no attribute ends above the ceiling the character screen shows it against.
+        /// Vanilla's stat purchase holds the same displayed value (base plus bonus) to that ceiling;
+        /// training adds to the bonus, so without this it could carry an attribute past it.
+        /// </summary>
+        public static void GetStatGains(GeoCharacter character, int levelsGained, out int strength, out int willpower, out int speed)
         {
-            if (levelsGained <= 0) return BaseReworkText.Get(BaseReworkText.TrainingNoStatGains);
-            return BaseReworkText.Format(
-                BaseReworkText.TrainingStatGains,
-                levelsGained * EndurancePerLevel,
-                levelsGained * WillpowerPerLevel,
-                levelsGained * SpeedPerLevel);
+            GetStatGains(levelsGained, out strength, out willpower, out speed);
+
+            CharacterProgression progression = character?.Progression;
+            if (progression == null)
+            {
+                return;
+            }
+
+            BaseCharacterStats baseStats = character.GetProgressionBaseStats();
+            strength = CapGain(strength, baseStats.Endurance + character.BonusStrength, progression.GetMaxBaseStat(CharacterBaseAttribute.Strength));
+            willpower = CapGain(willpower, baseStats.Willpower + character.BonusWillpower, progression.GetMaxBaseStat(CharacterBaseAttribute.Will));
+            speed = CapGain(speed, baseStats.Speed + character.BonusSpeed, progression.GetMaxBaseStat(CharacterBaseAttribute.Speed));
+        }
+
+        private static int CapGain(int gain, float current, int max)
+        {
+            return Math.Max(0, Math.Min(gain, max - (int)current));
+        }
+
+        public static string GetStatGainDescription(GeoCharacter character, int levelsGained)
+        {
+            GetStatGains(character, levelsGained, out int strength, out int willpower, out int speed);
+            if (strength + willpower + speed <= 0) return BaseReworkText.Get(BaseReworkText.TrainingNoStatGains);
+            return BaseReworkText.Format(BaseReworkText.TrainingStatGains, strength, willpower, speed);
         }
 
         public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec, int chosenTargetLevel)
@@ -521,6 +545,7 @@ namespace TFTV.TFTVBaseRework
                 // Clear dismissed marker (both early and full completion deploy the operative).
                 PersonnelRestrictions.ClearDismissedOperative(character);
                 GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(character);
+                PersonnelDismissal.ResetPreferredLoadout(phoenix, character);
 
                 // Relocate to the player-chosen base.
                 GeoPhoenixBase currentBase = phoenix.Bases.FirstOrDefault(b => b.Site.GetAllCharacters().Any(c => c == character));
@@ -915,9 +940,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                int bonusEndurance = remainingLevels * EndurancePerLevel;
-                int bonusWill = remainingLevels * WillpowerPerLevel;
-                int bonusSpeed = remainingLevels * SpeedPerLevel;
+                GetStatGains(character, remainingLevels, out int bonusEndurance, out int bonusWill, out int bonusSpeed);
 
                 character.BonusStrength += bonusEndurance;
                 character.BonusWillpower += bonusWill;
@@ -1020,6 +1043,7 @@ namespace TFTV.TFTVBaseRework
 
                 GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(character);
                 PersonnelRestrictions.ClearDismissedOperative(character);
+                PersonnelDismissal.ResetPreferredLoadout(phoenix, character);
 
                 if (!targetBase.Site.GetAllCharacters().Any(c => c == character))
                 {
