@@ -444,7 +444,7 @@ namespace TFTV.TFTVBaseRework
                 int levelsGained = targetLevel - currentCharLevel;
                 int spCost = TrainingFacilityRework.GetTrainingSpCost(targetLevel);
                 float duration = TrainingFacilityRework.GetEffectiveDurationHours(faction, targetLevel, currentCharLevel);
-                string statGains = TrainingFacilityRework.GetStatGainDescription(levelsGained);
+                string statGains = TrainingFacilityRework.GetStatGainDescription(person.Character, levelsGained);
                 string label = PersonnelText.Format(PersonnelText.TrainOption, targetLevel, spCost,
                     FormatDuration(duration), statGains);
 

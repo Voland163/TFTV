@@ -111,6 +111,7 @@ namespace TFTV.TFTVBaseRework
 
                 //  TFTVUI.Personnel.Loadouts.UnequipButtonClicked();
                 TryReturnLoadoutToStorage(faction, character);
+                ResetPreferredLoadout(faction, character);
                 MoveDismissedOperativeToSiteIfNeeded(faction, character);
                 PersonnelRestrictions.MarkDismissedOperative(character);
                 PersonnelRestrictions.MarkHiddenFromOperatives(character);
@@ -201,6 +202,73 @@ namespace TFTV.TFTVBaseRework
                 .Concat(character.InventoryItems)
                 .Where(item => item?.ItemDef != null)
                 .ToList();
+        }
+
+        private static readonly AccessTools.FieldRef<GeoPhoenixFaction, PostmissionReplenishManager> ReplenisherRef =
+            AccessTools.FieldRefAccess<GeoPhoenixFaction, PostmissionReplenishManager>("_replenisher");
+
+        /// <summary>
+        /// Makes the post-mission replenish loadout match what the character carries now.
+        ///
+        /// Vanilla only drops a loadout when the character dies or leaves the faction, and our
+        /// conversion does neither, so the kit they wore before the dismissal stayed on record. After
+        /// every mission GetMissingItems compared that record against the now empty character and
+        /// offered to manufacture the whole set again. Redeployment calls this too, so an operative
+        /// dismissed under older code does not come back expecting their old kit either.
+        ///
+        /// UpdatePreferredLoadout throws for a character it has no record of, hence the check.
+        /// </summary>
+        internal static void ResetPreferredLoadout(GeoPhoenixFaction faction, GeoCharacter character)
+        {
+            try
+            {
+                if (faction == null || character == null)
+                {
+                    return;
+                }
+
+                PostmissionReplenishManager replenisher = ReplenisherRef(faction);
+                if (replenisher == null || !replenisher.HasLoadout(character))
+                {
+                    return;
+                }
+
+                faction.UpdatePreferredLoadout(character);
+                TFTVLogger.Always($"{LogPrefix} Reset the replenish loadout of {character.DisplayName} to what they carry now.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Base personnel - civilians, trainees and dismissed operatives - never go on missions, so
+        /// nothing they carry or once carried is ever for the replenish screen. This also clears the
+        /// stale loadouts that saves made before ResetPreferredLoadout existed still hold.
+        /// </summary>
+        [HarmonyPatch(typeof(PostmissionReplenishManager), nameof(PostmissionReplenishManager.GetMissingItems), new Type[] { })]
+        internal static class PostmissionReplenishManager_GetMissingItems_SkipPersonnel_Patch
+        {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+            private static void Postfix(List<PostmissionReplenishManager.ReplenishableItems> __result)
+            {
+                try
+                {
+                    if (!BaseReworkCheck.BaseReworkEnabled || __result == null)
+                    {
+                        return;
+                    }
+
+                    __result.RemoveAll(entry => entry?.Character != null
+                        && GeoCharacterFilter.HiddenOperativeMarkerFilter.ShouldHide(entry.Character));
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
         }
 
         /// <summary>
