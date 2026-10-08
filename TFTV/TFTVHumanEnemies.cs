@@ -677,6 +677,7 @@ namespace TFTV
                 {
                     tacticalActor.name = TFTVHumanEnemiesNames.GetName(factionName, rankTag, genderTagDef);
                 }
+                TacticalActorBase_GetDisplayName_HumanEnemiesGenerator_Patch.Invalidate(tacticalActor);
                 AdjustStatsAndSkills(tacticalActor);
 
                 ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
@@ -866,10 +867,23 @@ namespace TFTV
             // DisplayName is read constantly by the tactical UI - health bars, hover, tooltips, the
             // combat log. The old body allocated a List of the actor's tags (twice, plus two 3-element
             // arrays and two string Splits) on every single read, including for actors that have no
-            // rank at all. An actor's faction and tier tags are fixed at spawn, so the result is
-            // computed once per actor and reused.
+            // rank at all, so the result is computed once per actor and reused.
+            //
+            // The name and the faction/tier tags are NOT there at spawn: they are given right after,
+            // by AssignHumanEnemiesTags at tactical start and GiveRankAndNameToHumaoidEnemy for
+            // reinforcements, and the UI reads DisplayName in between (the deployment phase spawns
+            // everyone a moment before tactical start). Both call Invalidate once they have named the
+            // actor, or the cached "no rank" would show the template's name for the rest of the mission.
             private static readonly ConditionalWeakTable<TacticalActorBase, RankedNameCache> _rankedNames =
                 new ConditionalWeakTable<TacticalActorBase, RankedNameCache>();
+
+            internal static void Invalidate(TacticalActorBase actor)
+            {
+                if (actor != null)
+                {
+                    _rankedNames.Remove(actor);
+                }
+            }
 
             public static void Postfix(TacticalActorBase __instance, ref string __result)
             {
@@ -1689,6 +1703,7 @@ namespace TFTV
                                 actor.GameTags.Add(gameTagDef);
                                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                 actor.name = TFTVHumanEnemiesNames.GetName(nameOfFaction, rank, genderTagDef);
+                                TacticalActorBase_GetDisplayName_HumanEnemiesGenerator_Patch.Invalidate(actor);
                                 TFTVLogger.Always("Name of new enemy is " + actor.name);
                                 TacticalActor tacticalActor = actor as TacticalActor;
                                 AdjustStatsAndSkills(tacticalActor);

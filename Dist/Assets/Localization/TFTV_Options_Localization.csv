@@ -325,7 +325,15 @@ Select an operative: the green squares show where they can be placed. Select a s
 Anyone who did not fit waits in the RESERVE on the left: click their card, then a square to bring them in, or a deployed unit to swap places. Right-click a unit to send it to the reserve. Whoever is still in the reserve when you deploy sits this mission out.
 
 Press DEPLOY (the End Turn button) when ready. Everyone else is then deployed and your turn begins.",,,,,,,,
+TFTV_DEPLOYMENT_PHASE_PROMPT_NO_RESERVE,Text,,"<b>DEPLOYMENT</b>
+
+Enemies and other factions have not been deployed yet.
+
+Select an operative: the green squares show where they can be placed. Select a square to move them there. Moving and abilities are unavailable until you deploy.
+
+Press DEPLOY (the End Turn button) when ready. Everyone else is then deployed and your turn begins.",,,,,,,,
 TFTV_DEPLOYMENT_PHASE_CONFIRM,Text,,DEPLOY,,,,,,,,
+TFTV_DEPLOYMENT_PHASE_DONT_SHOW_AGAIN,Text,,Don't show again,,,,,,,,
 TFTV_DEPLOYMENT_RESERVE_TITLE,Text,,RESERVE,,,,,,,,
 TFTV_DEPLOYMENT_RESERVE_EMPTY,Text,,Everyone is deployed.,,,,,,,,
 TFTV_DEPLOYMENT_RESERVE_BENCH,Text,,BENCH: SELECT A UNIT,,,,,,,,

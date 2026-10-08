@@ -70,9 +70,8 @@ namespace TFTVVehicleRework.Armadillo
                 Value = 50f
             },
         };
-                DamageEffectDef fireDamageEffect = (DamageEffectDef)Repo.GetDef("e6d685ab-7d63-dae4-490d-d2070923ce29"); //Fire_DamageEffectDef
-                fireDamageEffect.MaximumDamage = 50f;
-                fireDamageEffect.MinimumDamage = 50f;
+                // The flames burn for 50 because the payload's Burning keyword is 50. Fire_DamageEffectDef
+                // is shared by every fire tile in the game, so it is left at its vanilla value.
             }
 
             Meph.ChargesMax = 10;

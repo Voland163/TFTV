@@ -369,6 +369,46 @@ namespace TFTV.TFTVDrills
             return false;
         }
 
+        /// <summary>
+        /// Every Training Facility the faction owns, with its state and power, for the log. A
+        /// "needs a Training Facility" report can't be reproduced without knowing exactly what
+        /// HasFunctioningTrainingFacility saw.
+        /// </summary>
+        internal static string DescribeTrainingFacilities(GeoPhoenixFaction faction)
+        {
+            try
+            {
+                PhoenixFacilityDef trainingFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("TrainingFacility_PhoenixFacilityDef");
+
+                if (faction?.Bases == null || trainingFacilityDef == null)
+                {
+                    return "no faction/bases";
+                }
+
+                List<string> found = new List<string>();
+
+                foreach (GeoPhoenixBase phoenixBase in faction.Bases)
+                {
+                    if (phoenixBase?.Layout?.Facilities == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (GeoPhoenixFacility facility in phoenixBase.Layout.Facilities.Where(f => f != null && f.Def == trainingFacilityDef))
+                    {
+                        found.Add($"{phoenixBase.Site?.LocalizedSiteName ?? phoenixBase.name}: {facility.State}, powered={facility.IsPowered}");
+                    }
+                }
+
+                return found.Count == 0 ? "none" : string.Join("; ", found);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return "error";
+            }
+        }
+
         internal static bool MeetsClassLevelRequirements(GeoCharacter viewer, DrillUnlockCondition condition)
         {
             if (condition?.ClassLevelRequirements == null || condition.ClassLevelRequirements.Count == 0)

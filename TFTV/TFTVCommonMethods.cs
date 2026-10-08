@@ -201,6 +201,8 @@ namespace TFTV
 
                 TFTVBaseDefenseGeoscape.ClearInternalDataOnStateLoadAndChange();
 
+                TFTVIncidents.AdvanceWarningHavenAttack.ClearOnStateChangeAndLoad();
+
                 TFTVTouchedByTheVoid.TBTVVariable = 0;
                 TFTVTouchedByTheVoid.UmbraResearched = false;
 
@@ -322,6 +324,9 @@ namespace TFTV
                 TFTVDiplomacyPenalties.RestoreAllPatchedEvents();
 
                 TFTVRevenant.InternalData.RevenantDataToClearOnLoadOnly();
+
+                // Per playthrough: the save being loaded says whether the deployment prompt is hidden.
+                TFTVPlayerDeploymentPhase.PromptHidden = false;
 
 
                 TFTVTactical.TurnZeroMethodsExecuted = false;

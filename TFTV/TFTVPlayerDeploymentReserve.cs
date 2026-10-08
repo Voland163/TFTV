@@ -215,6 +215,13 @@ namespace TFTV
                         TFTVLogger.Always($"[DeploymentPhase] {ReserveName(data)} did not fit at level start; in reserve");
                     }
                 }
+
+                _pending.ReserveEnabled = _pending.Reserve.Count > 0;
+
+                if (!_pending.ReserveEnabled)
+                {
+                    TFTVLogger.Always("[DeploymentPhase] whole squad deployed at level start; no reserve this mission");
+                }
             }
             catch (Exception e)
             {
@@ -740,6 +747,11 @@ namespace TFTV
 
         private static void UpdateReserve(TacticalLevelController controller)
         {
+            if (!_pending.ReserveEnabled)
+            {
+                return;
+            }
+
             EnsureReserveInput();
 
             if (_deferredReserveAction != null && Time.frameCount > _deferredReserveFrame)
@@ -805,7 +817,7 @@ namespace TFTV
 
                 TacticalLevelController controller = _pending?.Controller;
 
-                if (controller == null || _pending.Releasing || controller.CurrentFaction == null
+                if (controller == null || _pending.Releasing || !_pending.ReserveEnabled || controller.CurrentFaction == null
                     || !controller.CurrentFaction.IsPlayingTurn || !controller.CurrentFaction.IsControlledByPlayer)
                 {
                     return false;

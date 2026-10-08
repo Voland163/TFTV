@@ -2231,6 +2231,7 @@ namespace TFTV
                 }
 
                 //method to cull fully paralyzed enemy targets from PX allies
+                //(and from Phoenix's own turrets and spider drones, which the AI controls)
 
                 private static bool CheckValidParalyzedTarget(TacticalActorBase actor, TacticalActor target)
                 {
@@ -2241,7 +2242,8 @@ namespace TFTV
 
                         if (phoenix == null
                             || actor.TacticalFaction != null &&
-                            (actor.TacticalFaction == phoenix && !actor.HasGameTag(DefCache.GetDef<ClassTagDef>("TechTurret_ClassTagDef")) || target.TacticalFaction == phoenix))
+                            (actor.TacticalFaction == phoenix && !actor.HasGameTag(DefCache.GetDef<ClassTagDef>("TechTurret_ClassTagDef"))
+                            && !actor.HasGameTag(DefCache.GetDef<ClassTagDef>("SpiderDrone_ClassTagDef")) || target.TacticalFaction == phoenix))
 
                         {
                             return true;
@@ -2266,6 +2268,108 @@ namespace TFTV
                     }
                 }
 
+                /// <summary>
+                /// The target culls above only cover weapon and ability target lists. AI movement and area attacks
+                /// pick their targets from the faction's AI blackboard instead: a spider drone walks up to an enemy
+                /// from GetEnemies and is scored on every enemy its explosion would catch. So fully paralysed
+                /// Pandorans, which the player wants to capture, kept drawing friendly drones in.
+                /// </summary>
+                internal static class ParalysedCaptureTargets
+                {
+                    private static ParalysedStatusDef _paralysedStatus;
+
+                    private static ParalysedStatusDef ParalysedStatus
+                    {
+                        get
+                        {
+                            if (_paralysedStatus == null)
+                            {
+                                _paralysedStatus = DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef");
+                            }
+
+                            return _paralysedStatus;
+                        }
+                    }
+
+                    // Phoenix's blackboard only drives Phoenix's AI-controlled turrets and drones.
+                    private static bool SparesParalysedEnemies(TacticalFaction faction)
+                    {
+                        if (faction == null)
+                        {
+                            return false;
+                        }
+
+                        TacticalFaction phoenix = faction.TacticalLevel.GetFactionByCommandName("px");
+
+                        return phoenix != null && (faction == phoenix || faction.GetRelationTo(phoenix) == FactionRelation.Friend);
+                    }
+
+                    [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.GetEnemies), new Type[] { typeof(ActorType), typeof(bool) })]
+                    public static class AIBlackboard_GetEnemies_patch
+                    {
+                        public static void Postfix(TacticalFaction ____faction, ref IEnumerable<TacticalActorBase> __result)
+                        {
+                            try
+                            {
+                                if (!SparesParalysedEnemies(____faction))
+                                {
+                                    return;
+                                }
+
+                                ParalysedStatusDef paralysed = ParalysedStatus;
+                                __result = __result.Where(enemy => !(enemy is TacticalActor actor && actor.HasStatus(paralysed)));
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                            }
+                        }
+                    }
+
+                    /// <summary>
+                    /// A self-centred blast (the spider drone's explosion) still catches a paralysed Pandoran standing
+                    /// next to another enemy. Such a position scores nothing.
+                    /// </summary>
+                    [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
+                    public static class AIAttackPositionConsideration_EvaluateWithAbility_patch
+                    {
+                        public static void Postfix(IAIActor actor, IAITarget target, TacticalAbilityDef abilityDef, ref float __result)
+                        {
+                            try
+                            {
+                                if (__result <= 0f || !(actor is TacticalActor tacActor) || !(target is TacAITarget tacAITarget))
+                                {
+                                    return;
+                                }
+
+                                if (!SparesParalysedEnemies(tacActor.TacticalFaction))
+                                {
+                                    return;
+                                }
+
+                                TacticalAbility ability = tacActor.GetAbilityWithDef<TacticalAbility>(abilityDef);
+
+                                if (ability == null || !ability.OriginTargetData.TargetSelf || !(ability is IDamageDealer damageDealer))
+                                {
+                                    return;
+                                }
+
+                                foreach (TacticalActorBase hit in AIUtil.GetAffectedTargetsByDamageAbility(tacActor, tacAITarget.Pos, damageDealer))
+                                {
+                                    if (hit is TacticalActor hitActor && !CheckValidParalyzedTarget(tacActor, hitActor))
+                                    {
+                                        __result = 0f;
+                                        return;
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                            }
+                        }
+                    }
+                }
 
             }
 

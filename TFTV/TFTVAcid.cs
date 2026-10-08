@@ -383,7 +383,7 @@ namespace TFTV
                         }
                         else
                         {
-                            if (itemSlot != null && itemSlot.DisplayName == "LEG")
+                            if (itemSlot != null && TFTVUI.Tactical.InfoViewBodyParts.LimbSideLabels.IsLegSlot(itemSlot))
                             {
                                 additionalSlot = hitActor.BodyState.GetSlot("Legs");
                             }

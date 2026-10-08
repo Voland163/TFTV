@@ -57,6 +57,8 @@ namespace TFTV.TFTVUI.Tactical
             internal string Label;
             internal string Value;
             internal bool IsLoss;
+            /// <summary>Greyed out: the row still counts, but nothing is lost from it directly.</summary>
+            internal bool Muted;
             /// <summary>Rows that break a total down by limb; consecutive ones share a bracket.</summary>
             internal bool Bracketed;
             internal bool HasLevel;
@@ -180,8 +182,8 @@ namespace TFTV.TFTVUI.Tactical
                     }
                     else if (status is FireStatus fire)
                     {
-                        List<KeyValuePair<string, float>> parts = FireDamageByPart(actor, fire);
-                        loss = parts.Count > 0 ? parts.Average(part => part.Value) : 0f;
+                        List<FirePart> parts = FireDamageByPart(actor, fire);
+                        loss = parts.Count > 0 ? parts.Average(part => part.Damage) : 0f;
                     }
                     else if (status is DamageOverTimeStatus dot && IsPoison(dot))
                     {
@@ -572,41 +574,61 @@ namespace TFTV.TFTVUI.Tactical
         ///
         /// The burning level itself is not predicted: FireStatus.StartTurn recalculates it from the
         /// fire voxels the actor is standing in, so next turn's level depends on where they move.
+        ///
+        /// A disabled part is still in the accumulation: it loses nothing itself (its damage is capped
+        /// at its 0 HP), but its uncapped amount still counts toward the average. Its row keeps the
+        /// number, greyed out and tagged, so the average still adds up.
         /// </summary>
         private static bool FireRows(Forecast forecast, TacticalActor actor, FireStatus fire)
         {
-            List<KeyValuePair<string, float>> byPart = FireDamageByPart(actor, fire);
+            List<FirePart> byPart = FireDamageByPart(actor, fire);
 
             if (byPart.Count == 0)
             {
                 return false;
             }
 
+            string disabledTag = Key("TFTV_FORECAST_DISABLED");
+
             List<Row> parts = byPart
                 .Select(part => new Row
                 {
                     Kind = RowKind.Stat,
-                    Label = part.Key,
-                    Value = Loss(part.Value),
-                    IsLoss = part.Value >= 0.5f,
+                    Label = part.Disabled ? $"{part.Name} - {disabledTag}" : part.Name,
+                    Value = Loss(part.Damage),
+                    IsLoss = !part.Disabled && part.Damage >= 0.5f,
+                    Muted = part.Disabled,
                     Bracketed = true,
                 })
                 .ToList();
 
-            float average = byPart.Average(part => part.Value);
+            float average = byPart.Average(part => part.Damage);
 
             forecast.Stat("TFTV_FORECAST_HIT_POINTS", Loss(average), average >= 0.5f);
             forecast.Rows.AddRange(parts);
             forecast.Note(Key("TFTV_BURNING_FORECAST_AVERAGE"));
+
+            if (byPart.Any(part => part.Disabled))
+            {
+                forecast.Note(Key("TFTV_BURNING_DISABLED_PARTS"));
+            }
+
             forecast.Note(Key("TFTV_BURNING_RECALCULATED"));
 
             return true;
         }
 
-        /// <summary>What each health slot takes from the fire: its damage less the slot's armor, scaled by resistance.</summary>
-        private static List<KeyValuePair<string, float>> FireDamageByPart(TacticalActor actor, FireStatus fire)
+        private struct FirePart
         {
-            List<KeyValuePair<string, float>> parts = new List<KeyValuePair<string, float>>();
+            internal string Name;
+            internal float Damage;
+            internal bool Disabled;
+        }
+
+        /// <summary>What each health slot takes from the fire: its damage less the slot's armor, scaled by resistance.</summary>
+        private static List<FirePart> FireDamageByPart(TacticalActor actor, FireStatus fire)
+        {
+            List<FirePart> parts = new List<FirePart>();
 
             CharacterBodyState body = actor.BodyState;
             if (body == null)
@@ -626,7 +648,12 @@ namespace TFTV.TFTVUI.Tactical
             foreach (ItemSlot slot in body.GetHealthSlots())
             {
                 float armour = (float)slot.GetArmor().Value;
-                parts.Add(new KeyValuePair<string, float>(slot.DisplayName, Mathf.Max(0f, damage - armour) * resistance));
+                parts.Add(new FirePart
+                {
+                    Name = slot.DisplayName,
+                    Damage = Mathf.Max(0f, damage - armour) * resistance,
+                    Disabled = !slot.Enabled,
+                });
             }
 
             return parts;

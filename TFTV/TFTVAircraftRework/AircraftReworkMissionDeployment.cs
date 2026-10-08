@@ -153,6 +153,14 @@ namespace TFTV
                         missionBriefingModule.DeployButton.ResetButtonAnimations();
 
                         missionBriefingModule.SquadSlotsUsedText.text = "";
+
+                        // The text sits on its own background box ("SquadSlotsUsed"), which would stay
+                        // on screen as an empty black square. The rework has no slot count to show.
+                        UnityEngine.Transform slotsBox = missionBriefingModule.SquadSlotsUsedText.transform.parent;
+                        if (slotsBox != null && slotsBox.name == "SquadSlotsUsed" && slotsBox.gameObject.activeSelf)
+                        {
+                            slotsBox.gameObject.SetActive(false);
+                        }
                         return false;
                     }
 

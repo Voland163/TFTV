@@ -293,6 +293,7 @@
     <Compile Include="TFTVUI\Tactical\CaptureTacticalWidget.cs" />
     <Compile Include="TFTVUI\Tactical\DamagePrediction.cs" />
     <Compile Include="TFTVUI\Tactical\AcidReadout.cs" />
+    <Compile Include="TFTVUI\Tactical\InfoViewBodyParts.cs" />
     <Compile Include="TFTVUI\Tactical\StatusForecast.cs" />
     <Compile Include="TFTVUI\Tactical\StatusForecastTooltip.cs" />
     <Compile Include="TFTVUI\Tactical\DeliriumWidget.cs" />
@@ -389,6 +390,9 @@
     <Compile Include="TFTVMain.cs" />
     <Compile Include="TFTVNewGameMenu.cs" />
     <Compile Include="TFTVBackgroundsAndCharacters.cs" />
+    <Compile Include="TFTVHavenDefenseDiagnostics.cs" />
+    <Compile Include="TFTVMinimumMovement.cs" />
+    <Compile Include="TFTVPandoranColonyRange.cs" />
     <Compile Include="TFTVPandoranProgress.cs" />
     <Compile Include="TFTVPassengerModules.cs" />
     <Compile Include="TFTVProjectOsiris.cs" />
@@ -398,6 +402,7 @@
     <Compile Include="TFTVStamina.cs" />
     <Compile Include="TFTVStarts.cs" />
     <Compile Include="TFTVPlayerDeploymentPhase.cs" />
+    <Compile Include="TFTVPlayerDeploymentPrompt.cs" />
     <Compile Include="TFTVPlayerDeploymentPlacement.cs" />
     <Compile Include="TFTVPlayerDeploymentReserve.cs" />
     <Compile Include="TFTVTactical.cs" />
@@ -456,6 +461,7 @@
     <Compile Include="Vehicles\Effects\ActorArmourThresholdEffectConditionDef.cs" />
     <Compile Include="Vehicles\Effects\AddedRotationParticleEffect.cs" />
     <Compile Include="Vehicles\Effects\AddedRotationParticleEffectDef.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\FireExplosionEffect_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\GeoCharacter_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\MoveAbilityTargetData_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\SceneViewElement_Patches.cs" />

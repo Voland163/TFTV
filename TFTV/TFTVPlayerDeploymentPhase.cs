@@ -66,6 +66,10 @@ namespace TFTV
             // release they are taken out of it, so they sit the mission out rather than arriving later.
             public readonly List<ActorDeployData> Reserve = new List<ActorDeployData>();
 
+            // Whether the reserve is in use this mission: only when someone did not fit at level start. With the
+            // whole squad on the map there is no strip, and no benching (right-click or pad B).
+            public bool ReserveEnabled;
+
             // Reserve cards: a copy of each unit's squad-bar card, taken before it left the map (inactive templates).
             public readonly Dictionary<ActorDeployData, GameObject> Cards = new Dictionary<ActorDeployData, GameObject>();
 
@@ -284,11 +288,94 @@ namespace TFTV
                 if (controller != null)
                 {
                     controller.View.ResetViewState();
+
+                    // The mission-start hints were queued while the phase held them back.
+                    bool shown = controller.View.TryShowContextHint();
+                    TFTVLogger.Always($"[DeploymentPhase] queued hints shown after release: {shown}");
                 }
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// The phase opens with the camera wherever the level put it, not on the squad. Jump it to the middle
+        /// of the squad - the deployment zone - once, when the phase becomes visible.
+        /// </summary>
+        private static void CenterCameraOnSquad(TacticalLevelController controller)
+        {
+            try
+            {
+                List<TacticalActor> squad = _pending?.SquadDeployData.Keys.Where(a => a != null && a.InPlay).ToList();
+
+                if (squad == null || squad.Count == 0)
+                {
+                    squad = controller.GetFactionByCommandName("PX")?.TacticalActors.Where(a => a != null && a.InPlay && a.IsAlive).ToList();
+                }
+
+                if (squad == null || squad.Count == 0 || squad[0].CameraDirector == null)
+                {
+                    TFTVLogger.Always("[DeploymentPhase] no squad to centre the camera on");
+                    return;
+                }
+
+                Vector3 centre = Vector3.zero;
+
+                foreach (TacticalActor actor in squad)
+                {
+                    centre += actor.Pos;
+                }
+
+                centre /= squad.Count;
+
+                squad[0].CameraDirector.Hint(Base.Cameras.CameraHint.ChaseTarget, new Base.Cameras.CameraChaseParams
+                {
+                    ChaseVector = centre,
+                    ChaseTransform = null,
+                    ChaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f),
+                    LockCameraMovement = false,
+                    Instant = true,
+                    ChaseOnlyOutsideFrame = false,
+                    SnapToFloorHeight = true
+                });
+
+                TFTVLogger.Always($"[DeploymentPhase] camera centred on the squad at {centre}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Mission-start hints fire at level start, while the phase is on, and their panel sits under the
+        /// reserve strip and next to the deployment prompt. While the phase holds, the hint manager reports
+        /// nothing to display: the hints stay in its queue (registering is untouched), and Release shows
+        /// them once everyone is on the map.
+        /// </summary>
+        [HarmonyPatch(typeof(PhoenixPoint.Common.ContextHelp.ContextHelpManager), "get_CanDisplayHint")]
+        internal static class ContextHelpManager_CanDisplayHint_HoldDuringDeployment_Patch
+        {
+            private static void Postfix(ref bool __result)
+            {
+                if (!__result || _pending == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    if (IsPending(GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>()))
+                    {
+                        __result = false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
         }
 
@@ -406,8 +493,8 @@ namespace TFTV
                     {
                         _shown = true;
                         SpawnSecurityGuardsEarly(Controller);
-                        GameUtl.GetMessageBox().ShowSimplePrompt(TFTVCommonMethods.ConvertKeyToString("TFTV_DEPLOYMENT_PHASE_PROMPT"),
-                            MessageBoxIcon.Information, MessageBoxButtons.OK, null);
+                        CenterCameraOnSquad(Controller);
+                        ShowDeploymentPrompt();
                     }
 
                     RegisterSecurityGuards(Controller);
@@ -415,7 +502,7 @@ namespace TFTV
                     UpdateMarkers(Controller);
 
                     // Right-click on a unit benches it (left click places, brings in, swaps).
-                    if (Input.GetMouseButtonDown(1) && !(UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false))
+                    if (_pending.ReserveEnabled && Input.GetMouseButtonDown(1) && !(UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false))
                     {
                         if (Controller.View.SelectAtCursor().Actor is TacticalActor pointedAt && IsSquadMember(pointedAt))
                         {
