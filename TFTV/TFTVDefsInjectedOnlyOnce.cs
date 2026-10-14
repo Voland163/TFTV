@@ -427,6 +427,97 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+            CreateBurningStatusDef();
+            CreateLimbMalusStatusDef();
+        }
+
+        /// <summary>
+        /// The fire rework's per-body-part burning status (always on). It takes the vanilla
+        /// Fire_StatusDef's look - name, icon, flames - and keeps a reference to it for the per-size
+        /// flame prefabs, the fire immunity ability and damage-over-time resistances that list it.
+        /// </summary>
+        private static void CreateBurningStatusDef()
+        {
+            try
+            {
+                FireStatusDef vanillaFire = DefCache.GetDef<FireStatusDef>("Fire_StatusDef");
+
+                Tactical.Entities.Statuses.BurningStatusDef burning = Helper.CreateDefFromClone<Tactical.Entities.Statuses.BurningStatusDef>(
+                    null, "{00939861-7E1A-43F4-AC3B-64C3E33900BA}", "TFTV_Burning_StatusDef");
+
+                burning.VanillaFireStatusDef = vanillaFire;
+                burning.EffectName = vanillaFire.EffectName;
+                burning.Duration = vanillaFire.Duration;
+                burning.ApplicationConditions = vanillaFire.ApplicationConditions ?? new EffectConditionDef[0];
+                burning.DurationTurns = -1;
+                burning.ExpireOnEndOfTurn = false;
+                burning.DisablesActor = false;
+                burning.SingleInstance = true;
+                burning.ShowNotification = vanillaFire.ShowNotification;
+                burning.VisibleOnPassiveBar = vanillaFire.VisibleOnPassiveBar;
+                burning.VisibleOnHealthbar = vanillaFire.VisibleOnHealthbar;
+                burning.VisibleOnStatusScreen = vanillaFire.VisibleOnStatusScreen | TacStatusDef.StatusScreenVisibility.VisibleOnBodyPartStatusList;
+                burning.HealthbarPriority = vanillaFire.HealthbarPriority;
+                burning.StackMultipleStatusesAsSingleIcon = vanillaFire.StackMultipleStatusesAsSingleIcon;
+                burning.ParticleEffectPrefab = vanillaFire.ParticleEffectPrefab;
+                burning.DontRaiseOnApplyOnLoad = vanillaFire.DontRaiseOnApplyOnLoad;
+                burning.EventOnApply = vanillaFire.EventOnApply;
+                burning.EventOnUnapply = vanillaFire.EventOnUnapply;
+
+                burning.Visuals = Helper.CreateDefFromClone(vanillaFire.Visuals, "{BE80AC8A-ABAB-4788-831F-367D23A6698C}", "TFTV_Burning_StatusDef");
+                burning.Visuals.Description = new LocalizedTextBind("TFTV_BURNING_DESC");
+
+                TFTVFireRework.BurningStatusDef = burning;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// The limb hit malus status. Always created, so saves that hold it load whether or not
+        /// the limb hit malus option is on; it is only applied while it is.
+        /// </summary>
+        private static void CreateLimbMalusStatusDef()
+        {
+            try
+            {
+                FireStatusDef vanillaFire = DefCache.GetDef<FireStatusDef>("Fire_StatusDef");
+
+                Tactical.Entities.Statuses.LimbMalusStatusDef limbMalus = Helper.CreateDefFromClone<Tactical.Entities.Statuses.LimbMalusStatusDef>(
+                    null, "{F1F87351-BD42-488E-B38E-216C68A922F4}", "TFTV_LimbMalus_StatusDef");
+
+                Sprite icon = Helper.CreateSpriteFromImageFile("LimbMalus.png");
+
+                limbMalus.EffectName = "TFTV_LimbMalus";
+                limbMalus.ApplicationConditions = new EffectConditionDef[0];
+                limbMalus.DurationTurns = -1;
+                limbMalus.ExpireOnEndOfTurn = false;
+                limbMalus.DisablesActor = false;
+                limbMalus.SingleInstance = true;
+                limbMalus.ShowNotification = false;
+                limbMalus.VisibleOnPassiveBar = true;
+                limbMalus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                limbMalus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList | TacStatusDef.StatusScreenVisibility.VisibleOnBodyPartStatusList;
+                limbMalus.HealthbarPriority = vanillaFire.HealthbarPriority;
+                limbMalus.StackMultipleStatusesAsSingleIcon = false;
+                limbMalus.ParticleEffectPrefab = null;
+                limbMalus.EventOnApply = null;
+                limbMalus.EventOnUnapply = null;
+
+                limbMalus.Visuals = Helper.CreateDefFromClone(vanillaFire.Visuals, "{DE1D822D-C7CB-4CFE-B31A-36B247E6264D}", "TFTV_LimbMalus_StatusDef");
+                limbMalus.Visuals.DisplayName1 = new LocalizedTextBind("TFTV_LIMB_MALUS_NAME");
+                limbMalus.Visuals.Description = new LocalizedTextBind("TFTV_LIMB_MALUS_DESC");
+                limbMalus.Visuals.SmallIcon = icon;
+                limbMalus.Visuals.LargeIcon = icon;
+
+                TFTVLimbHitMalus.StatusDef = limbMalus;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         /*  private static void ChangeScyllaSounds()

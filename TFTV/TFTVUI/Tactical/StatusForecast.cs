@@ -8,6 +8,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.Tactical.Entities.Statuses;
 using UnityEngine;
 
 namespace TFTV.TFTVUI.Tactical
@@ -21,9 +22,11 @@ namespace TFTV.TFTVUI.Tactical
     ///  - Acid is one status per limb. Every bare limb bills the character's Hit Points separately.
     ///  - Bleeding is one status covering several limbs, and each limb contributes a fixed amount
     ///    drawn from its body part. It never decays; it stops when the limb is healed.
-    ///  - Burning damages every body part, but the character's Hit Points take the *average* across
-    ///    parts, once - not the sum. Its level is also recalculated from the fire around the actor
-    ///    each turn rather than decaying, so the level cannot honestly be predicted, only the damage.
+    ///  - Burning (the fire rework) sticks to each body part an incendiary reached, with its own fire
+    ///    value per part that burns down every turn; the character's Hit Points take the *average*
+    ///    across the burning parts, once - not the sum.
+    ///  - The limb hit malus (its own option) is a set of stat losses, one per hurt body part,
+    ///    each on its own clock.
     ///  - Poison is a plain actor-level total, and TFTV's own patch takes 3 Will alongside it.
     ///
     /// Stats the status takes from are shown as a loss only ("Hit Points −40"), not as before and
@@ -120,9 +123,14 @@ namespace TFTV.TFTVUI.Tactical
                     return null;
                 }
 
+                // The limb hit malus has no single number to show next to its name.
+                string title = statusDef is LimbMalusStatusDef
+                    ? statusDef.Visuals.DisplayName1.Localize()
+                    : $"{statusDef.Visuals.DisplayName1.Localize()} {Mathf.RoundToInt(displayedValue)}";
+
                 Forecast forecast = new Forecast
                 {
-                    Title = $"{statusDef.Visuals.DisplayName1.Localize()} {Mathf.RoundToInt(displayedValue)}",
+                    Title = title,
                     TitleColor = statusDef.Visuals.Color,
                     Icon = statusDef.Visuals.SmallIcon,
                     IconColor = statusDef.Visuals.Color,
@@ -180,9 +188,9 @@ namespace TFTV.TFTVUI.Tactical
                     {
                         loss = bleed.Value;
                     }
-                    else if (status is FireStatus fire)
+                    else if (status is BurningStatus burning)
                     {
-                        List<FirePart> parts = FireDamageByPart(actor, fire);
+                        List<FirePart> parts = BurningDamageByPart(actor, burning);
                         loss = parts.Count > 0 ? parts.Average(part => part.Damage) : 0f;
                     }
                     else if (status is DamageOverTimeStatus dot && IsPoison(dot))
@@ -201,6 +209,14 @@ namespace TFTV.TFTVUI.Tactical
                             : status.TacStatusDef.name;
                         losses.Add(new KeyValuePair<string, float>(name, loss));
                     }
+                }
+
+                // Ground fire is not a status, but it lands at the start of the turn just the same.
+                float groundFire = TFTVFireRework.GetGroundFireValue(actor, out _) * TFTVFireRework.GetFireMultiplier(actor);
+
+                if (groundFire >= 0.5f)
+                {
+                    losses.Add(new KeyValuePair<string, float>(Key("TFTV_FORECAST_GROUND_FIRE"), groundFire));
                 }
 
                 float total = losses.Sum(loss => loss.Value);
@@ -417,9 +433,14 @@ namespace TFTV.TFTVUI.Tactical
                     return BleedRows(forecast, actor, bleed);
                 }
 
-                if (status is FireStatus fire)
+                if (status is BurningStatus burning)
                 {
-                    return FireRows(forecast, actor, fire);
+                    return BurningRows(forecast, actor, burning);
+                }
+
+                if (status is LimbMalusStatus limbMalus)
+                {
+                    return LimbMalusRows(forecast, actor, limbMalus);
                 }
 
                 if (status is ParalysisDamageOverTimeStatus paralysis)
@@ -566,97 +587,216 @@ namespace TFTV.TFTVUI.Tactical
         #region burning
 
         /// <summary>
-        /// Fire adds every health slot to one accumulation, which routes to
-        /// DamageAccumulation.ApplyAddedDamage_Fire: each part takes its own damage, but the
-        /// character's Hit Points take the *average* across parts, once. That is the opposite of
-        /// acid, where each affected limb bills Hit Points separately, and no description mentions
-        /// either rule.
+        /// Every burning part drops by 10 (20 with fire resistance) at the start of the character's
+        /// turn and, if still above 0, ticks for its new value less its armour. The parts tick in one
+        /// fire accumulation, so DamageAccumulation.ApplyAddedDamage_Fire bills Hit Points the
+        /// *average* across them, once.
         ///
-        /// The burning level itself is not predicted: FireStatus.StartTurn recalculates it from the
-        /// fire voxels the actor is standing in, so next turn's level depends on where they move.
-        ///
-        /// A disabled part is still in the accumulation: it loses nothing itself (its damage is capped
-        /// at its 0 HP), but its uncapped amount still counts toward the average. Its row keeps the
-        /// number, greyed out and tagged, so the average still adds up.
+        /// A disabled part still burns: it loses nothing itself (its damage is capped at its 0 HP),
+        /// but its uncapped amount still counts toward the average. Its row keeps the number, greyed
+        /// out and tagged, so the average still adds up.
         /// </summary>
-        private static bool FireRows(Forecast forecast, TacticalActor actor, FireStatus fire)
+        private static bool BurningRows(Forecast forecast, TacticalActor actor, BurningStatus burning)
         {
-            List<FirePart> byPart = FireDamageByPart(actor, fire);
+            List<FirePart> byPart = BurningDamageByPart(actor, burning);
+            float decay = TFTVFireRework.GetDecay(actor);
 
-            if (byPart.Count == 0)
+            if (byPart.Count > 0)
             {
-                return false;
+                float average = byPart.Average(part => part.Damage);
+                forecast.Stat("TFTV_FORECAST_HIT_POINTS", Loss(average), average >= 0.5f);
             }
 
             string disabledTag = Key("TFTV_FORECAST_DISABLED");
 
-            List<Row> parts = byPart
-                .Select(part => new Row
+            foreach (KeyValuePair<string, float> part in burning.GetParts())
+            {
+                FirePart tick = byPart.FirstOrDefault(candidate => candidate.SlotName == part.Key);
+                ItemSlot slot = actor.BodyState?.GetSlot(part.Key);
+                string name = slot?.DisplayName ?? part.Key;
+                bool disabled = slot != null && !slot.Enabled;
+                bool ticks = tick.SlotName != null;
+
+                forecast.Rows.Add(new Row
                 {
                     Kind = RowKind.Stat,
-                    Label = part.Disabled ? $"{part.Name} - {disabledTag}" : part.Name,
-                    Value = Loss(part.Damage),
-                    IsLoss = !part.Disabled && part.Damage >= 0.5f,
-                    Muted = part.Disabled,
+                    Label = disabled ? $"{name} - {disabledTag}" : name,
+                    Value = Loss(ticks ? tick.Damage : 0f),
+                    IsLoss = !disabled && ticks && tick.Damage >= 0.5f,
+                    Muted = disabled,
                     Bracketed = true,
-                })
-                .ToList();
+                    HasLevel = true,
+                    Before = Mathf.RoundToInt(part.Value),
+                    After = Mathf.RoundToInt(Mathf.Max(0f, part.Value - decay)),
+                });
+            }
 
-            float average = byPart.Average(part => part.Damage);
-
-            forecast.Stat("TFTV_FORECAST_HIT_POINTS", Loss(average), average >= 0.5f);
-            forecast.Rows.AddRange(parts);
-            forecast.Note(Key("TFTV_BURNING_FORECAST_AVERAGE"));
+            if (byPart.Count > 1)
+            {
+                forecast.Note(Key("TFTV_BURNING_FORECAST_AVERAGE"));
+            }
 
             if (byPart.Any(part => part.Disabled))
             {
                 forecast.Note(Key("TFTV_BURNING_DISABLED_PARTS"));
             }
 
-            forecast.Note(Key("TFTV_BURNING_RECALCULATED"));
+            forecast.Note(TFTVCommonMethods.FormatKey("TFTV_BURNING_DECAY", Mathf.RoundToInt(decay)));
+
+            if (TFTVLimbHitMalus.IsEnabled)
+            {
+                forecast.Note(Key("TFTV_BURNING_LIMB_MALUS"));
+            }
 
             return true;
         }
 
         private struct FirePart
         {
-            internal string Name;
+            internal string SlotName;
             internal float Damage;
             internal bool Disabled;
         }
 
-        /// <summary>What each health slot takes from the fire: its damage less the slot's armor, scaled by resistance.</summary>
-        private static List<FirePart> FireDamageByPart(TacticalActor actor, FireStatus fire)
+        /// <summary>
+        /// Next turn's tick on each part that will still be burning after it drops: its new value
+        /// less the part's armour, scaled by fire resistance.
+        /// </summary>
+        private static List<FirePart> BurningDamageByPart(TacticalActor actor, BurningStatus burning)
         {
             List<FirePart> parts = new List<FirePart>();
 
             CharacterBodyState body = actor.BodyState;
-            if (body == null)
+            if (body == null || burning == null)
             {
                 return parts;
             }
 
-            float resistance = 1f;
-            var fireType = actor.TacticalLevel?.VoxelMatrix?.VoxelMatrixData?.FireDamageTypeDef;
-            if (fireType != null)
-            {
-                resistance = actor.GetDamageMultiplierFor(fireType);
-            }
+            float decay = TFTVFireRework.GetDecay(actor);
+            float resistance = TFTVFireRework.GetFireMultiplier(actor);
 
-            float damage = fire.FullDamageValue;
-
-            foreach (ItemSlot slot in body.GetHealthSlots())
+            foreach (KeyValuePair<string, float> part in burning.GetParts())
             {
+                ItemSlot slot = body.GetSlot(part.Key);
+                float value = part.Value - decay;
+
+                if (slot == null || value <= 0f)
+                {
+                    continue;
+                }
+
                 float armour = (float)slot.GetArmor().Value;
                 parts.Add(new FirePart
                 {
-                    Name = slot.DisplayName,
-                    Damage = Mathf.Max(0f, damage - armour) * resistance,
+                    SlotName = part.Key,
+                    Damage = Mathf.Max(0f, value - armour) * resistance,
                     Disabled = !slot.Enabled,
                 });
             }
 
             return parts;
+        }
+
+        #endregion
+
+        #region limb hit malus
+
+        /// <summary>
+        /// The stats the malus is taking right now - read off the very modifications it applied, so
+        /// the numbers are the ones the character has - then one row per hurt part saying how much
+        /// and until when, and the rules the stock description cannot know (Ignore Pain, which arm
+        /// rule the selected weapon uses).
+        /// </summary>
+        private static bool LimbMalusRows(Forecast forecast, TacticalActor actor, LimbMalusStatus status)
+        {
+            TFTVLimbHitMalus.MalusTotals totals = TFTVLimbHitMalus.Calculate(actor, status);
+            List<TFTVLimbHitMalus.PartMalus> parts = totals.Parts.Where(part => part.Units > 0f).ToList();
+
+            if (parts.Count == 0)
+            {
+                return false;
+            }
+
+            forecast.Wide = true;
+
+            MalusStat(forecast, actor, status, "Perception", "TFTV_FORECAST_PERCEPTION", 1f, "");
+            MalusStat(forecast, actor, status, "Willpower", "TFTV_FORECAST_WILLPOWER", 1f, "");
+            MalusStat(forecast, actor, status, "Speed", "TFTV_FORECAST_SPEED", 1f, "");
+            MalusStat(forecast, actor, status, "Accuracy", "TFTV_FORECAST_ACCURACY", 100f, "%");
+
+            bool ownTurn = actor.TacticalLevel != null && actor.TacticalLevel.CurrentFaction == actor.TacticalFaction;
+
+            foreach (TFTVLimbHitMalus.PartMalus part in parts)
+            {
+                List<string> details = new List<string>();
+
+                if (part.Disabled)
+                {
+                    details.Add(Key("TFTV_LIMB_MALUS_PART_DISABLED"));
+                }
+                else
+                {
+                    if (part.Severity > 0f)
+                    {
+                        string endKey = ownTurn
+                            ? (part.EndsLeft <= 1 ? "TFTV_LIMB_MALUS_ENDS_THIS_TURN" : "TFTV_LIMB_MALUS_ENDS_NEXT_TURN")
+                            : (part.EndsLeft <= 1 ? "TFTV_LIMB_MALUS_ENDS_NEXT_TURN" : "TFTV_LIMB_MALUS_ENDS_LATER");
+
+                        details.Add(TFTVCommonMethods.FormatKey(endKey, Mathf.RoundToInt(part.Severity * 100f)));
+                    }
+
+                    if (part.Restorations > 0)
+                    {
+                        details.Add(TFTVCommonMethods.FormatKey("TFTV_LIMB_MALUS_RESIDUAL", part.Restorations));
+                    }
+                }
+
+                forecast.Rows.Add(new Row
+                {
+                    Kind = RowKind.Stat,
+                    Label = part.Slot.DisplayName,
+                    Value = string.Join("; ", details),
+                    Bracketed = true,
+                });
+            }
+
+            if (totals.IgnorePain)
+            {
+                forecast.Note(Key("TFTV_LIMB_MALUS_IGNORE_PAIN"));
+            }
+
+            if (parts.Any(part => part.Role == TFTVLimbHitMalus.LimbRole.Manipulator))
+            {
+                if (totals.WeaponHands >= 2)
+                {
+                    forecast.Note(Key("TFTV_LIMB_MALUS_TWO_HANDED"));
+                }
+                else if (totals.WeaponHands == 1)
+                {
+                    forecast.Note(Key("TFTV_LIMB_MALUS_ONE_HANDED"));
+                }
+            }
+
+            return true;
+        }
+
+        private static void MalusStat(Forecast forecast, TacticalActor actor, LimbMalusStatus status, string statName, string labelKey, float scale, string suffix)
+        {
+            BaseStat stat = actor.Status?.GetStat(statName);
+
+            if (stat?.Modifications == null)
+            {
+                return;
+            }
+
+            float change = stat.Modifications.Where(modification => modification.Source == status).Sum(modification => modification.Value);
+
+            if (change > -0.001f)
+            {
+                return;
+            }
+
+            forecast.Stat(labelKey, Loss(-change * scale, suffix), true);
         }
 
         #endregion

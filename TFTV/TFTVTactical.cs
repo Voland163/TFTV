@@ -252,6 +252,8 @@ namespace TFTV
 
 
 
+            TFTVLimbHitMalus.RefreshAll(Controller);
+
             TFTVLogger.Always("Tactical start completed");
 
             TFTVNJQuestline.IntroMission.RunOnTacticalStart(Controller);
