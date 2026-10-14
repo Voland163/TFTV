@@ -9,6 +9,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.Tactical.Entities.Statuses;
 using static PhoenixPoint.Tactical.Entities.TacticalActorViewBase;
 
 namespace TFTV.TFTVUI.Tactical
@@ -102,9 +103,9 @@ namespace TFTV.TFTVUI.Tactical
 
         /// <summary>
         /// The info view puts a status's icon on each body part row listed in its TargetSlots, and only for
-        /// statuses flagged for the body part list. Burning is neither: it is one status on the whole body,
-        /// so no row showed it even though fire damages every part. Here it is listed against every health
-        /// slot. Only UIStateCharacterStatus.SetData calls this method.
+        /// statuses flagged for the body part list. The fire rework's Burning and the limb hit malus are
+        /// both per body part; this makes sure each shows on exactly the rows it affects, even where the
+        /// vanilla filter would leave a status out. Only UIStateCharacterStatus.SetData calls this method.
         /// </summary>
         [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.GetCharacterStatusBodypartStatuses))]
         internal static class TacticalActorViewBase_GetCharacterStatusBodypartStatuses_Patch
@@ -118,27 +119,27 @@ namespace TFTV.TFTVUI.Tactical
                         return;
                     }
 
-                    FireStatus fire = ____statusComponent.GetStatus<FireStatus>();
-
-                    if (fire == null || fire.Value <= 0f || __result.Any(info => info.Def == fire.TacStatusDef))
+                    foreach (TacStatus status in ____statusComponent.Statuses.OfType<TacStatus>()
+                        .Where(status => status is BurningStatus || status is LimbMalusStatus)
+                        .ToList())
                     {
-                        return;
+                        List<string> slots = status.GetTargetSlotsNames().ToList();
+
+                        __result.RemoveAll(info => info.Def == status.TacStatusDef);
+
+                        if (slots.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        __result.Add(new StatusInfo
+                        {
+                            Def = status.TacStatusDef,
+                            Value = status.Value,
+                            Limit = status.Limit,
+                            TargetSlots = slots,
+                        });
                     }
-
-                    CharacterBodyState body = ____statusComponent.GetComponent<CharacterBodyState>();
-
-                    if (body == null)
-                    {
-                        return;
-                    }
-
-                    __result.Add(new StatusInfo
-                    {
-                        Def = fire.TacStatusDef,
-                        Value = fire.Value,
-                        Limit = fire.Limit,
-                        TargetSlots = body.GetHealthSlots().Select(slot => slot.GetSlotName()).ToList(),
-                    });
                 }
                 catch (Exception e)
                 {

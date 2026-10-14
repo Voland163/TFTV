@@ -1623,8 +1623,8 @@ namespace TFTV
                                 targetActor.HasGameTag(Shared.SharedGameTags.MutoidTag)
                                 && !targetActor.Status.HasStatus<BleedStatus>()
                                 && !targetActor.HasStatus(DefCache.GetDef<DamageOverTimeStatusDef>("Poison_DamageOverTimeStatusDef"))
-                                && !targetActor.HasStatus(DefCache.GetDef<ParalysisDamageOverTimeStatusDef>("Paralysis_DamageOverTimeStatusDef")
-                                )
+                                && !targetActor.HasStatus(DefCache.GetDef<ParalysisDamageOverTimeStatusDef>("Paralysis_DamageOverTimeStatusDef"))
+                                && TFTVFireRework.GetBurning(targetActor) == null
                                 ))
                             {
                                 return false;
@@ -1673,6 +1673,13 @@ namespace TFTV
                                 float num2 = item.Actor.Health.Value;
                                 float num3 = (float)item.Actor.Health.Max - num2;
 
+                                // A healing item puts out burning, so it is worth what the fire would still take,
+                                // weighted by its value and the parts it burns on.
+                                if (item.Actor is TacticalActor burningActor && TFTVFireRework.IsHealingItem(healAbility))
+                                {
+                                    num3 += TFTVFireRework.ExpectedRemainingHealthLoss(burningActor, TFTVFireRework.GetBurning(burningActor));
+                                }
+
                                 //adding check if actor or target are mindcontrolled, etc.
                                 if (item.Actor is TacticalActor tacticalActor && !CheckActorSuitability(tacticalActor, obj))
                                 {
@@ -1689,7 +1696,7 @@ namespace TFTV
                             if (num > 0f)
                             {
                                 tacAITarget.Actor = tacticalAbilityTarget.Actor;
-                                __result = num / (float)tacAITarget.Actor.Health.Max;
+                                __result = Mathf.Min(1f, num / (float)tacAITarget.Actor.Health.Max);
                                 return false;
                             }
 

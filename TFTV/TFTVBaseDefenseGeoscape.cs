@@ -3638,6 +3638,42 @@ namespace TFTV
         }
 
 
+        /// <summary>
+        /// The deployment screen starts with GetDefaultDeploymentSetup's pick: characters in source order (the
+        /// aircraft that launched the mission first, then the base) until MissionDef.MaxPlayerUnits is full - 9 for
+        /// base defense (ChangeBaseDefense). When deployment has no limit (Aircraft Rework, or the UnLimitedDeployment
+        /// option) everyone at the base may defend it, so start with all of them checked. Runs before the Base
+        /// Rework's hidden-personnel filter (GeoCharacterFilter), which then still removes whoever it hides.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.GetDefaultDeploymentSetup), new Type[] { typeof(IEnumerable<GeoCharacter>) })]
+        public static class GeoMission_GetDefaultDeploymentSetup_BaseDefenseAll_patch
+        {
+            [HarmonyPriority(Priority.High)]
+            public static void Postfix(GeoMission __instance, IEnumerable<GeoCharacter> deployment, ref IEnumerable<GeoCharacter> __result)
+            {
+                try
+                {
+                    if (deployment == null || (!TFTVAircraftReworkMain.AircraftReworkOn && !TFTVMain.Main.Config.UnLimitedDeployment))
+                    {
+                        return;
+                    }
+
+                    MissionTagDef pxBaseDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
+
+                    if (__instance?.MissionDef == null || !__instance.MissionDef.MissionTags.Contains(pxBaseDefenseTag))
+                    {
+                        return;
+                    }
+
+                    __result = ExcludeHiddenPersonnel(deployment).Distinct().ToList();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(GeoMission), "get_SkipDeploymentSelection")] //VERIFIED
         public static class GeoMission_get_SkipDeploymentSelection_BaseDefenseProgressOne_patch
         {

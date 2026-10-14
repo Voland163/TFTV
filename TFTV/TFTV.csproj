@@ -133,6 +133,10 @@
     <Compile Include="Tactical\Entities\Statuses\FumbleChanceStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\BurningStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\BurningStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\LimbMalusStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\LimbMalusStatusDef.cs" />
     <Compile Include="TFTVAAAgenda\AgendaHelpers.cs" />
     <Compile Include="TFTVAAAgenda\AgendaPatches.cs" />
     <Compile Include="TFTVAAAgenda\AgendaRefresh.cs" />
@@ -280,6 +284,8 @@
     <Compile Include="TFTVRevertSGPatchBalance.cs" />
     <Compile Include="TFTVSuppression\TFTVSuppression.cs" />
     <Compile Include="TFTVSuppression\TFTVSuppressionAI.cs" />
+    <Compile Include="TFTVSuppression\TFTVLimbHitMalus.cs" />
+    <Compile Include="TFTVFire\TFTVFireRework.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVTimeScaling.cs" />
     <Compile Include="TFTVUI\Geoscape\TopInforBar.cs" />
@@ -404,6 +410,7 @@
     <Compile Include="TFTVPlayerDeploymentPhase.cs" />
     <Compile Include="TFTVPlayerDeploymentPrompt.cs" />
     <Compile Include="TFTVPlayerDeploymentPlacement.cs" />
+    <Compile Include="TFTVPlayerDeploymentBaseDefenseCulls.cs" />
     <Compile Include="TFTVPlayerDeploymentReserve.cs" />
     <Compile Include="TFTVTactical.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

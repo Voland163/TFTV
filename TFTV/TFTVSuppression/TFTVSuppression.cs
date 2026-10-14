@@ -493,7 +493,7 @@ namespace TFTV
                 RegisterSuppressionEvent(actor, weapon, 1f);
             }
 
-            private static bool IsSuppressionExcluded(TacticalActor actor)
+            internal static bool IsSuppressionExcluded(TacticalActor actor)
             {
                 if (actor == null)
                 {

@@ -174,6 +174,7 @@ namespace PRMBetterClasses.SkillModifications
                         DefCache.GetDef<StatusDef>("Poison_DamageOverTimeStatusDef"),
                         DefCache.GetDef<StatusDef>("Paralysis_DamageOverTimeStatusDef"),
                         DefCache.GetDef<StatusDef>("Fire_StatusDef"),
+                        DefCache.GetDef<StatusDef>("TFTV_Burning_StatusDef"),
                         DefCache.GetDef<StatusDef>("Acid_StatusDef"),
                         DefCache.GetDef<StatusDef>("Infected_StatusDef"), // = virus applied
             };
