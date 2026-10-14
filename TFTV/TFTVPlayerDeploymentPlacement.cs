@@ -79,8 +79,9 @@ namespace TFTV
         /// allow the same unit at another size: zones pick their occupants by size tag rather than by room, so a
         /// vehicle may use grunt tiles and a grunt vehicle tiles wherever it physically fits. Fit is then the game's
         /// own GetValidSpawnPosition, with the unit's real size, followed by TFTV's checks: clearance from enemies
-        /// already on the map and (base defense) no 3x3/5x5 unit on an upper floor. Spots inside the base map's
-        /// sealed rooms never get this far: the GetOrderedSpawnPositions patch below removes them from the zones.
+        /// already on the map, and no borrowed rooftop tiles for large units. Base defense's own culls (sealed rooms,
+        /// the phase-I entrance limit, large units on the ground floor) are already applied inside the game's zone
+        /// methods by TFTVPlayerDeploymentBaseDefenseCulls, so the initial deployment obeys them too.
         ///
         /// Each zone tile costs the game a physics check, so the result is cached per unit until something on the
         /// map moves (MarkSpotsDirty). Callers only read the list.
@@ -116,6 +117,7 @@ namespace TFTV
 
             List<TacticalDeployZone> zones = PlayerZones();
             List<TacticalDeployZone> eligible = EligibleZones(zones, data);
+            HashSet<TacticalDeployZone> ownSizeZones = new HashSet<TacticalDeployZone>(eligible);
             int ownZones = eligible.Count;
 
             foreach (ActorDeployData variant in OtherSizeVariants(data))
@@ -140,9 +142,16 @@ namespace TFTV
                     .Select(a => a.Pos).ToList()
                 : new List<Vector3>();
 
-            bool keepOnGroundFloor = IsLargeUnit(data) && IsBaseDefense();
-            float groundY = keepOnGroundFloor ? GroundFloorY(zones) : 0f;
-            int upstairs = 0;
+            bool largeUnit = IsLargeUnit(data);
+            // Base defense's sealed rooms and phase-I entrance limit are cut from the zones' spawn positions, and its
+            // ground-floor rule for large units from their valid positions (TFTVPlayerDeploymentBaseDefenseCulls),
+            // so the game's own deployment obeys them as well as placement.
+            //
+            // Elsewhere a vehicle or other large unit may borrow grunt tiles only at the height of its own zones:
+            // grunt zones also cover rooftops (Anu maps), where it fits but vanilla would never put it. Only placement
+            // borrows tiles, so this one rule stays here.
+            float? borrowedTopY = largeUnit && !IsBaseDefense() ? OwnZonesTopY(ownSizeZones, zones) + UpperFloorHeight : (float?)null;
+            int rooftops = 0;
 
             foreach (TacticalDeployZone zone in eligible)
             {
@@ -154,9 +163,9 @@ namespace TFTV
                         continue;
                     }
 
-                    if (keepOnGroundFloor && pos.y > groundY + UpperFloorHeight)
+                    if (borrowedTopY.HasValue && !ownSizeZones.Contains(zone) && pos.y > borrowedTopY.Value)
                     {
-                        upstairs++;
+                        rooftops++;
                         continue;
                     }
 
@@ -167,7 +176,7 @@ namespace TFTV
             if (firstLook)
             {
                 TFTVLogger.Always($"[DeploymentPhase] {data.ComponentSetDef?.name}: {spots.Count} free spot(s)" +
-                    (keepOnGroundFloor ? $"; dropped {upstairs} above the ground floor (ground y {groundY:0.0})" : ""));
+                    (borrowedTopY.HasValue ? $"; dropped {rooftops} on borrowed tiles above y {borrowedTopY.Value:0.0}" : ""));
             }
 
             return spots;
@@ -187,78 +196,6 @@ namespace TFTV
             _loggedSpotSummaries.Clear();
             _spotCache.Clear();
             _groundFloorY = null;
-        }
-
-        /// <summary>
-        /// The base defense map has sealed rooms (an unbuilt section, roofed with terrain the camera cuts away)
-        /// whose floors are valid navmesh inside player and enemy deploy zones, so units - vehicles included, in
-        /// the vanilla initial deployment - could spawn shut in there. No general test told them apart (a closed
-        /// room is not a solid, and its navmesh connects through), so the area is cut by hand, at every height:
-        /// x -15.5..-0.5, z 19.5..25.5 (the in-game console's grid positions there read e.g. (-14.5, 2.4, 20.5)).
-        /// Applied where the game reads a zone's spawn positions, so vanilla spawning, TFTV's and placement all
-        /// skip it. Runs on every mission's spawns, so it asks "base defense?" first (cached per level) and only
-        /// then looks at the positions.
-        /// </summary>
-        [HarmonyPatch(typeof(TacticalDeployZone), nameof(TacticalDeployZone.GetOrderedSpawnPositions))]
-        internal static class TacticalDeployZone_GetOrderedSpawnPositions_BaseDefenseSealedRooms_Patch
-        {
-            private const float MinX = -15.5f, MaxX = -0.5f, MinZ = 19.5f, MaxZ = 25.5f, Margin = 0.01f;
-
-            private static readonly HashSet<TacticalDeployZone> _loggedZones = new HashSet<TacticalDeployZone>();
-            private static TacticalLevelController _checkedLevel;
-            private static bool _checkedLevelIsBaseDefense;
-
-            private static bool InSealedRooms(Vector3 pos)
-            {
-                return pos.x >= MinX - Margin && pos.x <= MaxX + Margin && pos.z >= MinZ - Margin && pos.z <= MaxZ + Margin;
-            }
-
-            public static void Postfix(TacticalDeployZone __instance, ref List<Vector3> __result)
-            {
-                try
-                {
-                    if (__result == null || __result.Count == 0 || !IsBaseDefenseLevel(__instance.TacticalLevel))
-                    {
-                        return;
-                    }
-
-                    if (__result.Any(InSealedRooms))
-                    {
-                        int before = __result.Count;
-
-                        // A new list, so whatever the zone keeps for itself is untouched.
-                        __result = __result.Where(p => !InSealedRooms(p)).ToList();
-
-                        if (_loggedZones.Add(__instance))
-                        {
-                            TFTVLogger.Always($"[DeploymentPhase] base defense: cut {before - __result.Count} of {before} spawn position(s) from {__instance.name} at {__instance.Pos} (sealed rooms)");
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static bool IsBaseDefenseLevel(TacticalLevelController controller)
-            {
-                if (!ReferenceEquals(controller, _checkedLevel))
-                {
-                    TacMissionTypeDef missionType = controller?.TacMission?.MissionData?.MissionType;
-
-                    // Only remember a definite answer: too early in loading there is no mission to ask yet.
-                    if (missionType == null)
-                    {
-                        return false;
-                    }
-
-                    _checkedLevel = controller;
-                    _checkedLevelIsBaseDefense = missionType.Tags.Contains(TFTVMain.Shared.SharedGameTags.BaseDefenseMissionTag);
-                }
-
-                return _checkedLevelIsBaseDefense;
-            }
         }
 
         private const float UpperFloorHeight = 2f;
@@ -294,6 +231,25 @@ namespace TFTV
         private static bool IsBaseDefense()
         {
             return _pending.Controller.TacMission.MissionData.MissionType.Tags.Contains(TFTVMain.Shared.SharedGameTags.BaseDefenseMissionTag);
+        }
+
+        /// <summary>
+        /// The highest spot among the zones a unit may use at its own size. Falls back to the lowest spot of all
+        /// player zones when it has none of its own.
+        /// </summary>
+        private static float OwnZonesTopY(IEnumerable<TacticalDeployZone> ownSizeZones, List<TacticalDeployZone> zones)
+        {
+            float highest = float.MinValue;
+
+            foreach (TacticalDeployZone zone in ownSizeZones)
+            {
+                foreach (Vector3 pos in zone.GetOrderedSpawnPositions(false))
+                {
+                    highest = Mathf.Max(highest, pos.y);
+                }
+            }
+
+            return highest == float.MinValue ? GroundFloorY(zones) : highest;
         }
 
         /// <summary>

@@ -410,6 +410,7 @@
     <Compile Include="TFTVPlayerDeploymentPhase.cs" />
     <Compile Include="TFTVPlayerDeploymentPrompt.cs" />
     <Compile Include="TFTVPlayerDeploymentPlacement.cs" />
+    <Compile Include="TFTVPlayerDeploymentBaseDefenseCulls.cs" />
     <Compile Include="TFTVPlayerDeploymentReserve.cs" />
     <Compile Include="TFTVTactical.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

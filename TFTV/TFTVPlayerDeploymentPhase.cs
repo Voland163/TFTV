@@ -1,10 +1,13 @@
 using Base.Core;
 using Base.UI.MessageBox;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Saves;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -289,9 +292,52 @@ namespace TFTV
                 {
                     controller.View.ResetViewState();
 
+                    RetriggerSightedHumanEnemyHints(controller);
+
                     // The mission-start hints were queued while the phase held them back.
                     bool shown = controller.View.TryShowContextHint();
                     TFTVLogger.Always($"[DeploymentPhase] queued hints shown after release: {shown}");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// A human enemy squad's hint (name, leader, tactic) fires on vanilla's "actor seen" trigger, for an actor
+        /// carrying the squad's faction tag. Both the tag and the hint come from TFTV's turn-0 code
+        /// (TFTVHumanEnemies.ImplementHumanEnemies), which the phase defers until after DEPLOY - but DEPLOY spawns
+        /// the held enemies first, so any already in sight were seen before they were tagged and the hint waited
+        /// for the next enemy to come into view. Fire the trigger again for one sighted member of each human enemy
+        /// faction, a frame after release so vision has caught up. The hint's own has-been-seen condition keeps it
+        /// from repeating.
+        /// </summary>
+        private static void RetriggerSightedHumanEnemyHints(TacticalLevelController controller)
+        {
+            try
+            {
+                GameTagDef humanEnemyTag = TFTVHumanEnemies.humanEnemyTagDef;
+                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
+                TacContextHelpManager hints = GameUtl.CurrentLevel()?.GetComponent<TacContextHelpManager>();
+
+                if (humanEnemyTag == null || phoenix == null || hints == null)
+                {
+                    return;
+                }
+
+                foreach (TacticalFaction faction in controller.Factions.Where(f => f != phoenix))
+                {
+                    TacticalActor seen = faction.TacticalActors.FirstOrDefault(a => a != null && a.IsAlive && a.HasGameTag(humanEnemyTag) && phoenix.Vision.IsRevealed(a));
+
+                    if (seen == null)
+                    {
+                        continue;
+                    }
+
+                    hints.EventTypeTriggered(HintTrigger.ActorSeen, seen, seen);
+                    TFTVLogger.Always($"[DeploymentPhase] {faction.TacticalFactionDef.name} was in sight at release; re-sent 'actor seen' for {seen.DisplayName} so its squad hint shows now");
                 }
             }
             catch (Exception e)
