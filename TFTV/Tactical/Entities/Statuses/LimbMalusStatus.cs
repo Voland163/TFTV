@@ -3,6 +3,7 @@ using Base.Serialization.General;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace TFTV.Tactical.Entities.Statuses
 {
@@ -28,6 +29,22 @@ namespace TFTV.Tactical.Entities.Statuses
 
         [SerializeMember]
         private List<int> _restorations = new List<int>();
+
+        /// <summary>Will Points the lower Willpower cut off, given back as the malus fades.</summary>
+        [SerializeMember]
+        private float _willPointsTrimmed;
+
+        internal float WillPointsTrimmed
+        {
+            get => _willPointsTrimmed;
+            set => _willPointsTrimmed = Mathf.Max(0f, value);
+        }
+
+        /// <summary>
+        /// The injured arms and their spread shares, as of the last refresh. Not saved: the refresh after a load
+        /// (TFTVLimbHitMalus.RefreshAll) rebuilds it.
+        /// </summary>
+        internal List<TFTVLimbHitMalus.PartMalus> CachedArms;
 
         public LimbMalusStatusDef LimbMalusStatusDef => BaseDef as LimbMalusStatusDef;
 

@@ -1,4 +1,5 @@
 using Base.Core;
+using Base.Entities;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -23,7 +24,8 @@ using UnityEngine;
 namespace TFTV
 {
     /// <summary>
-    /// Player-chosen deployment (config option PlayerDeploymentPhase): hold back every non-player participant at
+    /// Player-chosen deployment (config option PlayerDeploymentPhase; with it off, still on base defense and
+    /// whenever part of the squad does not fit at level start): hold back every non-player participant at
     /// mission start and let the player reposition the squad inside its deploy zones first (placement and the
     /// placement-only ability lock live in TFTVPlayerDeploymentPlacement.cs).
     ///
@@ -72,6 +74,11 @@ namespace TFTV
             // Whether the reserve is in use this mission: only when someone did not fit at level start. With the
             // whole squad on the map there is no strip, and no benching (right-click or pad B).
             public bool ReserveEnabled;
+
+            // With the config option off the phase still runs on base defense, and on any mission where part of the
+            // squad did not fit. Set when only the second reason can apply: the other sides are held through level
+            // start anyway, and released right there if the whole squad got on the map.
+            public bool OnlyIfReserve;
 
             // Reserve cards: a copy of each unit's squad-bar card, taken before it left the map (inactive templates).
             public readonly Dictionary<ActorDeployData, GameObject> Cards = new Dictionary<ActorDeployData, GameObject>();
@@ -260,6 +267,45 @@ namespace TFTV
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// No phase after all (option off, not base defense, whole squad on the map): spawn the held sides now,
+        /// still inside TacMission.OnLevelStart, which is where vanilla spawns them.
+        /// </summary>
+        private static void ReleaseAtLevelStart()
+        {
+            PendingDeployment pending = _pending;
+            pending.Releasing = true;
+
+            try
+            {
+                foreach (TacParticipantSpawn spawn in pending.HeldSpawns)
+                {
+                    spawn.DeployForTurn(0);
+                }
+            }
+            finally
+            {
+                _pending = null;
+                RestoreSaving(pending);
+                ResetPlacementCaches();
+            }
+
+            TFTVLogger.Always("[DeploymentPhase] option off and the whole squad fitted: no deployment phase, the other sides spawned at level start");
+
+            if (pending.DeferredMod != null)
+            {
+                if (pending.TacticalStartDeferred)
+                {
+                    pending.DeferredMod.OnTacticalStart();
+                }
+
+                if (pending.DeferredTurnNumber.HasValue)
+                {
+                    pending.DeferredMod.OnNewTurn(pending.DeferredTurnNumber.Value);
+                }
             }
         }
 
@@ -692,12 +738,18 @@ namespace TFTV
                 try
                 {
                     // ParticipantSpawns is null only on a fresh mission; a loaded save just re-initializes them.
-                    if (!TFTVMain.Main.Config.PlayerDeploymentPhase || __instance.ParticipantSpawns != null || !IsEligibleMission(__instance))
+                    if (__instance.ParticipantSpawns != null || !IsEligibleMission(__instance))
                     {
                         return;
                     }
 
-                    _pending = new PendingDeployment { Controller = __instance.TacticalLevel };
+                    bool baseDefense = __instance.MissionData.MissionType.Tags.Contains(TFTVMain.Shared.SharedGameTags.BaseDefenseMissionTag);
+
+                    _pending = new PendingDeployment
+                    {
+                        Controller = __instance.TacticalLevel,
+                        OnlyIfReserve = !TFTVMain.Main.Config.PlayerDeploymentPhase && !baseDefense,
+                    };
                     _holdingDuringLevelStart = true;
                 }
                 catch (Exception e)
@@ -724,6 +776,18 @@ namespace TFTV
                     }
 
                     CollectInitialReserve();
+
+                    if (_pending.OnlyIfReserve && !_pending.ReserveEnabled)
+                    {
+                        ReleaseAtLevelStart();
+                        return;
+                    }
+
+                    if (!TFTVMain.Main.Config.PlayerDeploymentPhase)
+                    {
+                        TFTVLogger.Always($"[DeploymentPhase] option off, but the phase runs: {(_pending.OnlyIfReserve ? "part of the squad did not fit" : "base defense")}");
+                    }
+
                     BeginPhase(__instance.TacticalLevel);
                 }
                 catch (Exception e)
@@ -803,6 +867,19 @@ namespace TFTV
 
                     _pending.PlayerSpawn = __instance;
                     _pending.SquadDeployData[actor] = deploymentData;
+
+                    // Spawned at a grid point above the floor, the unit would fall (with damage) at the first
+                    // ability anyone uses; settle it on the floor now.
+                    if (PutOnFloor(actor))
+                    {
+                        NavMeshNavigationComponent nav = actor.NavigationComponent;
+
+                        if (nav?.NavObstacle != null)
+                        {
+                            nav.NavObstacle.SetEnabled(false, false);
+                            nav.NavObstacle.SetEnabled(nav.ShouldCarveNavMesh, false);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {

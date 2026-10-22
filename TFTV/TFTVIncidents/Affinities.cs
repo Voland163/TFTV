@@ -3,6 +3,7 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -396,6 +397,46 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
+            /// <summary>
+            /// The option stored for this variable (1 or 2), or 0 when there is none. A loaded level
+            /// only copies its saved event variables into the live set in GeoscapeEventSystem.OnLevelStart,
+            /// and TFTV asks for choices before that (aircraft speed is recomputed while the save is
+            /// processed), so the saved copy in InstanceData is read too. Reading only the live set
+            /// returned "nothing", the default option 1 got cached, and a Compute leader who had chosen
+            /// the haven attack warning got the aircraft speed bonus instead after every load.
+            /// </summary>
+            private static int ReadStoredChoice(GeoLevelController level, string variableName)
+            {
+                GeoscapeEventSystem eventSystem = level?.EventSystem;
+
+                if (eventSystem == null)
+                {
+                    return 0;
+                }
+
+                int live = eventSystem.GetVariable(variableName);
+
+                if (live == 1 || live == 2)
+                {
+                    return live;
+                }
+
+                List<KeyValuePair<string, int>> saved = eventSystem.InstanceData?.CustomVariables;
+
+                if (saved != null)
+                {
+                    foreach (KeyValuePair<string, int> variable in saved)
+                    {
+                        if (variable.Key == variableName && (variable.Value == 1 || variable.Value == 2))
+                        {
+                            return variable.Value;
+                        }
+                    }
+                }
+
+                return 0;
+            }
+
             internal static void SetGeoscapeBenefitChoice(
                GeoLevelController level,
                LeaderSelection.AffinityApproach approach,
@@ -428,17 +469,16 @@ namespace TFTV.TFTVIncidents
                         return cached;
                     }
 
-                    if (level?.EventSystem == null)
+                    int stored = ReadStoredChoice(level, GetGeoBenefitVariableName(approach));
+
+                    if (stored == 0)
                     {
-                        // no level to read from: don't cache the default, or it would stick once a level is available
+                        // nothing chosen (or nothing readable yet): don't cache the default, or it would stick
                         return 1;
                     }
 
-                    int stored = level.EventSystem.GetVariable(GetGeoBenefitVariableName(approach));
-
-                    int normalized = (stored == 2) ? 2 : 1;
-                    GeoBenefitChoiceCache[approach] = normalized;
-                    return normalized;
+                    GeoBenefitChoiceCache[approach] = stored;
+                    return stored;
                 }
                 catch (Exception e)
                 {
@@ -500,11 +540,16 @@ namespace TFTV.TFTVIncidents
                         return GetTacticalBenefitChoiceFromSnapshot(approach);
                     }
 
-                    int stored = level.EventSystem.GetVariable(GetTacticalBenefitVariableName(approach));
+                    int stored = ReadStoredChoice(level, GetTacticalBenefitVariableName(approach));
 
-                    int normalized = NormalizeOption(stored);
-                    CacheTacticalBenefitChoice(approach, normalized);
-                    return normalized;
+                    if (stored == 0)
+                    {
+                        // nothing chosen (or nothing readable yet): don't cache the default, or it would stick
+                        return 1;
+                    }
+
+                    CacheTacticalBenefitChoice(approach, stored);
+                    return stored;
                 }
                 catch (Exception e)
                 {

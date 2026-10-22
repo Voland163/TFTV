@@ -143,6 +143,8 @@ namespace TFTV.TFTVBaseRework
 
             RehydratePendingActions(eventSystem, level);
 
+            CompleteOrphanedPendingSites(level);
+
             if (ActivePendingByTimerId.Count == 0)
             {
                 return;
@@ -172,6 +174,95 @@ namespace TFTV.TFTVBaseRework
             // Marked afterwards so the rescan is guaranteed to see the completed state, even though
             // the completion path already refreshes on its own.
             InvalidatePendingVisuals();
+        }
+
+        private const int OrphanScanFrameInterval = 30;
+        private static int _lastOrphanScanFrame = int.MinValue;
+        private static readonly List<GeoSite> _orphanBuffer = new List<GeoSite>();
+
+        /// <summary>
+        /// Safety net: a site whose own saved state says its construction is due (a pending tag and an
+        /// ExpiringTimerAt in the past) but that no live timer record covers. Vanilla deletes expired
+        /// event timers in GeoscapeEventSystem.Update before the postfix tick runs, so a timer that
+        /// expired without a record (e.g. records cleared around a load) left the site stuck forever:
+        /// pending tags, a dark progression ring, and no activation (reported for two of five base
+        /// upgrades queued together). The site is the truth here, so it completes from its tags.
+        /// </summary>
+        private static void CompleteOrphanedPendingSites(GeoLevelController level)
+        {
+            if (UnityEngine.Time.frameCount - _lastOrphanScanFrame < OrphanScanFrameInterval)
+            {
+                return;
+            }
+
+            _lastOrphanScanFrame = UnityEngine.Time.frameCount;
+
+            List<GeoSite> orphans = _orphanBuffer;
+            orphans.Clear();
+
+            TimeUnit now = level.Timing.Now;
+
+            foreach (GeoSite site in level.Map.AllSites)
+            {
+                if (site == null
+                    || !PhoenixBaseVisitFlow.HasPendingActionPublic(site)
+                    || ActivePendingByTimerId.Values.Any(active => active != null && active.SiteId == site.SiteId))
+                {
+                    continue;
+                }
+
+                // A site that lost its end time too is stuck all the same once no timer is left for it.
+                bool due = site.ExpiringTimerAt != TimeUnit.Zero
+                    ? site.ExpiringTimerAt <= now
+                    : !HasSitePendingTimer(level.EventSystem, site.SiteId);
+
+                if (due)
+                {
+                    orphans.Add(site);
+                }
+            }
+
+            foreach (GeoSite site in orphans)
+            {
+                PendingBaseAction action = PhoenixBaseVisitFlow.GetPendingAction(site);
+                TFTVLogger.Always($"[BaseActivation] site {site.SiteId} was due at {site.ExpiringTimerAt} (now {now}) with no live timer record: completing {action} from the site's own state");
+
+                RemoveSitePendingTimers(level.EventSystem, site.SiteId);
+                PhoenixBaseVisitFlow.CompletePendingAction(site, level.PhoenixFaction, action);
+            }
+
+            if (orphans.Count > 0)
+            {
+                InvalidatePendingVisuals();
+            }
+
+            orphans.Clear();
+        }
+
+        private static List<string> GetSitePendingTimerIds(GeoscapeEventSystem eventSystem, int siteId)
+        {
+            Dictionary<string, GeoEventTimer> timers = eventSystem == null ? null : TimersRef(eventSystem);
+
+            if (timers == null || timers.Count == 0)
+            {
+                return new List<string>();
+            }
+
+            string prefix = PendingTimerPrefix + siteId.ToString(CultureInfo.InvariantCulture) + "|";
+            return timers.Keys.Where(id => id != null && id.StartsWith(prefix, StringComparison.Ordinal)).ToList();
+        }
+
+        private static bool HasSitePendingTimer(GeoscapeEventSystem eventSystem, int siteId)
+        {
+            return GetSitePendingTimerIds(eventSystem, siteId).Count > 0;
+        }
+
+        private static void RemoveSitePendingTimers(GeoscapeEventSystem eventSystem, int siteId)
+        {
+            foreach (string timerId in GetSitePendingTimerIds(eventSystem, siteId))
+            {
+                eventSystem.RemoveTimer(timerId);
+            }
         }
 
         /// <summary>
@@ -301,6 +392,24 @@ namespace TFTV.TFTVBaseRework
         internal static class GeoscapeEventSystem_Update_patch
         {
             static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+            /// <summary>
+            /// Vanilla's Update completes expired timers and deletes them from _timers in the same call,
+            /// so pick up every pending timer before it runs: once it has, an expired timer that had no
+            /// record yet is gone.
+            /// </summary>
+            public static void Prefix(GeoscapeEventSystem __instance)
+            {
+                try
+                {
+                    RehydratePendingActions(__instance, ResolveLevel(__instance));
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
             public static void Postfix(GeoscapeEventSystem __instance)
             {
                 try

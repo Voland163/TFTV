@@ -3,14 +3,17 @@ using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewModules;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.TFTVDrills.DrillsPublicClasses;
 
@@ -108,6 +111,60 @@ namespace TFTV.TFTVUI.Tactical
             }
         }
 
+
+        /// <summary>
+        /// The aiming prediction simulates the weapon on its own (no ability is passed down to the
+        /// DamagePredictor), so it fires one execution: abilities that shoot several bursts, such as
+        /// Aimed Burst (2) or Gunslinger, showed the damage of only the first. While the shoot states
+        /// run their prediction, Weapon.GetNumberOfShots is asked for the ability's execution count.
+        /// </summary>
+        private static int _predictionExecutions;
+
+        private static Func<UIStateShoot, ShootAbility> _getShootAbility;
+
+        private static void BeginPrediction(UIStateShoot state)
+        {
+            try
+            {
+                if (_getShootAbility == null)
+                {
+                    _getShootAbility = AccessTools.MethodDelegate<Func<UIStateShoot, ShootAbility>>(AccessTools.PropertyGetter(typeof(UIStateShoot), "_shootAbility"));
+                }
+
+                _predictionExecutions = _getShootAbility(state)?.ShootAbilityDef?.ExecutionsCount ?? 0;
+            }
+            catch (Exception e)
+            {
+                _predictionExecutions = 0;
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [HarmonyPatch(typeof(UIStateShoot), "SimulateDamagePrediction", new Type[] { typeof(Weapon), typeof(Vector3), typeof(TacticalAbilityTarget), typeof(bool) })]
+        public static class UIStateShoot_SimulateDamagePrediction_Executions_Patch
+        {
+            public static void Prefix(UIStateShoot __instance) => BeginPrediction(__instance);
+            public static void Finalizer() => _predictionExecutions = 0;
+        }
+
+        [HarmonyPatch(typeof(UIStateFreeCam), "SimulateDamagePrediction", new Type[] { typeof(Weapon), typeof(Vector3), typeof(TacticalAbilityTarget), typeof(IDamageReceiver) })]
+        public static class UIStateFreeCam_SimulateDamagePrediction_Executions_Patch
+        {
+            public static void Prefix(UIStateFreeCam __instance) => BeginPrediction(__instance);
+            public static void Finalizer() => _predictionExecutions = 0;
+        }
+
+        [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetNumberOfShots))]
+        public static class Weapon_GetNumberOfShots_PredictionExecutions_Patch
+        {
+            public static void Prefix(ref int executionsCount)
+            {
+                if (_predictionExecutions > 1 && executionsCount == 1)
+                {
+                    executionsCount = _predictionExecutions;
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(UIStateShoot), "GetMinMaxPossibleDamage")] //VERIFIED
         public static class UIStateShoot_GetMinMaxPossibleDamage_patch

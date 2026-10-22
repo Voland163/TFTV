@@ -72,6 +72,27 @@ namespace TFTV
                         return volume;
                     }
 
+                    // Cheat option: vehicles and Mutogs take one slot (modules can still lower that, e.g. an Aspida on a Helios).
+                    if (TFTVMain.Main.Config.VehicleAndMutogSize1 && volume > 1)
+                    {
+                        return Math.Min(1, GetModuleAdjustedCharacterSpace(geoCharacter, volume, hasHarness, hasMutogPen, isThunderbird, isHelios, aspidaResearchCompleted));
+                    }
+
+                    return GetModuleAdjustedCharacterSpace(geoCharacter, volume, hasHarness, hasMutogPen, isThunderbird, isHelios, aspidaResearchCompleted);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            private static int GetModuleAdjustedCharacterSpace(GeoCharacter geoCharacter, int volume, bool hasHarness, bool hasMutogPen,
+                      bool isThunderbird, bool isHelios, bool aspidaResearchCompleted)
+            {
+                try
+                {
+
                     bool isVehicle = geoCharacter.GameTags != null && geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag);
                     bool isMutog = geoCharacter.GameTags != null && geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag);
 
@@ -203,17 +224,18 @@ namespace TFTV
                 }
             }
 
+            // Not gated on the Aircraft Rework: the cheat options (VehicleAndMutogSize1, MultipleVehiclesInAircraftAllowed)
+            // work in both modes, and vanilla's vehicle space getters sum OccupingSpace.
             [HarmonyPatch(typeof(GeoCharacter), "get_OccupingSpace")]
             public static class GeoCharacter_get_OccupingSpace_Patch
             {
-                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(GeoCharacter __instance, ref int __result)
                 {
                     try
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
 
-                        if (config.VehicleAndMutogSize1)
+                        if (config.VehicleAndMutogSize1 && __result > 1)
                         {
                             __result = 1;
                         }
@@ -260,7 +282,6 @@ namespace TFTV
             [HarmonyPatch(typeof(TransferActionMenuElement), "Init")]
             public static class TransferActionMenuElement_Init_Patch
             {
-                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static bool Prefix(TransferActionMenuElement __instance, IGeoCharacterContainer targetContainer, GeoRosterItem targetItem)
                 {
                     try
@@ -299,7 +320,7 @@ namespace TFTV
 
                         if (config.VehicleAndMutogSize1)
                         {
-                            occupyingSpace = 1;
+                            occupyingSpace = Math.Min(1, occupyingSpace);
                         }
 
                         PropertyInfo propertyInfo = typeof(TransferActionMenuElement).GetProperty("TargetContainer", BindingFlags.Public | BindingFlags.Instance);

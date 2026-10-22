@@ -55,7 +55,8 @@ namespace TFTV.TFTVIncidents
 
             public float ComputeDurationHours(GeoVehicle vehicle)
             {
-                int soldiers = vehicle?.Soldiers?.Count() ?? 0;
+                // Only those who can work on an incident speed it up (no Mutoids, Mutogs, vehicles or grunts).
+                int soldiers = vehicle?.GetAllCharacters()?.Count(TFTVBaseRework.PersonnelRestrictions.CanContributeToIncidents) ?? 0;
 
                 float hours = BaseHours - soldiers * PerSoldierSpeedBonusHours;
                 return Mathf.Clamp(hours, MinHours, MaxHours);

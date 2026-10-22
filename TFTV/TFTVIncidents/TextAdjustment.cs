@@ -299,10 +299,14 @@ namespace TFTV.TFTVIncidents
                     return leader;
                 }
 
-                return site.Vehicles
+                List<GeoCharacter> aboard = site.Vehicles
                     ?.Where(v => v != null && v.Owner == phoenixFaction)
                     .SelectMany(v => v.GetAllCharacters())
-                    .FirstOrDefault(IsHumanGeoCharacter);
+                    .ToList();
+
+                // Prefer someone who can actually work on the incident (not a Mutoid or a grunt).
+                return aboard?.FirstOrDefault(TFTVBaseRework.PersonnelRestrictions.CanContributeToIncidents)
+                    ?? aboard?.FirstOrDefault(IsHumanGeoCharacter);
             }
 
             private static string GetShortFormName(GeoCharacter character)

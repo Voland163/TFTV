@@ -722,7 +722,12 @@ namespace TFTV.TFTVUI.Tactical
             MalusStat(forecast, actor, status, "Perception", "TFTV_FORECAST_PERCEPTION", 1f, "");
             MalusStat(forecast, actor, status, "Willpower", "TFTV_FORECAST_WILLPOWER", 1f, "");
             MalusStat(forecast, actor, status, "Speed", "TFTV_FORECAST_SPEED", 1f, "");
-            MalusStat(forecast, actor, status, "Accuracy", "TFTV_FORECAST_ACCURACY", 100f, "%");
+
+            // Arms widen the selected weapon's spread rather than lowering a stat.
+            if (totals.SpreadIncrease > 0.001f)
+            {
+                forecast.Stat("TFTV_FORECAST_WEAPON_SPREAD", $"+{Mathf.RoundToInt(totals.SpreadIncrease * 100f)}%", true);
+            }
 
             bool ownTurn = actor.TacticalLevel != null && actor.TacticalLevel.CurrentFaction == actor.TacticalFaction;
 

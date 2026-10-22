@@ -421,6 +421,22 @@ namespace TFTV.TFTVBaseRework
                 return HasPendingAction(site);
             }
 
+            /// <summary>The construction a pending site is waiting for, read from its saved tags.</summary>
+            public static PendingBaseAction GetPendingAction(GeoSite site)
+            {
+                if (site.SiteTags.Contains(PhoenixBaseReworkState.PendingOutpostTag))
+                {
+                    return PendingBaseAction.Outpost;
+                }
+
+                if (site.SiteTags.Contains(PhoenixBaseReworkState.PendingBaseUpgradeTag))
+                {
+                    return PendingBaseAction.UpgradeToBase;
+                }
+
+                return PendingBaseAction.FullBase;
+            }
+
             public static float GetPendingDurationHours(GeoSite site)
             {
                 if (site.SiteTags.Contains(PhoenixBaseReworkState.PendingOutpostTag))

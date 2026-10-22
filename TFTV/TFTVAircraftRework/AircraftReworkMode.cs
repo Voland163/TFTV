@@ -54,7 +54,7 @@ namespace TFTV
         /// </summary>
         private const string ModeFileName = "TFTV_AircraftReworkBeta.txt";
 
-        private const string SaveMarkerId = "TFTV_AircraftReworkBeta";
+        internal const string SaveMarkerId = "TFTV_AircraftReworkBeta";
         private const string SaveMarkerOn = "on";
         private const string SaveMarkerOff = "off";
 
@@ -243,10 +243,47 @@ namespace TFTV
         /// </summary>
         internal static string FindReworkTraceInSave(Stream zsav, out string where)
         {
+            return FindTraceInSave(zsav, _reworkTraces, out where);
+        }
+
+        /// <summary>
+        /// The first of the given traces in the save file of this record, looking in the save and then in a tactical
+        /// save's embedded geoscape; null if none. readable is false when the file could not be found or read.
+        /// </summary>
+        internal static string FindTraceInSaveFile(PPSavegameMetaData save, byte[][] traces, out bool readable, out string where)
+        {
+            readable = false;
+            where = null;
+
+            try
+            {
+                string path = GetSaveFilePath(save);
+
+                if (path == null)
+                {
+                    return null;
+                }
+
+                using (FileStream file = File.OpenRead(path))
+                {
+                    string found = FindTraceInSave(file, traces, out where);
+                    readable = true;
+                    return found;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
+
+        private static string FindTraceInSave(Stream zsav, byte[][] traces, out string where)
+        {
             byte[] data = Gunzip(zsav);
 
             where = "save";
-            string found = FindReworkTrace(data, 0, data.Length);
+            string found = FindTrace(data, 0, data.Length, traces);
 
             if (found != null)
             {
@@ -282,7 +319,7 @@ namespace TFTV
             }
 
             where = "embedded geoscape";
-            return FindReworkTrace(geoscape, 0, geoscape.Length);
+            return FindTrace(geoscape, 0, geoscape.Length, traces);
         }
 
         /// <summary>The same file the game opens: the platform's file root + "/" + the record path.</summary>
@@ -333,9 +370,9 @@ namespace TFTV
             }
         }
 
-        private static string FindReworkTrace(byte[] data, int start, int end)
+        private static string FindTrace(byte[] data, int start, int end, byte[][] traces)
         {
-            foreach (byte[] trace in _reworkTraces)
+            foreach (byte[] trace in traces)
             {
                 if (IndexOf(data, trace, start, end) >= 0)
                 {

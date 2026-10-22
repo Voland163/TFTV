@@ -309,8 +309,11 @@
     <Compile Include="TFTVUI\Tactical\TacticalTooltipCycler.cs" />
     <Compile Include="TFTVUI\Tactical\TargetIcons.cs" />
     <Compile Include="TFTVUI\Tactical\Various.cs" />
+    <Compile Include="TFTVVanillaSaveGuard.cs" />
+    <Compile Include="TFTVVanillaFixes\AnvilCheatsPadVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Geoscape\GeoscapeVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Geoscape\ResearchGeoscapeVanillaFixes.cs" />
+    <Compile Include="TFTVVanillaFixes\Geoscape\StateQueueGeoscapeVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Geoscape\TemporaryGeoscapeVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Geoscape\UIGeoscapeVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\AITacticalVanillaFixes.cs" />
