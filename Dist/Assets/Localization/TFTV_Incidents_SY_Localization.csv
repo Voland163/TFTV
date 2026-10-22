@@ -1,10 +1,10 @@
 ﻿Key,Type,Desc,English
 TFTV_INCIDENT_30_TITLE_SY,Text,,The Hollow Ones
-TFTV_INCIDENT_30_DESC,Text,,"A scavenger named Childs Brimley, currently in custody, claims his team was infected—*mimicked*, he says—by a Pandoran organism. According to his report, the creature didn’t just copy their physiology but also their behavior and memories. One by one, his team turned… until he was the last. Synedrion researchers are at loss, and rumors are spreading throughout [HavenName]."
+TFTV_INCIDENT_30_DESC,Text,,"A scavenger named Childs Brimley, currently in custody, claims his team was infected—<i>mimicked</i>, he says—by a Pandoran organism. According to his report, the creature didn’t just copy their physiology but also their behavior and memories. One by one, his team turned… until he was the last. Synedrion researchers are at a loss, and rumors are spreading throughout [HavenName]."
 TFTV_INCIDENT_30_CHOICE_0_B,Text,,Conduct an interview with Brimley.
 TFTV_INCIDENT_30_CHOICE_1_E_O,Text,,Investigate the scavenging site.
 TFTV_INCIDENT_30_CHOICE_2,Text,,Leave it to Synedrion. [END]
-TFTV_INCIDENT_30_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","Brimley gave [OperativeName] detailed accounts—too detailed, perhaps. He insists he saw versions of his crewmates speaking in perfect voices, with perfect memories, but *wrong eyes.* His story is unnervingly consistent. Still, the evidence suggests paranoia and cabin fever."
+TFTV_INCIDENT_30_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","Brimley gave [OperativeName] detailed accounts—too detailed, perhaps. He insists he saw versions of his crewmates speaking in perfect voices, with perfect memories, but <i>wrong eyes.</i> His story is unnervingly consistent. Still, the evidence suggests paranoia and cabin fever."
 TFTV_INCIDENT_30_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","[OperativeName] recovered logs and audio fragments. The descent into violence was slow, filled with mistrust and contradictions. One recording ends with a voice repeating a teammate’s words before they were spoken. The autopsies showed no major mutations, and the Pandoran involvement is unconfirmed."
 TFTV_INCIDENT_30_OUTCOME_0_FAIL,Text,,"The interview broke down quickly. He alternated between fear and laughter, begging [OperativeName] to ‘check behind their eyes.’"
 TFTV_INCIDENT_30_OUTCOME_1_FAIL,Text,,"No biological evidence found. Just blood, old gear, and scratched walls. One message had been carved over and over into a bulkhead: ‘It wasn’t her.’"
@@ -18,8 +18,8 @@ SYN to AN +5
 200 food, 40 tech","In a concealed compartment beneath the floorboards, [OperativeName] found a pen drive—miraculously intact. It contains articles from <i>Human Horizon</i>, a sensationalist prewar outlet, and unauthored texts critiquing early 21st-century transhumanist ideologies. There’s no proof this was the Exalted’s hideout—but someone here was deeply skeptical of forced evolution."
 TFTV_INCIDENT_31_OUTCOME_1_SUCCESS,Text,"AN to SYN +5
 SYN to AN +5
-200 food, 40 tech","[OperativeName] recovered a single data device containing cached material—opinion pieces from the early mist years, warnings against radical bio-modification movements, and vague references to academic conferences."
-TFTV_INCIDENT_31_OUTCOME_0_FAIL,Text,,"[OperativeName] uncovered old furniture, some unreadable printouts, and a scorched personal journal—mostly illegible. One line stood out: “Can’t stop a tsunami. Drown or evolve.’"
+200 food, 40 tech","[OperativeName] recovered a single data device containing cached material—opinion pieces from the early Mist years, warnings against radical bio-modification movements, and vague references to academic conferences."
+TFTV_INCIDENT_31_OUTCOME_0_FAIL,Text,,"[OperativeName] uncovered old furniture, some unreadable printouts, and a scorched personal journal—mostly illegible. One line stood out: “Can’t stop a tsunami. Drown or evolve.”"
 TFTV_INCIDENT_31_OUTCOME_1_FAIL,Text,,"Most of what [OperativeName] found was water-damaged or burned. One corrupted file listed banned journals, including several fringe scientific publications. It seems whoever lived here questioned everything—including Anu doctrine."
 ,,,
 TFTV_INCIDENT_32_TITLE_SY,Text,,The Whole
@@ -27,22 +27,22 @@ TFTV_INCIDENT_32_DESC,Text,,"Director, in the center of the local marketplace, t
 TFTV_INCIDENT_32_CHOICE_0_P,Text,,Conduct a psychological assessment
 TFTV_INCIDENT_32_CHOICE_1_B_C,Text,,Run a discreet bioscan and record samples.
 TFTV_INCIDENT_32_CHOICE_2,Text,,Leave it be. [END]
-TFTV_INCIDENT_32_OUTCOME_0_SUCCESS,Text,Reward: additional personnel,"She eventually opened up. She claims to have survived a detention camp during the first mist outbreak. Infected prisoners around her died—some slowly, some violently. She says she didn't inherit their mutations… but their minds. She calls it a burden, not a gift."
+TFTV_INCIDENT_32_OUTCOME_0_SUCCESS,Text,Reward: additional personnel,"She eventually opened up. She claims to have survived a detention camp during the First Mist outbreak. Infected prisoners around her died—some slowly, some violently. She says she didn't inherit their mutations… but their minds. She calls it a burden, not a gift."
 TFTV_INCIDENT_32_OUTCOME_1_SUCCESS,Text,Reward: additional personnel,"No mutations detected, but her brain activity was anomalous—multiple neural signatures firing as if in parallel. Possible case of psychic imprint retention. Her voice recorder captured one phrase, repeated in twelve voices: <i>‘We remain.’</i>"
 TFTV_INCIDENT_32_OUTCOME_0_FAIL,Text,,"Her speech was fragmented—memories of people she couldn’t have been. One moment a mother, the next a terrified soldier. Trauma, maybe—but she knew things she shouldn't."
 TFTV_INCIDENT_32_OUTCOME_1_FAIL,Text,,"Nothing remarkable in her genome, but during the scan, background audio picked up faint layered voices—too synchronized to be coincidence. Her vitals never changed."
 ,,,
-TFTV_INCIDENT_33_TITLE_SY,Text,Req: Haven with Research center,The Man who debated too well
+TFTV_INCIDENT_33_TITLE_SY,Text,Req: Haven with Research center,The Man Who Debated Too Well
 TFTV_INCIDENT_33_DESC,Text,,"Director, we’ve been asked to quietly assist in a missing persons case. Dr. Eryan Vallis, a senior voice within the Polyphonic Tendency, vanished following a spirited—but allegedly civil—debate with Terraformer representatives in the science center. Witnesses say he left fuming, but there’s no record of his departure from the haven. One Terraformer reportedly joked he’d offered Vallis ‘a rare vintage to smooth things over.’ No one’s seen Vallis since."
 TFTV_INCIDENT_33_CHOICE_0_P,Text,,Interrogate all the witnesses.
-TFTV_INCIDENT_33_CHOICE_1_C_E,Text,,Search the science center thorougly.
+TFTV_INCIDENT_33_CHOICE_1_C_E,Text,,Search the science center thoroughly.
 TFTV_INCIDENT_33_CHOICE_2,Text,,We don't have time for detective work. [END]
-TFTV_INCIDENT_33_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","The Terraformers loathed Dr. Vallis. Only one of them - the one who joked about smoothing things over with some wine-, showed any restraint when casting aspersions towards the missing person. Under further questioning, he broke down and confessed to killing him. ""There was no other choice!"""
+TFTV_INCIDENT_33_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","The Terraformers loathed Dr. Vallis. Only one of them—the one who joked about smoothing things over with some wine—showed any restraint when casting aspersions towards the missing person. Under further questioning, he broke down and confessed to killing him. ""There was no other choice!"""
 TFTV_INCIDENT_33_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","A decorative wall in the science center’s acoustic wing concealed a narrow corridor. At the far end, [OperativeName] found a bricked-up alcove—polycrete still curing. Inside: Vallis’s body, arms crossed, seated upright. An old wine bottle lay beside him, label faded but partially legible: ‘Resonant Oak – Private Cask.’ A glass stood untouched. Scratched faintly into the wall: ‘He said we’d toast to understanding.’"
 TFTV_INCIDENT_33_OUTCOME_0_FAIL,Text,,"A lot of Terraformers naturally disagreed with his views, but no one seems capable of harming him personally, whatever their ideological differences."
 TFTV_INCIDENT_33_OUTCOME_1_FAIL,Text,,"[OperativeName] discovered a forgotten chamber beneath the center—acoustic insulation peeling from the walls. The air smelled faintly of alcohol. An overturned glass, an empty bottle, and a trail of smeared footprints ended at a sealed maintenance hatch. No body. A ring of dust marked where someone once sat for a long time."
 TFTV_INCIDENT_35_TITLE_SY,Text,,What the Earth Kept
-TFTV_INCIDENT_35_DESC,Text,,"Director, a Synedrion expedition returned to [HavenName] from a region where changes in terrain following the Second Mist —subsidence, erosion, and structural collapse—have exposed areas previously inaccessible to survey teams.
+TFTV_INCIDENT_35_DESC,Text,,"Director, a Synedrion expedition returned to [HavenName] from a region where changes in terrain following the Second Mist—subsidence, erosion, and structural collapse—have exposed areas previously inaccessible to survey teams.
 
 Among the findings is something unexpected: the skeletal remains of an unknown creature.
 
@@ -50,7 +50,7 @@ The expedition recovered what appears to be a single limb—possibly a leg, poss
 TFTV_INCIDENT_35_CHOICE_0_B_O,Text,,Analyze the remains
 TFTV_INCIDENT_35_CHOICE_1_C,Text,,Correlate the discovery with Phoenix and Synedrion data archives.
 TFTV_INCIDENT_35_CHOICE_2,Text,,Let Synedrion handle it. [END]
-TFTV_INCIDENT_35_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","The limb is fossilized but largely intact. Bone structure is vaguely cephalopodan, but scaled to monstrous proportions—comparable to a Pandoran creature, but at a magnitude 100 times larger. The tissue residue is hundreds of thousands of years old. It may predate humanity… and resemble our future. "
+TFTV_INCIDENT_35_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","The limb is fossilized but largely intact. Bone structure is vaguely cephalopodan, but scaled to monstrous proportions—comparable to a Pandoran creature, but at a magnitude 100 times larger. The tissue residue is hundreds of thousands of years old. It may predate humanity… and resemble our future."
 TFTV_INCIDENT_35_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","Cross-referencing the fragment’s structure against Phoenix and Synedrion archives reveals disturbing parallels. Internal lattice patterns echo those found in aquatic Pandoran organisms, optimized for distributing extreme mass. The scale is unprecedented. There is no clear lineage match, only recurring design principles."
 TFTV_INCIDENT_35_OUTCOME_0_FAIL,Text,,"The anatomy is unfamiliar, but certain features echo Pandoran traits. Nothing conclusive—but enough to raise concern. One Synedrion biologist quietly requested access to our Pandoran archives."
 TFTV_INCIDENT_35_OUTCOME_1_FAIL,Text,,"Scans showed no clear biological lineage, but the density and shape align loosely with aquatic Pandoran designs. One expedition member commented, ‘It’s like we found the bones of something we haven’t met yet.’"
@@ -64,7 +64,7 @@ TFTV_INCIDENT_36_OUTCOME_1_SUCCESS,Text,Reward: additional personnel,"An enginee
 TFTV_INCIDENT_36_OUTCOME_0_FAIL,Text,,"[OperativeName] couldn’t isolate the exact trigger, but traces of an internal protocol override remain. It wasn’t sabotage. It was planned—deep in the system. Likely a failsafe from the haven’s original architects."
 TFTV_INCIDENT_36_OUTCOME_1_FAIL,Text,,"Most officials were defensive. One coordinator finally admitted, ‘This haven was built to survive, not to collapse under idealism. We all knew that line would be crossed eventually.’"
 TFTV_INCIDENT_37_TITLE_SY,Text,Req: Synedrion Recruit,Directive 11
-TFTV_INCIDENT_37_DESC,Text,,"Director, [RequirementOperativeName] was sent some data by a Synedrion friend. It's a series of task logs from the [HavenName] civic AI. The pattern is disturbing: individuals flagged as ‘sub-optimally aligned’ were repeatedly assigned high-risk tasks—scavenging in mist zones, deep structural repairs, unshielded reclamation work. Officially, these were random civic assignments. Unofficially, most of those individuals are dead."
+TFTV_INCIDENT_37_DESC,Text,,"Director, [RequirementOperativeName] was sent some data by a Synedrion friend. It's a series of task logs from the [HavenName] civic AI. The pattern is disturbing: individuals flagged as ‘sub-optimally aligned’ were repeatedly assigned high-risk tasks—scavenging in Mist zones, deep structural repairs, unshielded reclamation work. Officially, these were random civic assignments. Unofficially, most of those individuals are dead."
 TFTV_INCIDENT_37_CHOICE_0_C,Text,,Conduct a full analysis of the task records.
 TFTV_INCIDENT_37_CHOICE_1_P_B,Text,,Quietly interview relatives of the deceased on the pretext of a health survey.
 TFTV_INCIDENT_37_CHOICE_2,Text,,Leave it alone—Synedrion internal affairs. [END]
@@ -82,7 +82,7 @@ TFTV_INCIDENT_38_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 t
 TFTV_INCIDENT_38_OUTCOME_0_FAIL,Text,,"Threat reports were routed through a cognitive dampening subroutine—officially to reduce false positives, but in practice, it downplayed critical data. It's unclear if this was design… or drift."
 TFTV_INCIDENT_38_OUTCOME_1_FAIL,Text,,"No obvious breach, but [OperativeName] uncovered old subroutines modified weeks ago by an unregistered user. The edits shifted risk language from 'critical' to 'manageable.' Whether it's sabotage or ideology remains unclear."
 TFTV_INCIDENT_39_TITLE_SY,Text,Req: haven has a Mist Repeller,The Sound of the Mist
-TFTV_INCIDENT_39_DESC,Text,,"Director, the mist repellent at [HavenName] has gone offline following a targeted explosion. Initial reports describe it as sabotage—minimal casualties, but the core emitter was damaged. The council is split: some want immediate repairs, others suspect it was an inside job. A few locals claim they heard music playing just before the blast."
+TFTV_INCIDENT_39_DESC,Text,,"Director, the Mist Repeller at [HavenName] has gone offline following a targeted explosion. Initial reports describe it as sabotage—minimal casualties, but the core emitter was damaged. The council is split: some want immediate repairs, others suspect it was an inside job. A few locals claim they heard music playing just before the blast."
 TFTV_INCIDENT_39_CHOICE_0_M,Text,,Help repair the Mist Repeller.
 TFTV_INCIDENT_39_CHOICE_1_C_E,Text,,Investigate the sabotage.
 TFTV_INCIDENT_39_CHOICE_2,Text,,Stay out of it. [END]
@@ -90,10 +90,10 @@ TFTV_INCIDENT_39_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 t
 TFTV_INCIDENT_39_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","[OperativeName] traced the attack to a small group of Polyphonic radicals calling themselves The Resonant Fold. They believe the Mist is not a threat, but a voice—the Repeller an act of spiritual violence. The bomber left behind a manifesto, comparing Mist Expulsion to ‘silencing the breath of Gaia.’ Three suspects have fled."
 TFTV_INCIDENT_39_OUTCOME_0_FAIL,Text,,"[OperativeName] stabilized the core, but full range is limited. Local security remains on edge. Someone left a strange recording in the emitter logs—chanting layered with melodic feedback. It’s marked Polyphonic Archive – Redacted."
 TFTV_INCIDENT_39_OUTCOME_1_FAIL,Text,,"[OperativeName] found fragments of a Polyphonic symbol near the emitter casing. A local council member admitted a ‘philosophical splinter’ had formed, but downplayed the danger. The Mist continues to creep in while the council debates how to respond."
-TFTV_INCIDENT_40_TITLE_SY,Text,,The Voice Behind the Mask (Volonte Event 1)
-TFTV_INCIDENT_40_DESC,Text,,"Director, there’s unrest brewing. A woman named Kara Volonte, a pre-Collapse media personality turned New Jericho spokesperson, has arrived to [HavenName] under the guise of hosting a public discourse on ‘civil resilience.’ In practice, she’s been calling for strict limits on mutant participation in governance and research. The unsettling part? She’s articulate, charismatic, and gaining support. Synedrion’s council is paralyzed—torn between upholding free expression and preserving internal unity."
-TFTV_INCIDENT_40_CHOICE_0_B_P,Text,,Publicly challenge Kara Volonte’s rhetoric. 
-TFTV_INCIDENT_40_CHOICE_1_C,Text,,Investigate her affiliations and funding. 
+TFTV_INCIDENT_40_TITLE_SY,Text,,The Voice Behind the Mask
+TFTV_INCIDENT_40_DESC,Text,,"Director, there’s unrest brewing. A woman named Kara Volonte, a pre-Collapse media personality turned New Jericho spokesperson, has arrived in [HavenName] under the guise of hosting a public discourse on ‘civil resilience.’ In practice, she’s been calling for strict limits on mutant participation in governance and research. The unsettling part? She’s articulate, charismatic, and gaining support. Synedrion’s council is paralyzed—torn between upholding free expression and preserving internal unity."
+TFTV_INCIDENT_40_CHOICE_0_B_P,Text,,Publicly challenge Kara Volonte’s rhetoric.
+TFTV_INCIDENT_40_CHOICE_1_C,Text,,Investigate her affiliations and funding.
 TFTV_INCIDENT_40_CHOICE_2,Text,,Avoid involvement. Synedrion must decide. [END]
 TFTV_INCIDENT_40_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","[OperativeName] exposed contradictions in her message—quotes from her earlier broadcasts praising 'evolutionary courage' before she aligned with New Jericho. Public support wavered. She’s still speaking, but the crowd is thinner."
 TFTV_INCIDENT_40_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 tech","[OperativeName] uncovered private transmissions between Kara and a New Jericho intelligence liaison—her campaign here was coordinated, seeded with talking points and subtle pressure. Synedrion authorities quietly asked her to leave, citing outside manipulation."
@@ -142,13 +142,13 @@ The leader of the Synedrion haven of [HavenName] has begun publicly espousing Ma
 While some consider this a pragmatic response to scarcity, others fear it signals a deeper ideological shift."
 TFTV_INCIDENT_42_CHOICE_0_C,Text,,"Gather and analyze available data on the haven’s situation."
 TFTV_INCIDENT_42_CHOICE_1_M_P,Text,,"Speak with the haven leader under the pretext of assisting with maintenance and logistics."
-TFTV_INCIDENT_42_CHOICE_2,Text,,It's always factions within factions with Synedrion - let them sort it out themselves. [END]
+TFTV_INCIDENT_42_CHOICE_2,Text,,It's always factions within factions with Synedrion — let them sort it out themselves. [END]
 TFTV_INCIDENT_42_OUTCOME_0_SUCCESS,Text,Reward: additional personnel,"The data paints a bleak picture.
 
 Food production has fallen steadily for months. Scavenging missions to secure replacement parts and nutrients for the hydroponic systems have become increasingly dangerous—and increasingly unsuccessful.
 
 There is simply not enough food to sustain the current population."
-TFTV_INCIDENT_42_OUTCOME_1_SUCCESS,Text,Reward: additional personnel,"The meeting is smooth—almost too smooth.The haven leader is eloquent, reassuring, and confident. He speaks convincingly about balance, sustainability, and collective responsibility. Yet when the discussion turns to specifics—maintenance cycles, system dependencies, or manual overrides—his understanding falters. It becomes apparent that the haven functions largely through automation and AI. Incapable of changing material conditions, the leader instead seeks to redefine them, persuading the population that scarcity is not failure—but necessity."
+TFTV_INCIDENT_42_OUTCOME_1_SUCCESS,Text,Reward: additional personnel,"The meeting is smooth—almost too smooth. The haven leader is eloquent, reassuring, and confident. He speaks convincingly about balance, sustainability, and collective responsibility. Yet when the discussion turns to specifics—maintenance cycles, system dependencies, or manual overrides—his understanding falters. It becomes apparent that the haven functions largely through automation and AI. Incapable of changing material conditions, the leader instead seeks to redefine them, persuading the population that scarcity is not failure—but necessity."
 TFTV_INCIDENT_42_OUTCOME_0_FAIL,Text,,"The available data is incomplete and heavily filtered.
 
 Production metrics are aggregated beyond usefulness, and several key resource reports are missing entirely.
@@ -197,7 +197,7 @@ Frustration grows on both sides, reinforcing the belief that the newcomers are i
 Several systems are taken offline after repeated misuse, worsening the atmosphere further."
 TFTV_INCIDENT_43_OUTCOME_1_FAIL,Text,,"The refugees are wary and defensive.
 
-[OperativeName] is seen as a representative of Synedrion authority rather than neutral observers.
+[OperativeName] is seen as a representative of Synedrion authority rather than a neutral observer.
 
 Conversations collapse into rehearsed slogans and quiet suspicion.
 
@@ -212,7 +212,7 @@ Terraformers remain skeptical, warning against drawing conclusions from an isola
 Both factions have requested Phoenix Project involvement to examine the creature and assess the circumstances of its capture."
 TFTV_INCIDENT_44_CHOICE_0_B_O,Text,,"Conduct a thorough biological examination of the specimen."
 TFTV_INCIDENT_44_CHOICE_1_C,Text,,"Review all data related to the capture and containment."
-TFTV_INCIDENT_44_CHOICE_2,Text,,"We don't know where this sample came from nor how it was collected. This is Propaganda, not Science. [END]"
+TFTV_INCIDENT_44_CHOICE_2,Text,,"We don't know where this sample came from or how it was collected. This is propaganda, not science. [END]"
 TFTV_INCIDENT_44_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","The specimen is identified as an Arthron, though markedly atypical in appearance.
 
 Its facial structure is disturbingly humanoid, and its physiology shows extensive signs of age—at least twenty-five years by Phoenix estimates.
