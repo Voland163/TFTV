@@ -1,7 +1,7 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 KEY_PHOENIXPEDIA_GUIDE_ACID_DESC,Text,,"A weapon with Acid Damage will add the damage value to the acid level of the hit body part. Acid can accumulate on body parts, if they are hit multiple times with acid damage.
 
-At the start of a character's turn, acid will eat away at the body part. First, the body part's armor is affected, and reduced by the Acid value. If there is no armor left on the body part then the damage is applied to Body Part Hit Points and to General Hit Points. After all acid damage is resolved, the acid value on each body part will reduce by 10.","具有酸蚀伤害的武器会将伤害值增加至被击中身体部位的酸蚀等级。如果身体部位多次受到酸蚀伤害，酸蚀等级也会累积。
+At the start of a character's turn, acid will eat away at the body part. First, the body part's armor is affected, and reduced by the Acid value. If there is no armor left on the body part then the damage is applied to Body Part Hit Points and to General Hit Points. After all acid damage is resolved, the acid value on each body part will reduce by 10 (faster on some bionic parts). Acid Resistance reduces the damage to the body part and Hit Points, and makes acid burn off twice as fast, but does not reduce the armor corrosion.","具有酸蚀伤害的武器会将伤害值增加至被击中身体部位的酸蚀等级。如果身体部位多次受到酸蚀伤害，酸蚀等级也会累积。
 
 当受到影响的角色回合开始时，酸蚀会逐渐侵蚀身体部位。首先，身体部位的护甲会受到影响，减少 10 点。如果身体部位没有剩余护甲，则会对身体部位和总生命值造成 10 点伤害。所有酸蚀伤害结算完毕后，每个身体部位的酸蚀值将会减少 10 点。","Une arme infligeant des dégâts caustiques augmentera la valeur de dégâts caustiques de la partie du corps touchée. L'acide peut s'accumuler sur une partie du corps si elle est touchée plusieurs fois par des armes infligeant des dégâts caustiques.
 
@@ -217,14 +217,14 @@ KEY_PHOENIXPEDIA_GUIDE_DAMAGE_SYSTEM_DESCRIPTION,Text,,"When an individual round
 
 The armor value of the body part hit is subtracted from the damage value. The resultant damage is then applied to both the Body Part Hit Points and the character's General Hit Points.
 
-If the General Hit Points are reduced to zero, the target dies. If the Body Part Hit Points are reduced to zero, the body part is disabled and any Strength, Speed, Willpower or abilities given by that body part are lost. Additionally, a bleed value may be applied to the character base on the body part's bleed value.
+If the General Hit Points are reduced to zero, the target dies. If the Body Part Hit Points are reduced to zero, the body part is disabled and any Strength, Speed, Willpower or abilities given by that body part are lost. Additionally, a bleed value may be applied to the character based on the body part's bleed value.
 
-Special damage values - from poison, virus, paralysis - are only applied to the target if at least some standard damage is inflicted.
+Special damage values — from poison, virus, paralysis — are only applied to the target if at least some standard damage is inflicted.
 
 <color=#f7bc20>TACTICAL RECOMMENDATIONS</color>
  • <color=#ffffff>Targeted Disabling</color>: Use Free Aim mode to disable arms. An enemy with only one functional arm can no longer use two-handed weapons (such as rifles or shields). Disabled legs severely restrict movement range.
  • <color=#ffffff>Breaking Willpower</color>: Headshots cause the loss of Will Points and disable special abilities.
- • <color=#ffffff>Field Medicine</color>: If an operative's body part has been disabled, use a medkit immediately. Although it does not restore the body part's function, it stops bleeding and stabilizes hit points for continued deployment.
+ • <color=#ffffff>Field Medicine</color>: If an operative's body part has been disabled, use a medkit immediately: it restores the body part's Hit Points and function, and stops bleeding.
  • <color=#ffffff>Armor Penetration</color>: Special effects like Poison or Virus only take effect if the damage pierces the armor. Against heavily armored enemies, you must first destroy the armor or use weapons with high armor penetration.","当一发子弹或一次武器攻击命中目标时，就会产生一个伤害值。
 
 伤害值会减去被击中的身体部位拥有的护甲值。由此产生的伤害同时作用于身体部位的生命值和角色的总生命值。
@@ -293,13 +293,13 @@ In the course of the game, each faction will offer series of Diplomacy missions.
 
 <color=#f7bc20>RELATIONSHIP LEVELS</color>
  • <color=#ffffff>Allied: (attitude 75+)</color> The Phoenix Project can research all the allied faction's research projects. Attacking allied faction Havens puts you immediately At War.
- • <color=#ffffff>Aligned: (attitude 50 - 74)</color> The faction shares significant research projects with the Phoenix Project.
- • <color=#ffffff>Supportive: (attitude 25 - 49)</color> When the Phoenix Project discovers a Haven, belonging to the faction, it will be revealed instantly without exploration.
- • <color=#ffffff>Friendly: (attitude 0 - 24)</color> Standard relations.
- • <color=#ffffff>Unfriendly: (attitude -24  - -1)</color> Cannot Trade or Recruit from Haven Leaders with such an attitude.
- • <color=#ffffff>Hostile: (attitude -49 - -25)</color> No special effect.
- • <color=#ffffff>Aggressive: (attitude -74 - -50)</color> No special effect.
- • <color=#ffffff>At War: (attitude 75-)</color> The faction will attempt to attack your bases. Relations cannot improve from this point.","除了凤凰计划之外，世界上还有三个主要派系：新耶利哥、平衡议会，以及安努门徒教会。世界上现存的大部分避难所都由这三个派系所控制着。
+ • <color=#ffffff>Aligned: (attitude 50 to 74)</color> The faction shares significant research projects with the Phoenix Project.
+ • <color=#ffffff>Supportive: (attitude 25 to 49)</color> When the Phoenix Project discovers a Haven, belonging to the faction, it will be revealed instantly without exploration.
+ • <color=#ffffff>Friendly: (attitude 0 to 24)</color> Standard relations.
+ • <color=#ffffff>Unfriendly: (attitude -24 to -1)</color> Cannot Trade or Recruit from Haven Leaders with such an attitude.
+ • <color=#ffffff>Hostile: (attitude -49 to -25)</color> No special effect.
+ • <color=#ffffff>Aggressive: (attitude -74 to -50)</color> No special effect.
+ • <color=#ffffff>At War: (attitude -75 or lower)</color> The faction will attempt to attack your bases. Relations cannot improve from this point.","除了凤凰计划之外，世界上还有三个主要派系：新耶利哥、平衡议会，以及安努门徒教会。世界上现存的大部分避难所都由这三个派系所控制着。
 
 在游戏过程中，每个派系都会提供一系列外交任务。完成这些任务可提升你与这些派系之间的关系。在达到关系等级的最高点时（友好为 24 点，支持为 49 点，一致为 74 点）会触发重要的外交任务。
 
@@ -390,11 +390,11 @@ Hostil: (postura -25 - -49) Sin efectos especiales.
 Agresivo: (postura -50 - -74) Sin efectos especiales.
 En guerra: (postura -75) La facción intentará atacar tus bases. Las relaciones no pueden mejorar llegado este punto.",
 KEY_PHOENIXPEDIA_GUIDE_FACTIONS_NAME,Text,,Factions and Diplomacy,高级：派系和外交,Avancé : factions et diplomatie,Fraktionen und Diplomatie,Avanzato: Fazioni e diplomazia,Zaawansowane: frakcje i dyplomacja,Дополнительно: фракции и дипломатия,Avanzado: Facciones y diplomacia,Fortgeschritten: Fraktionen und Diplomatie
-KEY_PHOENIXPEDIA_GUIDE_FIRE_DESC,Text,,"A weapon with Fire Damage adds 40 fire intensity to the target. At the start of the victim's turn, fire damage is applied to each body part, minus the armor value. The fire value then reduces by 10. The duration of the effect depends on the intensity (e.g., 40 fire corresponds to a duration of 4 turns).
+KEY_PHOENIXPEDIA_GUIDE_FIRE_DESC,Text,,"Incendiary weapons set the body parts they hit on fire, with a fire value equal to the weapon's Fire Damage. Further hits do not stack: each part keeps its highest value.
 
-Fire damage cannot exceed 40, even with multiple strikes.
+At the start of each of the character's turns, every burning part takes its fire value minus its armor as damage, then its fire value drops by 10 (20 with fire resistance); the part goes out at 0. General Hit Points take the average of the burning parts' damage, not the sum. A healing item puts out every part at once.
 
-A character standing on a burning tile suffers the tile's fire damage (between 10 and 40).","具有火焰伤害的武器将为目标增加 40 点火焰伤害值。受到火焰影响的角色在回合开始时，减去护甲值后的火焰伤害数值将对每个身体部位产生影响。随后，火焰伤害值将会减少 10 点。
+Fire on the ground is separate: it only hurts characters while they stand in it.","具有火焰伤害的武器将为目标增加 40 点火焰伤害值。受到火焰影响的角色在回合开始时，减去护甲值后的火焰伤害数值将对每个身体部位产生影响。随后，火焰伤害值将会减少 10 点。
 
 火焰伤害值不会超过 40 点，即使多次攻击也不行。
 
@@ -430,9 +430,9 @@ Wartość obrażeń od ognia nie może być wyższa niż 40 punktów nawet po ki
 
 Postać stojąca na polu, na którym płonie ogień, odniesie obrażenia od ognia przypisane do danego pola, tzn. od 10 do 40 punktów."
 KEY_PHOENIXPEDIA_GUIDE_FIRE_NAME,Text,,Fire Damage,火焰伤害,Dégâts de feu,Feuerschaden,Danni da fuoco,Obrażenia od ognia,Урон от огня,Daño de fuego,Obrażenia od ognia
-KEY_PHOENIXPEDIA_GUIDE_HAVENS_DESCRIPTION,Text,,"Havens represent the only remaining human settlements in the world, outside of Phoenix Bases. Each Haven is controlled by a Leader who determines  its affiliation and attitude to all factions, including the Phoenix Project. If the attitude is below zero (Unfriendly or worse), Phoenix squads will not be allowed to recruit or trade at the haven.
+KEY_PHOENIXPEDIA_GUIDE_HAVENS_DESCRIPTION,Text,,"Havens represent the only remaining human settlements in the world, outside of Phoenix Bases. Each Haven is controlled by a Leader who determines its affiliation and attitude to all factions, including the Phoenix Project. If the attitude is below zero (Unfriendly or worse), Phoenix squads will not be allowed to recruit or trade at the haven.
 
-Havens are divided into zones that focus on a specific aspect of the Haven’s development. Each zone could be a target of attack (by Pandorans or enemy factions), sabotage, or allow additional mission options. Production zones, such as Factories and Food Production zones, allow the exchange of one type of resource for another. 
+Havens are divided into zones that focus on a specific aspect of the Haven’s development. Each zone could be a target of attack (by Pandorans or enemy factions), sabotage, or allow additional mission options. Production zones, such as Factories and Food Production zones, allow the exchange of one type of resource for another.
 
 If a zone is damaged it can no longer perform its main function, and must be repaired by the Haven before it can do so. If the population of a Haven is annihilated the Haven is destroyed and removed off the map.
 
@@ -577,11 +577,11 @@ Forschungszentrum – trägt zur allgemeinen Forschung bei, auf die sich die Zuf
 Trainingszentrum – verbessert die militärische Macht der Zuflucht
 Elitetrainingszentrum - verbessert die militärische Macht der Zuflucht erheblich. Hier werden Elitesoldaten ausgebildet. "
 KEY_PHOENIXPEDIA_GUIDE_HAVENS_NAME,Text,,Havens,高级：避难所,Avancé : refuges,Zufluchten,Avanzato: Rifugi,Zaawansowane: bastiony,Дополнительно: убежища,Avanzado: Refugios,Fortgeschritten: Zufluchten
-KEY_PHOENIXPEDIA_GUIDE_PARALYSE_DESC,Text,,"If a weapon inflicts at least some Standard Damage, then the Paralyze Damage value of the weapon is added to the target's paralysis value. Paralysis value can accumulate in a target from multiple attacks.
+KEY_PHOENIXPEDIA_GUIDE_PARALYSE_DESC,Text,,"If a weapon inflicts at least some Standard Damage, then the Paralysis Damage value of the weapon is added to the target's paralysis value. Paralysis value can accumulate in a target from multiple attacks.
 
-The target will lose Action Points based on the proportion of paralysis to the character's strength. For example, if the character has a paralysis value of 10 and a strength of 20, it will lose half its Action Points, leaving 2 APs per turn. If the paralysis value exceeds the victim's Strength, then it will be completely paralyzed and unable to do anything.
+The target will lose Action Points based on the proportion of paralysis to the character's strength. For example, if the character has a paralysis value of 10 and a strength of 20, it will lose half its Action Points, leaving 2 AP per turn. If the paralysis value exceeds the victim's Strength, then it will be completely paralyzed and unable to do anything.
 
-Paralyze value decreases by 1 per turn, and victims will slowly recover their Action Points. Improved Medkits, Technicians, and Aspidas remove 50% Paralysis when healing.
+Paralysis value decreases by 1 per turn, and victims will slowly recover their Action Points. Improved Medkits, Technicians, and Aspidas remove 50% Paralysis when healing.
 
 You will need to paralyze Pandorans in order to capture them for live research.","如果某武器至少造成了一些标准伤害，那么就可以将其麻痹伤害数值增加至目标的麻痹值。多次攻击目标可累积麻痹值。
 
@@ -632,7 +632,7 @@ La cible perdra des points d'action en fonction de la différence de la paralysi
 La valeur de paralysie baisse d'un point par tour, et les victimes récupèrent progressivement leurs points d'action.
 
 Vous devrez paralyser les pandoriens si vous voulez les capturer vivants pour mener des expériences."
-KEY_PHOENIXPEDIA_GUIDE_PARALYSE_NAME,Text,,Paralyze Damage,麻痹伤害,Dégâts de paralysie,Lähmungsschaden,Danni paralizzanti,Obrażenia od paraliżu,Урон от паралича,Daño paralizante,Obrażenia od paraliżu
+KEY_PHOENIXPEDIA_GUIDE_PARALYSE_NAME,Text,,Paralysis Damage,麻痹伤害,Dégâts de paralysie,Lähmungsschaden,Danni paralizzanti,Obrażenia od paraliżu,Урон от паралича,Daño paralizante,Obrażenia od paraliżu
 KEY_PHOENIXPEDIA_GUIDE_PIERCE_DESC,Text,,"A weapon with a Pierce Value ignores a portion of the enemy's armor before Standard Damage is calculated.
 
 Pierce does not permanently destroy armor. This value has no effect against targets without any armor.
@@ -645,7 +645,7 @@ Panzerbrechend zerstört die Rüstung nicht dauerhaft. Gegen Ziele ohne Rüstung
 <color=#f7bc20>BEISPIEL</color>
  • Ein Gewehr mit 50 Schaden würde bei einem Ziel mit 30 Rüstung normalerweise nur 20 Schaden verursachen. Verfügt die Waffe jedoch über einen Panzerbrechend-Wert von 20, wird die effektive Rüstung für diesen Schuss auf 10 reduziert (30 Rüstung minus 20 Panzerbrechend). Das Ziel erleidet somit 40 Schaden.","Un'arma dotata di valore di perforazione ignora l'armatura fino al livello di perforazione prima di infliggere i danni standard. Per esempio, una pistola con valore danni 50 contro un bersaglio con armatura 30 infliggerebbe, di norma, 20 danni. Se avesse un valore di perforazione pari a 20, allora l'efficacia dell'armatura verrebbe ridotta a 10, e il bersaglio subirebbe 40 danni. La perforazione non ha effetti su bersagli privi di valore armatura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza.","Оружие с пронзающим уроном будет игнорировать соответствующую часть брони, прежде чем нанести обычный уроню Например, если урон оружия против бронированных целей составляет 50 очков, а цель имеет 30 очков брони, то такое оружие нанесет 20 очков урона. Однако, если бы оно наносило 20 очков пронзающего урона, то эффективность брони снизилась бы до 10 очков, а цель в итоге получила бы 40 очков урона. Пронзающий урон не оказывает никакого эффекта на цели без брони.","Las armas con un valor de perforación ignoran la armadura según el valor de perforación antes de aplicar el daño estándar. Por ejemplo, una pistola con un daño de 50 contra un objetivo con una armadura de 30 inflige 20 de daño. Si tuviera un valor de perforación de 20, la efectividad de la armadura se reduciría a 10 y el objetivo recibiría 40 de daño. La perforación no tiene efecto alguno contra objetivos sin valor de armadura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza."
 KEY_PHOENIXPEDIA_GUIDE_PIERCE_NAME,Text,,Pierce Value,穿透值,Valeur de perforation,Panzerbrechend (Rüstungsdurchschlag),Valore di perforazione,Wartość przebicia,Значение пронзающего урона,Valor de perforación,Значение пронзающего урона
-KEY_PHOENIXPEDIA_GUIDE_POISON_DESC,Text,,"If a weapon inflicts at least some Standard Damage, the weapon's Poison value is added to the target's current poison level. Poison accumulates from multiple attacks. At the start of the affected character's turn, the poison value is subtracted from General Hit Points, while simultaneously reducing Willpower (WP) and decreasing Accuracy. The poison level then drops by 10. The victim may die if Hit Points reach zero before the poison level falls to zero.
+KEY_PHOENIXPEDIA_GUIDE_POISON_DESC,Text,,"If a weapon inflicts at least some Standard Damage, the weapon's Poison value is added to the target's current poison level. Poison accumulates from multiple attacks. At the start of the affected character's turn, the poison value is subtracted from General Hit Points, while simultaneously reducing Will Points (WP) and decreasing Accuracy. The poison level then drops by 10. The victim may die if Hit Points reach zero before the poison level falls to zero.
 
 Medkits will remove all poison from a character that is healed.","如果某武器造成了标准伤害，那么其中毒伤害值就会增加至目标当前的中毒等级。
 
@@ -700,7 +700,7 @@ Verwirrten Charakteren steht im nächsten Zug nur 1 AP zur Verfügung und ihre G
  
  Los personajes aturdidos tienen 1 PA en el siguiente turno y su precisión se reduce a la mitad. Además, no se podrán usar las habilidades que necesitan puntos de voluntad. Pierden el estado de aturdido al final del turno. Los estados de aturdido no se acumulan, por lo que el daño de choque en un objetivo aturdido no tiene más efectos.",
 KEY_PHOENIXPEDIA_GUIDE_SHOCK_NAME,Text,,Shock Damage,冲击伤害,Dégâts électriques,Schockschaden,Danni da shock,Obrażenia od wstrząsu,Оглушающий урон,Daño eléctrico,Obrażenia od wstrząsu
-KEY_PHOENIXPEDIA_GUIDE_SHRED_DESC,Text,,A weapon with Shred Damage will deduct the Shred value from the hit body part's armor. Shred Damage is applied for each projectile that hits. Blast weapons with Shred Damage will shred every body part affected by the blast. Shred Damage has no affect on body parts without armor.,具有粉碎伤害的武器会从被击中的身体部位护甲值中扣除粉碎值。每一发命中的炮弹都会造成粉碎伤害。具有粉碎伤害的爆炸武器将会撕裂被爆炸影响的每一个身体部位。粉碎伤害对没有护甲的身体部位没有任何效果。,Les dégâts de déchiquetage réduiront de la valeur de déchiquetage l'armure de la partie du corps atteinte. Les dégâts de déchiquetage sont appliqués pour chaque projectile atteignant la cible. Les armes explosives avec des dégâts de déchiquetage déchiquèteront chaque partie du corps affectée par l'explosion. Les dégâts de déchiquetage n'ont aucun effet sur les parties du corps sans armure.,"Eine Waffe mit Zerfetzungsschaden sorgt dafür, dass von der Rüstung des getroffenen Körperteils Zerfetzungsschaden abgezogen wird. Für jede Kugel, die trifft, wird Zerfetzungsschaden angewendet. Explosionswaffen mit Zerfetzungsschaden fügen allen Körperteilen Schaden zu, die von der Explosion getroffen werden. Zerfetzungsschaden hat keinen Einfluss auf Körperteile ohne Rüstung.",Un'arma che infligge danni da lacerazione sottrae il valore di lacerazione dall'armatura della parte del corpo colpita. I danni da lacerazione vengono inflitti per ogni proiettile che va a segno. Le armi esplosive con danni da lacerazione lacerano tutte le parti del corpo coinvolte nell'esplosione. I danni da lacerazione non hanno effetti sulle parti del corpo prive di armatura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.,"При использовании оружия, наносящего рваные раны, значение урона вычитается из брони пораженной части тела. Урон от рваных ран применяется к каждому снаряду, попавшему в цель. Взрывное оружие наносит урон от рваных ран всем частям тела в радиусе взрыва. Урон от рваных ран не влияет на не защищенные броней части тела.",Las armas con daño de desgarro reducen el valor de rotura de la armadura de la parte del cuerpo impactada. El daño de desgarro se aplica por cada proyectil que impacta. Las armas de estallido con daño de desgarro aplican los efectos a cada parte del cuerpo dentro del radio de la explosión. El daño de desgarro no tiene efecto alguno en las partes del cuerpo sin armadura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.
+KEY_PHOENIXPEDIA_GUIDE_SHRED_DESC,Text,,A weapon with Shred Damage will deduct the Shred value from the hit body part's armor. Shred Damage is applied for each projectile that hits. Blast weapons with Shred Damage will shred every body part affected by the blast. Shred Damage has no effect on body parts without armor.,具有粉碎伤害的武器会从被击中的身体部位护甲值中扣除粉碎值。每一发命中的炮弹都会造成粉碎伤害。具有粉碎伤害的爆炸武器将会撕裂被爆炸影响的每一个身体部位。粉碎伤害对没有护甲的身体部位没有任何效果。,Les dégâts de déchiquetage réduiront de la valeur de déchiquetage l'armure de la partie du corps atteinte. Les dégâts de déchiquetage sont appliqués pour chaque projectile atteignant la cible. Les armes explosives avec des dégâts de déchiquetage déchiquèteront chaque partie du corps affectée par l'explosion. Les dégâts de déchiquetage n'ont aucun effet sur les parties du corps sans armure.,"Eine Waffe mit Zerfetzungsschaden sorgt dafür, dass von der Rüstung des getroffenen Körperteils Zerfetzungsschaden abgezogen wird. Für jede Kugel, die trifft, wird Zerfetzungsschaden angewendet. Explosionswaffen mit Zerfetzungsschaden fügen allen Körperteilen Schaden zu, die von der Explosion getroffen werden. Zerfetzungsschaden hat keinen Einfluss auf Körperteile ohne Rüstung.",Un'arma che infligge danni da lacerazione sottrae il valore di lacerazione dall'armatura della parte del corpo colpita. I danni da lacerazione vengono inflitti per ogni proiettile che va a segno. Le armi esplosive con danni da lacerazione lacerano tutte le parti del corpo coinvolte nell'esplosione. I danni da lacerazione non hanno effetti sulle parti del corpo prive di armatura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.,"При использовании оружия, наносящего рваные раны, значение урона вычитается из брони пораженной части тела. Урон от рваных ран применяется к каждому снаряду, попавшему в цель. Взрывное оружие наносит урон от рваных ран всем частям тела в радиусе взрыва. Урон от рваных ран не влияет на не защищенные броней части тела.",Las armas con daño de desgarro reducen el valor de rotura de la armadura de la parte del cuerpo impactada. El daño de desgarro se aplica por cada proyectil que impacta. Las armas de estallido con daño de desgarro aplican los efectos a cada parte del cuerpo dentro del radio de la explosión. El daño de desgarro no tiene efecto alguno en las partes del cuerpo sin armadura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.
 KEY_PHOENIXPEDIA_GUIDE_SHRED_NAME,Text,,Shred Damage,粉碎伤害,Dégâts de déchiquetage,Zerfetzungsschaden,Danni da lacerazione,Obrażenia od szatkowania,Урон от рваных ран,Daño de rotura,Obrażenia od szatkowania
 KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_DESCRIPTION,Text,,"Status effects can apply to the entire character or only to a specific body part. Status effects are shown above the health bar, while body part statuses are visible under INFO.
 
@@ -708,7 +708,7 @@ KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_DESCRIPTION,Text,,"Status effects can appl
  • <color=#ffffff>ACID</color>: Corrodes armor. Without armor, the body part takes damage. Value decreases by 10 per turn.
  • <color=#ffffff>BLEEDING</color>: Direct loss of Hit Points (HP) at the start of each turn.
  • <color=#ffffff>BURNING</color>: Fire damage to all body parts (armor is subtracted).
- • <color=#ffffff>POISON</color>: Deals damage, reduces Willpower (WP), and decreases Accuracy. Value decreases by 10 per turn.
+ • <color=#ffffff>POISON</color>: Deals damage, reduces Will Points (WP), and decreases Accuracy. Value decreases by 10 per turn.
  • <color=#ffffff>VIRUS</color>: Subtracts Will Points (WP) at the start of the turn. Value decreases by 1 per turn.
 
 <color=#f7bc20>MOVEMENT & ACTION</color>
@@ -718,11 +718,11 @@ KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_DESCRIPTION,Text,,"Status effects can appl
  • <color=#ffffff>PANICKED</color>: Operative cannot move for one turn and recovers Will Points.
  • <color=#ffffff>OVERWATCH</color>: Operative automatically attacks enemies entering the target cone.
  • <color=#ffffff>SLOWED</color>: Movement speed is reduced to 25%.
- • <color=#ffffff>GOOED</color>: Slows characters by 75% on direct hit, until the Goo decays or is removed. Passing through Goo fields does not apply any penalty.
+ • <color=#ffffff>GOOED</color>: Characters touching Goo at the start of a turn become Slowed, unless immune to Goo.
 
 <color=#f7bc20>STAMINA & PSYCHE</color>
- • <color=#ffffff>FRENZIED</color>: Speed +50% and immunity to panic.
- • <color=#ffffff>TIRED / EXHAUSTED</color>: Permanently reduces available Action Points by -1 or -2 per turn.
+ • <color=#ffffff>FRENZIED</color>: Speed +33% and immunity to panic.
+ • <color=#ffffff>TIRED / EXHAUSTED</color>: Starting a mission with 10 Stamina or less, or with 0 Stamina, reduces Action Points by 1 or 2 for that mission.
  • <color=#ffffff>SONIC</color>: Dazes the target if damage exceeds current Will Points.
 
 <color=#f7bc20>SPECIAL FORMS</color>
@@ -914,7 +914,7 @@ SPARALIŻOWANO: postać nie może się ruszyć ani wykonywać żadnych działań
 KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_NAME,Text,,Status Effects,状态效果,Effets d'état,Statuseffekte,Effetti di stato,Efekty stanu,Состояния,Efectos de estado,Efectos de estado
 KEY_PHOENIXPEDIA_GUIDE_VIRUS_DESC,Text,,"If a weapon inflicts at least some Standard Damage, then the Virus Damage value of the weapon is added to the target's virus value.
 
-Virus damage can accumulate from multiple attacks. At the start of the affected character's turn, its virus value is subtracted from Will Points. Then the virus level reduces by 1. Over multiple turns the virus level will fall to zero, but the victim will panic if his Will Points fall to zero.
+Virus damage can accumulate from multiple attacks. At the start of the affected character's turn, its virus value is subtracted from Will Points. Then the virus level reduces by 1. Over multiple turns the virus level will fall to zero, but the victim will panic if their Will Points fall to zero.
 
 Standard Medkits have no effect on Virus damage.","如果某武器造成了标准伤害，那么其病毒伤害值就会增加至目标当前的病毒数值。
 
@@ -953,7 +953,7 @@ KEY_PHOENIXPEDIA_GUIDE_VIRUS_NAME,Text,,Virus Damage,病毒伤害,Dégâts virau
 KEY_PHOENIXPEDIA_GUIDE_XP_DESCRIPTION,Text,,"<color=#f7bc20>EXPERIENCE POINTS (XP)</color>
 At the end of missions, XP is distributed to all surviving operatives based on their combat contribution.
 
- • <color=#ffffff>Combat Contribution</color>: Calculated from actions in the field (e.g., damage dealt, healing). 
+ • <color=#ffffff>Combat Contribution</color>: Calculated from actions in the field (e.g., damage dealt, healing).
 <i>Note: Vehicles, drones, turrets, and NPCs do not receive XP themselves. Their combat contribution is instead fully distributed among all participating operatives.</i>
  • <color=#ffffff>Teamwork</color>: The total combat contribution in the mission counts more than individual kills!
 
@@ -963,22 +963,22 @@ Operatives earn Skill Points (SP) in several ways:
 
  • <color=#ffffff>Level Up</color>: Individual SP awarded upon reaching a new level.
  • <color=#ffffff>Mission Reward</color>: Depending on difficulty level, operatives earn individual SP after each successful mission.
- • <color=#ffffff>Phoenix SP</color>: These are awarded for the entire organization and go into the shared pool.
+ • <color=#ffffff>Phoenix SP</color>: These are awarded for the entire organization and are shared by all operatives.
 
 
 <color=#f7bc20>MENTOR PROTOCOL & SECONDARY CLASSES</color>
 Level 7 operatives normally continue to claim their share of XP even though they no longer progress. The 'Mentor Protocol' ability prevents this loss:
 
  • <color=#ffffff>Function</color>: A level 7 operative with this skill no longer receives XP from missions.
- • <color=#ffffff>Redistribution</color>: Their share is instead fully distributed among all teammates under level 7.
- • <color=#ffffff>Bonus SP</color>: A mentor with the Mentor Protocol generates an additional 2 SP for the shared pool after each mission.
- • <color=#ffffff>Training Effect</color>: Mentor shares are distributed, ensuring no experience is lost.
+ • <color=#ffffff>Redistribution</color>: Their share instead goes to the lowest-level teammate under level 7 who has not already received another mentor's share. If there is no such teammate, the share is lost.
+ • <color=#ffffff>Bonus SP</color>: If the mentor earned the most XP in the squad, the Mentor Protocol adds 2 Phoenix SP.
+ • <color=#ffffff>Training Effect</color>: Mentor shares go to the least experienced operatives first, so they catch up faster.
 
 At Level 4, you can choose a secondary class for an operative. This significantly expands your tactical options: abilities that require specific weapon proficiencies can be used with weapons from either class after specialization.
 
 
 <color=#f7bc20><i>TIP FOR NEW DIRECTORS</i></color>
-<i>Use the <b>Mentor Protocol</b> strategically: it not only serves to quickly bring young operatives to Level 7, but is also a reliable source of SP in the <b>shared pool</b>. These points are essential for specializing your veteran operatives with additional cross-class abilities.</i>","完成任务目标可获得经验点数 (XP)。在战斗中存活的士兵会根据战斗贡献分配经验点数。
+<i>Use the <b>Mentor Protocol</b> strategically: it not only serves to quickly bring young operatives to Level 7, but is also a reliable source of <b>Phoenix SP</b>. These points are essential for specializing your veteran operatives with additional cross-class abilities.</i>","完成任务目标可获得经验点数 (XP)。在战斗中存活的士兵会根据战斗贡献分配经验点数。
 
  当士兵达到下一等级的经验阈值时将会自动升级。士兵升级后将获得技能点 (SP)，可用于习得新的技能或提高核心属性：力量、意志力和速度。
 
