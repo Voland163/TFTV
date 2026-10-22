@@ -32,17 +32,17 @@ TFTV_INCIDENT_18_DESC,Text,,"A training facility at the New Jericho haven [Haven
 The suspect was subdued and detained, but his statements are incoherent. Local command suspects the use of mind-influence technology, possibly of Anu or Synedrion origin."
 TFTV_INCIDENT_18_CHOICE_0_B,Text,,Interrogate and examine the suspect.
 TFTV_INCIDENT_18_CHOICE_1_C_M,Text,,Access and analyze the facility’s security logs.
-TFTV_INCIDENT_18_CHOICE_2,Text,,Risking our relations with the factions is just not worth it. [END] 
+TFTV_INCIDENT_18_CHOICE_2,Text,,Risking our relations with the factions is just not worth it. [END]
 TFTV_INCIDENT_18_OUTCOME_0_SUCCESS,Text,"Reward: NJ +4, Haven Leader + 8, Materials +400","At first, the trainee insists he was “possessed”—that a foreign voice guided his hand. Under sustained questioning, the narrative collapses. He breaks down, confessing that his victims had been hazing him for weeks."
 TFTV_INCIDENT_18_OUTCOME_1_SUCCESS,Text,"Reward: NJ +4, Haven Leader + 8, Materials +400","[OperativeName] discreetly hacks the haven’s archives, recovering several weeks of footage.
 The pattern is clear: the victims repeatedly followed the suspect into maintenance corridors and supply depots—blind spots without cameras.
-The night before the shooting, audio logs capture muffled confrontations and laughter. "
+The night before the shooting, audio logs capture muffled confrontations and laughter."
 TFTV_INCIDENT_18_OUTCOME_0_FAIL,Text,,"The interrogation proceeds aggressively. The subject becomes unresponsive, then catatonic.
 Medical examination reveals severe neural stress consistent with prior trauma, but no clear cause."
 TFTV_INCIDENT_18_OUTCOME_1_FAIL,Text,,"The logs prove partially corrupted—some files overwritten, others intentionally erased.
 Only fragments remain: flickers of uniformed figures moving through blind spots, an argument cut off mid-sentence."
 TFTV_INCIDENT_19_TITLE_NJ,Text,,The Synedrion Detainees
-TFTV_INCIDENT_19_DESC,Text,,"Synedrion has denounced that the New Jericho Internal Security Bureau in [HavenName] has detained several individuals without due process—allegedly for nothing more than sympathizing with Synedrion’s political ideas.
+TFTV_INCIDENT_19_DESC,Text,,"Synedrion has complained that the New Jericho Internal Security Bureau in [HavenName] has detained several individuals without due process—allegedly for nothing more than sympathizing with Synedrion’s political ideas.
 The ISB chief rejects the accusation, claiming the detainees form part of a terrorist cell plotting to assassinate the haven’s leader.
 The leader, caught between Synedrion’s outrage and the ISB’s certainty, has invited the Phoenix Project to verify the evidence before the situation escalates into an inter-faction incident."
 TFTV_INCIDENT_19_CHOICE_0_P,Text,,"Assess the political atmosphere in the haven."
@@ -115,7 +115,7 @@ The trade talks collapse within hours, replaced by formal protests and a chorus 
 TFTV_INCIDENT_23_TITLE_NJ,Text,Req: same haven as Synedrion Detainees,The Administrator’s Demise
 TFTV_INCIDENT_23_DESC,Text,,"The leader of [HavenName] has been found dead in her quarters—stabbed multiple times, the body carefully arranged in what appears to be a ritual pattern.
 The Internal Security Bureau blames Anu sympathizers.
-With the haven already on edge after the recent arrests of the Synedrion sympathizers, Phoenix Project has been called in once again to conduct an independent investigation."
+With the haven already on edge after the recent arrests of the Synedrion sympathizers, the Phoenix Project has been called in once again to conduct an independent investigation."
 TFTV_INCIDENT_23_CHOICE_0_C,Text,,Investigate the ISB chief and his recent activities.
 TFTV_INCIDENT_23_CHOICE_1_O_P,Text,,Search for the real murderer among the haven’s personnel.
 TFTV_INCIDENT_23_CHOICE_2,Text,,The Disciples might well be involved; better stay out of faction rivalry. [END]
@@ -138,7 +138,7 @@ A reconnaissance team has already surveyed the site, and preliminary data has be
 Before committing personnel and resources, the haven leadership has asked the Phoenix Project to assess the findings and advise on the feasibility of reclamation."
 TFTV_INCIDENT_24_CHOICE_0_C,Text,,"Analyze the reconnaissance data."
 TFTV_INCIDENT_24_CHOICE_1_E_P,Text,,"Debrief the reconnaissance team in person."
-TFTV_INCIDENT_24_CHOICE_2,Text,,"We are not interested in New Jericho Reclamation efforts, we need to deal with the Pandoravirus menace. [END]"
+TFTV_INCIDENT_24_CHOICE_2,Text,,"We are not interested in New Jericho reclamation efforts; we need to deal with the Pandoravirus menace. [END]"
 TFTV_INCIDENT_24_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"Structural damage is extensive, environmental hazards persistent, and Pandoran presence likely.
 
 Even maintaining a secure perimeter—let alone restoring infrastructure—would require manpower far beyond what [HavenName] can realistically spare."
@@ -173,7 +173,7 @@ TFTV_INCIDENT_25_CHOICE_2,Text,,"It could be anything, we don't have time for th
 TFTV_INCIDENT_25_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"Phoenix aircraft perform a low-altitude flyby of the area where the survivor’s armor was likely contaminated. A depression filled with viscous black residue is located—thick, inert, and unremarkable under sensors. There are no signs of combat, no biological threats beyond known Pandoran activity, and no trace of the missing soldiers."
 TFTV_INCIDENT_25_OUTCOME_1_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"It takes time to break through the survivor’s isolation. Gradually, fragments of memory surface.
 
-He describes a pool of black substance—liquid, but not water. From it, humanoid shapes would rise. 
+He describes a pool of black substance—liquid, but not water. From it, humanoid shapes would rise.
 
 They dragged his teammates into the pool.
 
@@ -273,8 +273,8 @@ All refugees have been placed under immediate quarantine."
 TFTV_INCIDENT_28_CHOICE_0_B,Text,,"Conduct a detailed examination of the quarantined refugees."
 TFTV_INCIDENT_28_CHOICE_1_C_M,Text,,"Review and assess New Jericho’s infection detection procedures."
 TFTV_INCIDENT_28_CHOICE_2,Text,,No matter what we do they are never leaving quarantine. [END]
-TFTV_INCIDENT_28_OUTCOME_0_SUCCESS,Text,Reward: Research +300,"Nearly all refugees - not just those that tested positive - exhibit one or more markers that could be associated with Pandoravirus exposure, but a reaction to the virus does not imply infection. It is also not possible to establish whether exposure ocurred during the infestation of [RequirementHavenName], or long before it. "
-TFTV_INCIDENT_28_OUTCOME_1_SUCCESS,Text,Reward: Research +300,"Though seemingly complex and thorough, New Jericho’s screening protocols are narrowly defined; detection focuses on specific biomarkers known to correlate with mutations or late-stage Pandoran adaptation, but which can also sometimes appear after an immune reaction. "
+TFTV_INCIDENT_28_OUTCOME_0_SUCCESS,Text,Reward: Research +300,"Nearly all refugees — not just those that tested positive — exhibit one or more markers that could be associated with Pandoravirus exposure, but a reaction to the virus does not imply infection. It is also not possible to establish whether exposure occurred during the infestation of [RequirementHavenName], or long before it."
+TFTV_INCIDENT_28_OUTCOME_1_SUCCESS,Text,Reward: Research +300,"Though seemingly complex and thorough, New Jericho’s screening protocols are narrowly defined; detection focuses on specific biomarkers known to correlate with mutations or late-stage Pandoran adaptation, but which can also sometimes appear after an immune reaction."
 TFTV_INCIDENT_28_OUTCOME_0_FAIL,Text,,"Several refugees refuse further examination, fearing the results will be used to justify permanent isolation.
 
 Stress responses interfere with testing, and cooperation deteriorates rapidly.
