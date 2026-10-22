@@ -753,10 +753,19 @@ namespace TFTV
 
         public static class TFTV_TacticalPerceptionBase_IsTouchingVoxel_patch
         {
-            public static void Postfix(TacticalPerceptionBase __instance)
+            public static void Postfix(TacticalPerceptionBase __instance, List<TacticalVoxel> outTouchedVoxels, ref bool __result)
             {
                 try
                 {
+                    // Passengers ride along on the vehicle's tile, but mist, goo and fire can't reach them
+                    // inside it - this covers vanilla's mist Willpower drain and every TFTV check alike.
+                    if (__result && __instance.TacActorBase != null && __instance.TacActorBase.IsMounted)
+                    {
+                        __result = false;
+                        outTouchedVoxels?.Clear();
+                        return;
+                    }
+
                     TFTVVoxels.TFTVFire.CheckFireQuencherTouchingFire(__instance);
 
 

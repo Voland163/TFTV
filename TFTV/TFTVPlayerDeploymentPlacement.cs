@@ -1,10 +1,12 @@
 using Base.Entities;
+using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
@@ -497,6 +499,7 @@ namespace TFTV
         private static void MoveActor(TacticalLevelController controller, TacticalActor actor, Vector3 pos)
         {
             actor.SetPosition(pos);
+            PutOnFloor(actor);
             actor.OnFinishedMovingActor(actor);
 
             MoveAbility move = actor.GetAbility<MoveAbility>();
@@ -515,6 +518,57 @@ namespace TFTV
             }
 
             controller.ActorFinishedMoving(actor);
+        }
+
+        /// <summary>
+        /// Spawn-grid points are not always on the floor: in raised zones they can sit above it. Vanilla's fall check
+        /// (FallNoSupportAbility, run for every unit whenever any ability finishes - placement included) casts down
+        /// from the unit and wants a floor within 0.3 m, so a soldier left at such a point dropped and took fall
+        /// damage as soon as anyone acted. Put them on the floor right under the point instead. Returns true if the
+        /// unit was moved.
+        /// </summary>
+        internal static bool PutOnFloor(TacticalActor actor)
+        {
+            try
+            {
+                if (actor == null || actor.IsMounted || actor.GetAbility<FallNoSupportAbility>() == null)
+                {
+                    return false;
+                }
+
+                TacticalPerception perception = actor.TacticalPerception;
+                TacticalMap map = actor.Map;
+
+                if (perception == null || map == null)
+                {
+                    return false;
+                }
+
+                Vector3 pos = TacticalMap.SnapXZToGrid(actor.Pos);
+
+                if (perception.HasFloorSupportAt(pos))
+                {
+                    return false;
+                }
+
+                CastResult floor = map.CastFirstFloorAt(pos + Vector3.up * (perception.Height * 0.5f), UnityLayers.FloorAllMask, null);
+
+                if (!floor.IsValid)
+                {
+                    return false;
+                }
+
+                Vector3 from = actor.Pos;
+                Vector3 onFloor = new Vector3(from.x, floor.Point.y, from.z);
+                actor.SetPosition(onFloor);
+                TFTVLogger.Always($"[DeploymentPhase] {actor.DisplayName} had no floor under {from}: put on the floor at {onFloor}");
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
         }
 
         private static MethodInfo _selectCharacterMethod;

@@ -930,6 +930,17 @@ namespace TFTV.TFTVUI.Tactical
         {
             try
             {
+                // Mission type defs are shared, so secondary objectives added for an earlier mission are still on
+                // them. Strip them every time, not only when new ones are available: a leftover nobody tracks in
+                // _secondaryObjectiveDefsInPlay skips TFTV's own completion checks, and (being hidden from the
+                // summary) paid its XP without showing it - a Haven defense gave 680 XP for a 425 XP summary.
+                List<FactionObjectiveDef> withoutSecondaries = missionType.CustomObjectives.ToList();
+
+                if (withoutSecondaries.RemoveAll(obj => _secondaryObjectiveDefsALL.Contains(obj)) > 0)
+                {
+                    missionType.CustomObjectives = withoutSecondaries.ToArray();
+                }
+
                 if (!missionType.FinalMission && !missionType.name.Contains("Tutorial") && missionType.ParticipantsData.Any(pd => pd.FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef")
                     && AvailableSecondaryObjectivesTactical != null && AvailableSecondaryObjectivesTactical.Count > 0))
                 {
@@ -1871,6 +1882,48 @@ namespace TFTV.TFTVUI.Tactical
             }
         }
 
+
+        /// <summary>
+        /// The battle summary lists only objectives that are not IsUiSummaryHidden, and its TOTAL adds up only the
+        /// listed ones, but every achieved objective pays out. TFTV's secondary objectives are summary-hidden (so a
+        /// failed one does not clutter it), so one that was achieved gave XP the summary never showed. List the
+        /// achieved ones that reward something.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleBattleSummary), "GetShowFactionObjectives")]
+        public static class UIModuleBattleSummary_GetShowFactionObjectives_RewardedHidden_Patch
+        {
+            public static void Postfix(TacticalFaction faction, ref IList<FactionObjective> __result)
+            {
+                try
+                {
+                    if (faction?.Objectives == null || __result == null)
+                    {
+                        return;
+                    }
+
+                    IList<FactionObjective> listed = __result;
+                    List<FactionObjective> rewardedHidden = faction.Objectives
+                        .Where(objective => objective.IsUiSummaryHidden
+                            && objective.State == FactionObjectiveState.Achieved
+                            && (objective.GetActualExperienceReward() > 0 || objective.GetActualSkillPointsReward() > 0)
+                            && !listed.Contains(objective))
+                        .ToList();
+
+                    if (rewardedHidden.Count == 0)
+                    {
+                        return;
+                    }
+
+                    List<FactionObjective> shown = __result.ToList();
+                    shown.AddRange(rewardedHidden);
+                    __result = shown;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(FactionObjective), nameof(FactionObjective.Evaluate))]
         public static class FactionObjective_Evaluate_Patch

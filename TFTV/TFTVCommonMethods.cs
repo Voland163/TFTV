@@ -451,7 +451,7 @@ namespace TFTV
                     // Checked before the clears below, so a refused load leaves the running campaign
                     // as it was. An empty coroutine is what vanilla LoadGame itself amounts to when it
                     // refuses an incompatible save.
-                    if (!AircraftReworkMode.CanLoad(metaData))
+                    if (!TFTVVanillaSaveGuard.CanLoad(metaData) || !AircraftReworkMode.CanLoad(metaData))
                     {
                         __result = Enumerable.Empty<NextUpdate>().GetEnumerator();
                         return false;

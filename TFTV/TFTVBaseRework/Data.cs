@@ -316,9 +316,17 @@ namespace TFTV.TFTVBaseRework
             return character != null && !HasJustAGrunt(character);
         }
 
+        /// <summary>
+        /// Humans only: Mutoids count as human templates in the game, but they are not personnel
+        /// who can investigate an incident, and neither are Mutogs or vehicles.
+        /// </summary>
         internal static bool CanContributeToIncidents(GeoCharacter character)
         {
-            return character != null && !HasJustAGrunt(character);
+            return character != null
+                && character.TemplateDef != null
+                && character.TemplateDef.IsHuman
+                && !character.IsMutoid
+                && !HasJustAGrunt(character);
         }
 
         internal static bool CanBeAssignedToManufacturingOrResearch(GeoCharacter character)

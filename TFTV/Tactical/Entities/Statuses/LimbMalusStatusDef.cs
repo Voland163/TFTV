@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TFTV.Tactical.Entities.Statuses
 {
-    /// <summary>Def of <see cref="LimbMalusStatus"/>, the limb hit malus (Config.LimbHitMalus).</summary>
+    /// <summary>Def of <see cref="LimbMalusStatus"/>, the limb hit malus (currently switched off).</summary>
     [SerializeType(InheritCustomCreateFrom = typeof(TacStatusDef))]
     [CreateAssetMenu(fileName = "LimbMalusStatusDef", menuName = "Defs/Statuses/LimbMalusStatusDef")]
     public class LimbMalusStatusDef : TacStatusDef

@@ -16,7 +16,7 @@ namespace TFTV
 {
     /// <summary>
     /// Limb hit malus: hits that get past armour on a head, an arm or a leg lower the stat tied to
-    /// that part for a while. It has its own option (Config.LimbHitMalus).
+    /// that part for a while. Currently switched off (see IsEnabled).
     ///
     /// Each part has a severity (0-100%): every projectile or strike of standard damage that gets
     /// through adds its raw damage (before armour) as a share of the part's max HP. Fire adds
@@ -38,7 +38,7 @@ namespace TFTV
             None,
             /// <summary>Heads and sensory organs: Perception and the Willpower the part provides.</summary>
             Sensory,
-            /// <summary>Arms, claws and weapon mounts: Accuracy.</summary>
+            /// <summary>Arms, claws and weapon mounts: weapon spread.</summary>
             Manipulator,
             /// <summary>Legs, tails and other movement parts: the Speed the part provides.</summary>
             Locomotion,
@@ -48,8 +48,16 @@ namespace TFTV
         internal const float PerceptionHitCap = 0.25f;
         /// <summary>At 100% severity: this share of the Willpower the part provides.</summary>
         internal const float WillpowerHitCap = 0.5f;
-        /// <summary>At 100% severity: this many Accuracy points (0.25 = 25%).</summary>
-        internal const float AccuracyHitCap = 0.25f;
+        /// <summary>
+        /// At 100% severity: weapon spread (the aiming cone's angle) +25%. Arms work on spread directly rather
+        /// than on the Accuracy stat: vanilla's cone is SpreadDegrees / (1 + Accuracy) and soldiers start at an
+        /// Accuracy of 0, so a stat malus either did nothing (the stat may not go below 0) or, allowed below 0,
+        /// grew without bound (-0.5 doubles the cone, -1 makes it infinite).
+        /// </summary>
+        internal const float SpreadHitIncrease = 0.25f;
+
+        /// <summary>The arm malus never more than doubles weapon spread.</summary>
+        internal const float MaxSpreadIncrease = 1f;
         /// <summary>At 100% severity: this share of the Speed the part provides.</summary>
         internal const float SpeedHitCap = 0.5f;
 
@@ -83,7 +91,13 @@ namespace TFTV
 
         internal static LimbMalusStatusDef StatusDef { get; set; }
 
-        internal static bool IsEnabled => TFTVMain.Main?.Config?.LimbHitMalus ?? false;
+        /// <summary>
+        /// Off for now (2026-10-21): the system needs more work, so it was taken out of the options as well. The
+        /// code stays dormant - every hook checks this first - and a save that still carries the status has it
+        /// cleaned up on its next refresh. Don't add the option back as a TFTVConfig field without warning that
+        /// a new field resets every player's saved settings once.
+        /// </summary>
+        internal static bool IsEnabled => false;
 
         #region parts
 
@@ -196,7 +210,8 @@ namespace TFTV
             internal float PerceptionShare;
             internal float WillpowerLoss;
             internal float SpeedLoss;
-            internal float AccuracyLoss;
+            /// <summary>This arm's share of the weapon spread increase (0.25 = +25%).</summary>
+            internal float SpreadIncrease;
         }
 
         internal sealed class MalusTotals
@@ -206,7 +221,8 @@ namespace TFTV
             internal float PerceptionShare;
             internal float WillpowerLoss;
             internal float SpeedLoss;
-            internal float AccuracyLoss;
+            /// <summary>Weapon spread increase for the selected weapon (0.25 = +25%).</summary>
+            internal float SpreadIncrease;
             /// <summary>Hands the selected weapon needs, or -1 when it rides on a body part.</summary>
             internal int WeaponHands;
 
@@ -256,7 +272,7 @@ namespace TFTV
                         part.WillpowerLoss = vanillaRemovedStats ? 0f : part.Units * WillpowerHitCap * GetProvidedStat(slot, WillpowerStat);
                         break;
                     case LimbRole.Manipulator:
-                        part.AccuracyLoss = part.Units * AccuracyHitCap;
+                        part.SpreadIncrease = part.Units * SpreadHitIncrease;
                         break;
                     case LimbRole.Locomotion:
                         part.SpeedLoss = vanillaRemovedStats ? 0f : part.Units * SpeedHitCap * GetProvidedStat(slot, SpeedStat);
@@ -269,7 +285,8 @@ namespace TFTV
             totals.PerceptionShare = Mathf.Min(1f, totals.Parts.Sum(part => part.PerceptionShare));
             totals.WillpowerLoss = totals.Parts.Sum(part => part.WillpowerLoss);
             totals.SpeedLoss = totals.Parts.Sum(part => part.SpeedLoss);
-            totals.AccuracyLoss = CombineArms(actor, totals);
+            Weapon selected = actor.Equipments?.SelectedWeapon;
+            totals.SpreadIncrease = CombineArms(selected, totals.Parts.Where(part => part.Role == LimbRole.Manipulator).ToList(), out totals.WeaponHands);
 
             return totals;
         }
@@ -277,22 +294,15 @@ namespace TFTV
         /// <summary>
         /// Arms and weapon handedness. A weapon mounted on a body part takes that part's malus. A
         /// two-handed weapon takes the maluses of both arms added up. A one-handed weapon is only
-        /// affected when every hand has a malus, and then by the lowest one.
+        /// affected when every hand has a malus, and then by the lowest one. hands is what the weapon
+        /// needs, -1 when it rides on a body part, 0 with no weapon.
         /// </summary>
-        private static float CombineArms(TacticalActor actor, MalusTotals totals)
+        private static float CombineArms(Weapon weapon, List<PartMalus> arms, out int hands)
         {
-            List<PartMalus> arms = totals.Parts.Where(part => part.Role == LimbRole.Manipulator).ToList();
+            hands = 0;
 
-            if (arms.Count == 0)
+            if (arms.Count == 0 || weapon == null)
             {
-                return 0f;
-            }
-
-            Weapon weapon = actor.Equipments?.SelectedWeapon;
-
-            if (weapon == null)
-            {
-                totals.WeaponHands = 0;
                 return 0f;
             }
 
@@ -301,30 +311,52 @@ namespace TFTV
 
             if (mountedOn != null)
             {
-                totals.WeaponHands = -1;
-                return Mathf.Min(1f, mountedOn.AccuracyLoss);
+                hands = -1;
+                return Mathf.Min(MaxSpreadIncrease, mountedOn.SpreadIncrease);
             }
 
-            List<PartMalus> hands = arms.Where(arm => arm.Slot.ItemSlotDef.ProvidesHand).ToList();
+            List<PartMalus> handArms = arms.Where(arm => arm.Slot.ItemSlotDef.ProvidesHand).ToList();
 
-            if (hands.Count == 0)
+            if (handArms.Count == 0)
             {
-                hands = arms;
+                handArms = arms;
             }
 
-            totals.WeaponHands = weapon.HandsToUse;
+            hands = weapon.HandsToUse;
 
             if (weapon.HandsToUse >= 2)
             {
-                return Mathf.Min(1f, hands.Sum(arm => arm.AccuracyLoss));
+                return Mathf.Min(MaxSpreadIncrease, handArms.Sum(arm => arm.SpreadIncrease));
             }
 
-            if (hands.Count == 1)
+            if (handArms.Count == 1)
             {
-                return Mathf.Min(1f, hands[0].AccuracyLoss);
+                return Mathf.Min(MaxSpreadIncrease, handArms[0].SpreadIncrease);
             }
 
-            return hands.All(arm => arm.AccuracyLoss > 0f) ? Mathf.Min(1f, hands.Min(arm => arm.AccuracyLoss)) : 0f;
+            return handArms.All(arm => arm.SpreadIncrease > 0f) ? Mathf.Min(MaxSpreadIncrease, handArms.Min(arm => arm.SpreadIncrease)) : 0f;
+        }
+
+        /// <summary>
+        /// The spread multiplier the arm malus puts on this weapon (1 when none). Read from the arm
+        /// list the last refresh cached on the status: this runs from Weapon.GetAllSpreadMultipliers,
+        /// which the AI calls for every shot it considers.
+        /// </summary>
+        internal static float GetSpreadMultiplier(TacticalActor actor, Weapon weapon)
+        {
+            if (!IsEnabled || actor?.Status == null || weapon == null)
+            {
+                return 1f;
+            }
+
+            LimbMalusStatus status = actor.Status.GetStatus<LimbMalusStatus>();
+
+            if (status == null || status.UnapplyRequested || status.CachedArms == null || status.CachedArms.Count == 0)
+            {
+                return 1f;
+            }
+
+            return 1f + CombineArms(weapon, status.CachedArms, out _);
         }
 
         /// <summary>Nearest whole point, halves up (22.5 → 23), unlike Mathf.Round.</summary>
@@ -370,7 +402,7 @@ namespace TFTV
                     return;
                 }
 
-                ApplyStats(actor, status, totals);
+                ApplyStats(actor, status, totals, loading);
             }
             catch (Exception e)
             {
@@ -410,20 +442,29 @@ namespace TFTV
             }
         }
 
-        private static void ApplyStats(TacticalActor actor, LimbMalusStatus status, MalusTotals totals)
+        private static void ApplyStats(TacticalActor actor, LimbMalusStatus status, MalusTotals totals, bool loading)
         {
-            RemoveModifications(actor, status);
-
-            CharacterStatsAdd(actor, status, PerceptionStat, current => RoundHalfUp(current * (1f - totals.PerceptionShare)) - current);
-            CharacterStatsAdd(actor, status, WillpowerStat, current => RoundHalfUp(current - totals.WillpowerLoss) - current);
-            CharacterStatsAdd(actor, status, SpeedStat, current => RoundHalfUp(current - totals.SpeedLoss) - current);
-            CharacterStatsAdd(actor, status, AccuracyStat, current => -totals.AccuracyLoss);
+            SetModification(actor, status, PerceptionStat, current => RoundHalfUp(current * (1f - totals.PerceptionShare)) - current, loading);
+            SetModification(actor, status, WillpowerStat, current => RoundHalfUp(current - totals.WillpowerLoss) - current, loading);
+            SetModification(actor, status, SpeedStat, current => RoundHalfUp(current - totals.SpeedLoss) - current, loading);
+            // Arms now widen weapon spread instead (GetSpreadMultiplier); this clears what older versions applied.
+            SetModification(actor, status, AccuracyStat, null, loading);
+            status.CachedArms = totals.Parts.Where(part => part.Role == LimbRole.Manipulator && part.SpreadIncrease > 0f).ToList();
 
             // Will Points and Action Points take their maximums from Willpower and Speed here.
             actor.UpdateStats();
         }
 
-        private static void CharacterStatsAdd(TacticalActor actor, LimbMalusStatus status, string statName, Func<float, float> delta)
+        private static readonly System.Reflection.MethodInfo OnStatChangeMethod = AccessTools.Method(typeof(BaseStat), "OnStatChange");
+
+        /// <summary>
+        /// Replaces this status's modification of one stat with the one <paramref name="delta"/> asks
+        /// for (none when it is null), working from the stat's value without it. The swap itself is
+        /// silent: a refresh runs on every hit, and vanilla reacts to a Willpower rise by handing out
+        /// Will Points (and shows a floating "+WP"), so removing and re-adding raised a + and a -
+        /// notification each time and topped Will Points up. Only a real net change is passed on.
+        /// </summary>
+        private static void SetModification(TacticalActor actor, LimbMalusStatus status, string statName, Func<float, float> delta, bool loading)
         {
             BaseStat stat = actor.Status.GetStat(statName);
 
@@ -432,17 +473,68 @@ namespace TFTV
                 return;
             }
 
+            float before = stat;
+
+            stat.RemoveStatModificationsWithSource(status, false);
+            stat.ReapplyModifications();
+
             // Never below 0 (or whatever the stat's own floor makes of that).
             float current = stat;
-            float change = Mathf.Max(delta(current), -Mathf.Max(0f, current));
+            float change = delta == null ? 0f : Mathf.Max(delta(current), -Mathf.Max(0f, current));
 
-            if (change > -0.001f)
+            if (change < -0.001f)
+            {
+                stat.AddStatModification(new StatModification(StatModificationType.Add, statName, change, status, change), false);
+                stat.ReapplyModifications();
+            }
+
+            float after = stat;
+
+            if (loading || Mathf.Abs(after - before) < 0.001f)
             {
                 return;
             }
 
-            stat.AddStatModification(new StatModification(StatModificationType.Add, statName, change, status, change), true);
-            stat.ReapplyModifications();
+            if (statName == WillpowerStat)
+            {
+                OnWillpowerChanged(actor, status, before, after);
+            }
+            else
+            {
+                OnStatChangeMethod?.Invoke(stat, new object[] { StatChangeType.Value, before, after });
+            }
+        }
+
+        /// <summary>
+        /// Will Points follow the malus only as far as it takes them: a lower Willpower trims them to
+        /// the new maximum, and a higher one gives back what was trimmed, never more.
+        /// </summary>
+        private static void OnWillpowerChanged(TacticalActor actor, LimbMalusStatus status, float before, float after)
+        {
+            StatusStat willPoints = actor.CharacterStats?.WillPoints;
+
+            if (willPoints == null)
+            {
+                actor.UpdateStats();
+                return;
+            }
+
+            float pointsBefore = willPoints;
+            actor.UpdateStats();
+
+            if (after < before)
+            {
+                status.WillPointsTrimmed += Mathf.Max(0f, pointsBefore - willPoints);
+                return;
+            }
+
+            float giveBack = Mathf.Min(after - before, status.WillPointsTrimmed);
+
+            if (giveBack > 0.001f)
+            {
+                status.WillPointsTrimmed -= giveBack;
+                willPoints.AddRestrictedToMax(giveBack);
+            }
         }
 
         internal static void RemoveStats(TacticalActor actor, LimbMalusStatus status)
@@ -452,24 +544,13 @@ namespace TFTV
                 return;
             }
 
-            RemoveModifications(actor, status);
-            actor.UpdateStats();
-        }
-
-        private static void RemoveModifications(TacticalActor actor, LimbMalusStatus status)
-        {
             foreach (string statName in AffectedStats)
             {
-                BaseStat stat = actor.Status.GetStat(statName);
-
-                if (stat == null)
-                {
-                    continue;
-                }
-
-                stat.RemoveStatModificationsWithSource(status, true);
-                stat.ReapplyModifications();
+                SetModification(actor, status, statName, null, loading: false);
             }
+
+            status.CachedArms = null;
+            actor.UpdateStats();
         }
 
         private static void RemoveAnyLimbMalusModifications(TacticalActor actor)
@@ -491,7 +572,7 @@ namespace TFTV
 
                 foreach (object source in sources)
                 {
-                    stat.RemoveStatModificationsWithSource(source, true);
+                    stat.RemoveStatModificationsWithSource(source, false);
                 }
 
                 if (sources.Count > 0)
@@ -753,6 +834,26 @@ namespace TFTV
                     }
 
                     OnStandardHit(slot, __instance.AmountApplied + Mathf.Max(0f, result.ArmorMitigatedDamage));
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Every spread calculation goes through here: the aiming cone and reticle, the shot itself
+        /// (CreateTrajectory) and the AI's shot evaluation.
+        /// </summary>
+        [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetAllSpreadMultipliers))]
+        internal static class Weapon_GetAllSpreadMultipliers_LimbMalus_Patch
+        {
+            private static void Postfix(Weapon __instance, TacticalActor sourceActor, ref float __result)
+            {
+                try
+                {
+                    __result *= GetSpreadMultiplier(sourceActor, __instance);
                 }
                 catch (Exception e)
                 {

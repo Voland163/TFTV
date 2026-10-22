@@ -131,7 +131,7 @@ namespace TFTV
         /// </summary>
         internal static void ApplyIncendiary(TacticalActor actor, float fireValue, object source)
         {
-            if (actor == null || !actor.IsAlive || actor.BodyState == null || actor.Status == null || IsImmuneToBurning(actor))
+            if (actor == null || !actor.IsAlive || actor.BodyState == null || actor.Status == null || actor.IsMounted || IsImmuneToBurning(actor))
             {
                 return;
             }
@@ -229,6 +229,13 @@ namespace TFTV
 
                 if (actor == null || !actor.IsAlive || actor.BodyState == null)
                 {
+                    return;
+                }
+
+                // Riding in a vehicle puts the fire out (normally done on mounting; this catches saves).
+                if (actor.IsMounted)
+                {
+                    Extinguish(actor);
                     return;
                 }
 
@@ -612,6 +619,26 @@ namespace TFTV
                     try
                     {
                         OnActorStartTurn(__instance);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            /// <summary>Getting into a vehicle puts out every burning part.</summary>
+            [HarmonyPatch(typeof(MountedStatus), nameof(MountedStatus.OnApply))]
+            internal static class MountedStatus_OnApply_Patch
+            {
+                private static void Postfix(MountedStatus __instance)
+                {
+                    try
+                    {
+                        if (__instance.TacticalActor != null)
+                        {
+                            Extinguish(__instance.TacticalActor);
+                        }
                     }
                     catch (Exception e)
                     {
