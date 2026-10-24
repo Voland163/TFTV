@@ -41,10 +41,13 @@ namespace TFTV.Tactical.Entities.Statuses
         }
 
         /// <summary>
-        /// The injured arms and their spread shares, as of the last refresh. Not saved: the refresh after a load
+        /// The working arms and their hit spread shares, as of the last refresh. Not saved: the refresh after a load
         /// (TFTVLimbHitMalus.RefreshAll) rebuilds it.
         /// </summary>
         internal List<TFTVLimbHitMalus.PartMalus> CachedArms;
+
+        /// <summary>Head hits' spread increase on every weapon, as of the last refresh. Not saved either.</summary>
+        internal float CachedHeadSpread;
 
         public LimbMalusStatusDef LimbMalusStatusDef => BaseDef as LimbMalusStatusDef;
 

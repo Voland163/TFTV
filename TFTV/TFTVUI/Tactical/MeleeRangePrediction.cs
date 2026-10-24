@@ -73,13 +73,12 @@ namespace TFTV.TFTVUI.Tactical
 
                 foreach (TacticalActor threatActor in GetKnownMeleeEnemies(selectedActor))
                 {
-                    ShootAbility meleeAbility = GetBestMeleeAbility(threatActor);
+                    TacticalAbility meleeAbility = GetBestCloseThreat(threatActor, out float meleeRange);
                     if (meleeAbility == null)
                     {
                         continue;
                     }
 
-                    float meleeRange = meleeAbility.Weapon.GetMaxRange();
                     float maxMoveRange = GetFullTurnMoveRange(threatActor);
                     float moveAndAttackRange = GetFullTurnMoveAndAttackRange(threatActor, meleeAbility);
                     if (moveAndAttackRange < 0f)
@@ -139,13 +138,65 @@ namespace TFTV.TFTVUI.Tactical
                 }
             }
 
+            /// <summary>
+            /// Enemies the player can see and whose movement it knows: under Harsh Attrition an unknown specimen's
+            /// movement is hidden ("?"), so it gets no marker either.
+            /// </summary>
             private static IEnumerable<TacticalActor> GetKnownMeleeEnemies(TacticalActor selectedActor)
             {
                 return from actor in selectedActor.TacticalFaction.Vision
                            .GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false)
                            .OfType<TacticalActor>()
-                       where CanThreatenNextTurn(actor) && GetBestMeleeAbility(actor) != null
+                       where CanThreatenNextTurn(actor)
+                             && TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Unknown
+                             && GetBestCloseThreat(actor, out _) != null
                        select actor;
+            }
+
+            /// <summary>Close-range attacks that are not melee weapons: worms blowing themselves up, the Mindfragger's leap.</summary>
+            private static readonly HashSet<string> CloseThreatAbilityDefNames = new HashSet<string>
+            {
+                "AcidwormExplode_AbilityDef",
+                "FirewormExplode_AbilityDef",
+                "PoisonwormExplode_AbilityDef",
+                "Facehugger_MindControl_AbilityDef",
+            };
+
+            /// <summary>
+            /// The attack the marker plans around, and how far from where the enemy stands it reaches: a melee weapon's
+            /// range; a worm's blast radius (it explodes where it stands); the Mindfragger's leap range.
+            /// </summary>
+            private static TacticalAbility GetBestCloseThreat(TacticalActor actor, out float reach)
+            {
+                ShootAbility melee = GetBestMeleeAbility(actor);
+
+                if (melee != null)
+                {
+                    reach = melee.Weapon.GetMaxRange();
+                    return melee;
+                }
+
+                foreach (TacticalAbility ability in actor.GetAbilities<TacticalAbility>())
+                {
+                    TacticalAbilityDef def = ability?.TacticalAbilityDef;
+
+                    if (def == null || !CloseThreatAbilityDefNames.Contains(def.name))
+                    {
+                        continue;
+                    }
+
+                    float range = def.TargetingDataDef?.Origin?.Range ?? 0f;
+                    float blast = (def as ApplyDamageEffectAbilityDef)?.DamagePayload?.AoeRadius ?? 0f;
+                    reach = Mathf.Max(range, blast);
+
+                    if (reach > 0f)
+                    {
+                        return ability;
+                    }
+                }
+
+                reach = 0f;
+                return null;
             }
 
             private static bool CanThreatenNextTurn(TacticalActor actor)
@@ -199,7 +250,7 @@ namespace TFTV.TFTVUI.Tactical
                 return GetNextTurnActionPoints(actor) * distanceToApFactor;
             }
 
-            private static float GetFullTurnMoveAndAttackRange(TacticalActor actor, ShootAbility meleeAbility)
+            private static float GetFullTurnMoveAndAttackRange(TacticalActor actor, TacticalAbility meleeAbility)
             {
                 MoveAbility moveAbility = actor.GetAbility<MoveAbility>();
                 if (moveAbility == null)

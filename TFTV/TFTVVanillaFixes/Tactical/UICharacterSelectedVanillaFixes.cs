@@ -145,6 +145,13 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                         return;
                     }
 
+                    // Harsh Attrition: an unknown specimen's perception is not known, so it draws no circle.
+                    if (TFTVHarshAttrition.PandoranVariance.GetKnowledge(enemyActor) == TFTVHarshAttrition.PandoranVariance.Knowledge.Unknown)
+                    {
+                        __result.StartScale = Vector3.zero;
+                        return;
+                    }
+
                     // Patch only the enemy-perception hover marker. The return-fire
                     // marker keeps the unmodified possible-vision result.
                     __result.StartScale = 2.05f
@@ -185,7 +192,8 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                 IEnumerable<TacticalActor> enemies = selectedActor.TacticalFaction.Vision
                     .GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false)
                     .OfType<TacticalActor>()
-                    .Where(actor => actor.InPlay && actor.Interactable)
+                    .Where(actor => actor.InPlay && actor.Interactable
+                        && TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Unknown)
                     .Distinct();
 
                 foreach (TacticalActor enemy in enemies)
@@ -616,6 +624,8 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                         }
                     }
                 }
+
+                TFTVHarshAttrition.PandoranVariance.GateTooltip(actor, data.Entries);
 
                 return data;
             }

@@ -5,6 +5,7 @@ using Base.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -123,6 +124,12 @@ namespace TFTV.TFTVUI.Tactical
                     return null;
                 }
 
+                // Forecasts read armour and Hit Points: a Pandoran the player has not studied keeps the stock text.
+                if (TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Studied)
+                {
+                    return null;
+                }
+
                 // The limb hit malus has no single number to show next to its name.
                 string title = statusDef is LimbMalusStatusDef
                     ? statusDef.Visuals.DisplayName1.Localize()
@@ -162,7 +169,8 @@ namespace TFTV.TFTVUI.Tactical
         {
             try
             {
-                if (actor == null || actor.Health == null)
+                if (actor == null || actor.Health == null
+                    || TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Studied)
                 {
                     return null;
                 }
@@ -702,15 +710,15 @@ namespace TFTV.TFTVUI.Tactical
         #region limb hit malus
 
         /// <summary>
-        /// The stats the malus is taking right now - read off the very modifications it applied, so
-        /// the numbers are the ones the character has - then one row per hurt part saying how much
-        /// and until when, and the rules the stock description cannot know (Ignore Pain, which arm
-        /// rule the selected weapon uses).
+        /// The stats the wounds are taking right now - read off the very modifications applied, so
+        /// the numbers are the ones the character has - then the selected weapon's spread and melee
+        /// damage, one row per hurt part saying how much and until when, and the rules the stock
+        /// description cannot know (Ignore Pain, which arm rule the selected weapon uses).
         /// </summary>
         private static bool LimbMalusRows(Forecast forecast, TacticalActor actor, LimbMalusStatus status)
         {
             TFTVLimbHitMalus.MalusTotals totals = TFTVLimbHitMalus.Calculate(actor, status);
-            List<TFTVLimbHitMalus.PartMalus> parts = totals.Parts.Where(part => part.Units > 0f).ToList();
+            List<TFTVLimbHitMalus.PartMalus> parts = totals.Parts.Where(part => part.Units > 0f || part.Disabled).ToList();
 
             if (parts.Count == 0)
             {
@@ -723,10 +731,23 @@ namespace TFTV.TFTVUI.Tactical
             MalusStat(forecast, actor, status, "Willpower", "TFTV_FORECAST_WILLPOWER", 1f, "");
             MalusStat(forecast, actor, status, "Speed", "TFTV_FORECAST_SPEED", 1f, "");
 
-            // Arms widen the selected weapon's spread rather than lowering a stat.
-            if (totals.SpreadIncrease > 0.001f)
+            // Arms and heads widen the selected weapon's spread rather than lowering a stat.
+            Weapon selected = actor.Equipments?.SelectedWeapon;
+            float spread = TFTVLimbHitMalus.GetSpreadMultiplier(actor, selected);
+
+            if (spread > 1.001f)
             {
-                forecast.Stat("TFTV_FORECAST_WEAPON_SPREAD", $"+{Mathf.RoundToInt(totals.SpreadIncrease * 100f)}%", true);
+                forecast.Stat("TFTV_FORECAST_WEAPON_SPREAD", $"+{Mathf.RoundToInt((spread - 1f) * 100f)}%", true);
+            }
+
+            if (TFTVLimbHitMalus.IsMeleeWeapon(selected))
+            {
+                float melee = TFTVLimbHitMalus.GetMeleeDamageMultiplier(actor, selected);
+
+                if (melee < 0.999f)
+                {
+                    forecast.Stat("TFTV_FORECAST_MELEE_DAMAGE", Loss((1f - melee) * 100f, "%"), true);
+                }
             }
 
             bool ownTurn = actor.TacticalLevel != null && actor.TacticalLevel.CurrentFaction == actor.TacticalFaction;

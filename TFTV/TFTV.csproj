@@ -381,6 +381,14 @@
     <Compile Include="TFTVHarmonyGeoscape.cs" />
     <Compile Include="TFTVHarmonyGeoscapeUI.cs" />
     <Compile Include="TFTVHarmonyTactical.cs" />
+    <Compile Include="TFTVHarshAttrition\TFTVHarshAttrition.cs" />
+    <Compile Include="TFTVHarshAttrition\PandoranVariance.cs" />
+    <Compile Include="TFTVHarshAttrition\ArthronClawRegrowth.cs" />
+    <Compile Include="TFTVHarshAttrition\DisarmedReturn.cs" />
+    <Compile Include="Tactical\Entities\Statuses\DisarmedStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\DisarmedStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\PandoranVarianceStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\PandoranVarianceStatusDef.cs" />
     <Compile Include="TFTVHealing.cs" />
     <Compile Include="TFTVEconomyExploitsFixes.cs" />
     <Compile Include="TFTVNewGameOptions.cs" />

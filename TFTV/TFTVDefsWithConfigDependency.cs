@@ -65,6 +65,7 @@ namespace TFTV
                 NewTrainingFacilities.ImplementNewTrainingFacilities();
                 BaseReworkResearch.ImplementBaseReworkResearch();
                 NewPowerManagement.ImplementNewPowerManagement();
+                TFTVHarshAttrition.ImplementOptionDependentDefs();
             }
             catch (Exception e)
             {
@@ -80,6 +81,7 @@ namespace TFTV
                 StrongerPandorans.ImplementStrongerPandorans();
                 HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
                 PandoranCapture.ChangesToPandoranCapture();
+                TFTVHarshAttrition.ImplementOptionDependentDefs();
             }
             catch (Exception e)
             {
