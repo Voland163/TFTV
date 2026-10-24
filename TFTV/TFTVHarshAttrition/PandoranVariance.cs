@@ -23,7 +23,7 @@ namespace TFTV
     {
         /// <summary>
         /// Every Pandoran rolls its toughness when it enters play: max HP, and each body part's max HP and
-        /// armour, each an independent uniform 75-125%. The rolls are AddMax modifications on the stats with
+        /// armour, each an independent uniform 60-140%. The rolls are AddMax modifications on the stats with
         /// the status def as source, so they are saved with the stats and never re-rolled.
         ///
         /// What the player sees depends on knowledge of the species and of the individual:
@@ -38,8 +38,8 @@ namespace TFTV
         {
             internal static PandoranVarianceStatusDef StatusDef { get; set; }
 
-            internal const float MinRoll = 0.75f;
-            internal const float MaxRoll = 1.25f;
+            internal const float MinRoll = 0.6f;
+            internal const float MaxRoll = 1.4f;
             /// <summary>Studied within this share of the vision range between the two actors.</summary>
             internal const float StudyRangeShare = 0.5f;
 
@@ -232,36 +232,66 @@ namespace TFTV
                     return;
                 }
 
-                actor.Status.ApplyStatus(StatusDef);
-
                 float healthRoll = NextRoll();
-                ApplyRoll(actor.CharacterStats?.Health, healthRoll);
-
                 HashSet<TacticalItem> rolledItems = new HashSet<TacticalItem>();
+                int perceptionRoll;
+                int speedRoll;
 
-                foreach (ItemSlot slot in actor.BodyState.GetHealthSlots().ToList())
+                // While the new maximums go on, Health can dip for a moment (and a low roll lowers it for good). Hurt
+                // reactions listen to that - the Triton camo, eggs starting to hatch, mist - so they are muted until
+                // the roll is done.
+                _rolling = true;
+
+                try
                 {
-                    float partHealthRoll = NextRoll();
-                    float partArmourRoll = NextRoll();
+                    actor.Status.ApplyStatus(StatusDef);
+                    ApplyRoll(actor.CharacterStats?.Health, healthRoll);
 
-                    foreach (TacticalItem item in slot.GetAllDirectItems(false))
+                    foreach (ItemSlot slot in actor.BodyState.GetHealthSlots().ToList())
                     {
-                        // An item spanning several slots is rolled once.
-                        if (item == null || !rolledItems.Add(item))
-                        {
-                            continue;
-                        }
+                        float partHealthRoll = NextRoll();
+                        float partArmourRoll = NextRoll();
 
-                        ApplyRoll(item.GetHealth(), partHealthRoll);
-                        ApplyRoll(item.GetArmor(), partArmourRoll);
+                        foreach (TacticalItem item in slot.GetAllDirectItems(false))
+                        {
+                            // An item spanning several slots is rolled once.
+                            if (item == null || !rolledItems.Add(item))
+                            {
+                                continue;
+                            }
+
+                            ApplyRoll(item.GetHealth(), partHealthRoll);
+                            ApplyRoll(item.GetArmor(), partArmourRoll);
+                        }
                     }
+
+                    perceptionRoll = RollFlat(actor, PerceptionStatName);
+                    speedRoll = RollFlat(actor, SpeedStatName);
+                    actor.UpdateStats();
+                }
+                finally
+                {
+                    _rolling = false;
                 }
 
-                int perceptionRoll = RollFlat(actor, PerceptionStatName);
-                int speedRoll = RollFlat(actor, SpeedStatName);
-                actor.UpdateStats();
-
                 TFTVLogger.Always($"[HarshAttrition] Rolled {actor.name}: HP x{healthRoll:0.00}, {rolledItems.Count} body parts, Perception {perceptionRoll:+0;-0;0}, Speed {speedRoll:+0;-0;0}");
+            }
+
+            /// <summary>Set while a creature's stats are being rolled: its hurt reactions must not take that for damage.</summary>
+            private static bool _rolling;
+
+            /// <summary>
+            /// TacticalHurtReactionAbility listens to Health's StatChangeEvent and registers a reaction (Triton camo,
+            /// eggs' StartPreparing, SpawnMist) on any drop while the creature is in play. The rolls run right after it
+            /// enters play, so without this every rolled Triton vanished and every rolled egg started to hatch.
+            /// </summary>
+            [HarmonyPatch(typeof(PhoenixPoint.Tactical.Entities.Abilities.TacticalHurtReactionAbility), "OnActorDamaged")]
+            internal static class TacticalHurtReactionAbility_OnActorDamaged_PandoranVariance_Patch
+            {
+                private static bool Prefix()
+                {
+                    return !_rolling;
+                }
             }
 
             internal const int MaxFlatRoll = 3;
@@ -676,7 +706,7 @@ namespace TFTV
                 {
                     bar.ArmorAmountText.text = knowledge == Knowledge.Unknown
                         ? "?"
-                        : $"~{Mathf.CeilToInt(bar.ArmorBar.CurrentValue * PartsBaseShare((TacticalActor)actor, armour: true))}";
+                        : Approximately(Mathf.Ceil(bar.ArmorBar.CurrentValue * PartsBaseShare((TacticalActor)actor, armour: true)));
                 }
             }
 
@@ -742,15 +772,23 @@ namespace TFTV
                     }
                 }
 
-                // The species' Perception and movement, without this individual's roll.
+                // The species' Perception, and the species' base Hit Points and movement for the texts (the bars keep
+                // their real fill), without this individual's rolls.
                 data.Perception -= FlatRoll(actor, PerceptionStatName);
+                _statusScreenHealthBase = Mathf.RoundToInt(data.HitPoints.Max);
+                _statusScreenMovementBase = Mathf.RoundToInt(data.ActionPoints.Max - FlatRoll(actor, SpeedStatName));
+            }
 
-                float speedRoll = FlatRoll(actor, SpeedStatName);
-                UIModuleCharacterStatus.CharacterData.ValueBarData movement = data.ActionPoints;
-                movement.Max = Mathf.Max(0f, movement.Max - speedRoll);
-                movement.Limit = Mathf.Min(movement.Limit, movement.Max);
-                movement.Current = Mathf.Min(movement.Current, movement.Max);
-                data.ActionPoints = movement;
+            private static int _statusScreenHealthBase;
+            private static int _statusScreenMovementBase;
+
+            /// <summary>
+            /// How an approximate value reads: the species' base with a "?" after it. A "~" in front looked like a minus
+            /// sign in the game's font.
+            /// </summary>
+            private static string Approximately(float value)
+            {
+                return $"{Mathf.RoundToInt(value)}?";
             }
 
             private static void GateStatusScreenTexts(UIModuleCharacterStatus module)
@@ -765,12 +803,20 @@ namespace TFTV
 
                 if (knowledge == Knowledge.Known)
                 {
-                    foreach (UnityEngine.UI.Text text in new[] { module.HitPointsBarText, module.ActionPointsBarText, module.PerceptionText })
+                    // The species' base maximums only: no current values, nothing this individual rolled.
+                    if (module.HitPointsBarText != null)
                     {
-                        if (text != null)
-                        {
-                            text.text = $"~{text.text}";
-                        }
+                        module.HitPointsBarText.text = Approximately(_statusScreenHealthBase);
+                    }
+
+                    if (module.ActionPointsBarText != null)
+                    {
+                        module.ActionPointsBarText.text = Approximately(_statusScreenMovementBase);
+                    }
+
+                    if (module.PerceptionText != null && float.TryParse(module.PerceptionText.text, out float perception))
+                    {
+                        module.PerceptionText.text = Approximately(perception);
                     }
 
                     return;
@@ -1009,12 +1055,12 @@ namespace TFTV
                 }
             }
 
-            /// <summary>"12/18" or "18" less the roll, as "~15"; anything else is left as it is.</summary>
+            /// <summary>"12/18" or "18" less the roll, as "15?"; anything else is left as it is.</summary>
             private static string Approximate(string value, float roll)
             {
                 string last = value?.Split('/').LastOrDefault();
 
-                return float.TryParse(last, out float number) ? $"~{Mathf.RoundToInt(number - roll)}" : value;
+                return float.TryParse(last, out float number) ? Approximately(number - roll) : value;
             }
 
             private static void SetValue(List<ShortActorInfoTooltipDataEntry> entries, int index, string value)
