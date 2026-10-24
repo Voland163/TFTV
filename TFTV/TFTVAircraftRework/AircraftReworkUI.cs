@@ -942,24 +942,13 @@ namespace TFTV
                         return;
                     }
 
-                    // Filter out any equipment that is not a module.
-                    // Assuming that modules have a definition of type GeoVehicleModuleDef.
+                    // Keep only the fitted modules, in order, at most 3. No null padding:
+                    // vanilla shows one button per entry and hides the rest, so empty
+                    // module spaces get no square and take no room in the row.
                     equipments = equipments
                         .Where(e => e?.EquipmentDef is GeoVehicleModuleDef)
+                        .Take(3)
                         .ToList();
-
-
-
-                    // Force the list to exactly 3 entries:
-                    while (equipments.Count < 3)
-                    {
-                        equipments.Add(null);
-                    }
-                    if (equipments.Count > 3)
-                    {
-                        // If for some reason there are more than 3 modules, trim the list.
-                        equipments = equipments.Take(3).ToList();
-                    }
                 }
                 catch (Exception e)
                 {
