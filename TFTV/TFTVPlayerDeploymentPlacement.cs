@@ -442,7 +442,7 @@ namespace TFTV
             }
         }
 
-        private static TacticalActor FindBlocker(TacticalLevelController controller, TacticalActor mover, Vector3 pos)
+        internal static TacticalActor FindBlocker(TacticalLevelController controller, TacticalActor mover, Vector3 pos)
         {
             float moverRadius = Radius(mover);
 
@@ -496,7 +496,8 @@ namespace TFTV
             }
         }
 
-        private static void MoveActor(TacticalLevelController controller, TacticalActor actor, Vector3 pos)
+        /// <summary>Also used by Harsh Attrition to bring a fled enemy back onto the map.</summary>
+        internal static void MoveActor(TacticalLevelController controller, TacticalActor actor, Vector3 pos)
         {
             actor.SetPosition(pos);
             PutOnFloor(actor);

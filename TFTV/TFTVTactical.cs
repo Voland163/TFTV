@@ -60,6 +60,8 @@ namespace TFTV
         public bool StrongerPandoransTactical;
         public bool NerfAncientsWeaponsTactical;
         public bool StaminaSetToZeroAfterInjury;
+        public bool HarshAttritionTactical;
+        public List<string> HarshAttritionAutopsies;
         public int ODILevel;
         public int internalDifficultyCheck;
         public Dictionary<string, int> PandoransInContainment;
@@ -232,6 +234,7 @@ namespace TFTV
             TFTVLogger.Always($"Scylla Capture Module is present {TFTVCapturePandorans.ScyllaCaptureModulePresent}");
             TFTVLogger.Always($"Stronger Pandorans {TFTVNewGameOptions.StrongerPandoransSetting}");
             TFTVLogger.Always($"Nerf ancients weapons {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
+            TFTVLogger.Always($"Harsh Attrition {TFTVNewGameOptions.HarshAttritionSetting}");
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
             TFTVLogger.Always($"Current ODI level: {TFTVODIandVoidOmenRoll.CurrentODI_Level}");
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
@@ -336,6 +339,8 @@ namespace TFTV
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
                 TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = data.StaminaSetToZeroAfterInjury;
+                TFTVNewGameOptions.HarshAttritionSetting = data.HarshAttritionTactical;
+                TFTVHarshAttrition.PandoranVariance.AutopsiedClassTags = data.HarshAttritionAutopsies ?? new List<string>();
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
@@ -469,6 +474,8 @@ namespace TFTV
                 NerfAncientsWeaponsTactical = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
                 StaminaSetToZeroAfterInjury = TFTVNewGameOptions.StaminaPenaltyFromInjurySetting,
+                HarshAttritionTactical = TFTVNewGameOptions.HarshAttritionSetting,
+                HarshAttritionAutopsies = TFTVHarshAttrition.PandoranVariance.AutopsiedClassTags,
                 ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,
                 PandoransInContainment = TFTVBaseDefenseTactical.PandoransInContainment,
                 PandoransInContainmentEscaped = TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed,

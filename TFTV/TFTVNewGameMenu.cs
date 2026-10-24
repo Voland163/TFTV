@@ -1227,6 +1227,7 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("HarderAmbush", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.MoreAmbushesSetting), OnHarderAmbushValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("ImpossibleWeapons", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting), OnImpossibleWeaponsValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("NoSecondChances", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("HarshAttrition", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.HarshAttritionSetting), OnHarshAttritionValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EtermesVulnerabilityResistance", _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability - 1, 0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("ResourcesEvents", _amountPercentageResources, DefaultDifficulties.ConvertDifficultyToIndexEventsResources(), OnResourcesEventsValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
 
@@ -1707,6 +1708,22 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         TFTVNewGameOptions.NoSecondChances = option;
                         _noSecondChances = arrowPickerController;
 
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                /// <summary>Experimental, so it is never set by the difficulty: it stays as the player leaves it.</summary>
+                private static void OnHarshAttritionValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.HarshAttritionSetting = option;
                     }
                     catch (Exception e)
                     {

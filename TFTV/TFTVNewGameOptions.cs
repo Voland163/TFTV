@@ -118,6 +118,8 @@ namespace TFTV
         public static bool StrongerPandoransSetting;
         public static bool ImpossibleWeaponsAdjustmentsSetting;
         public static bool NoSecondChances;
+        /// <summary>Experimental: wounds, returning enemies and hidden Pandoran stats (TFTVHarshAttrition). Off on every difficulty.</summary>
+        public static bool HarshAttritionSetting;
         public static int EtermesResistanceAndVulnerability;
 
         public static float RansackResourcesMultiplier = 1f;  // 0.0 – 2.0
@@ -345,6 +347,8 @@ namespace TFTV
                     LimitedHarvestingSetting = false;
                     NoSecondChances = false;
                 }
+
+                HarshAttritionSetting = false;
 
                 SetEnemyForceOptionDefaults(difficulty);
 

@@ -429,6 +429,7 @@ namespace TFTV
 
             CreateBurningStatusDef();
             CreateLimbMalusStatusDef();
+            CreatePandoranVarianceStatusDef();
         }
 
         /// <summary>
@@ -513,6 +514,66 @@ namespace TFTV
                 limbMalus.Visuals.LargeIcon = icon;
 
                 TFTVLimbHitMalus.StatusDef = limbMalus;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Harsh Attrition's hidden records: rolled Pandorans and disarmed enemies. Always created, so saves that
+        /// hold them load whether or not the option is on; they are only applied while it is.
+        /// </summary>
+        private static void CreatePandoranVarianceStatusDef()
+        {
+            try
+            {
+                FireStatusDef vanillaFire = DefCache.GetDef<FireStatusDef>("Fire_StatusDef");
+
+                Tactical.Entities.Statuses.PandoranVarianceStatusDef variance = Helper.CreateDefFromClone<Tactical.Entities.Statuses.PandoranVarianceStatusDef>(
+                    null, "{6C2E9B41-3F7A-4D58-9E10-A84B2C5D7F31}", "TFTV_PandoranVariance_StatusDef");
+
+                variance.EffectName = "TFTV_PandoranVariance";
+                variance.ApplicationConditions = new EffectConditionDef[0];
+                variance.DurationTurns = -1;
+                variance.ExpireOnEndOfTurn = false;
+                variance.DisablesActor = false;
+                variance.SingleInstance = true;
+                variance.ShowNotification = false;
+                variance.VisibleOnPassiveBar = false;
+                variance.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                variance.VisibleOnStatusScreen = 0;
+                variance.HealthbarPriority = vanillaFire.HealthbarPriority;
+                variance.StackMultipleStatusesAsSingleIcon = false;
+                variance.ParticleEffectPrefab = null;
+                variance.EventOnApply = null;
+                variance.EventOnUnapply = null;
+                variance.Visuals = Helper.CreateDefFromClone(vanillaFire.Visuals, "{0D4F7A92-6B1E-4C3D-8A57-E29F41B6C803}", "TFTV_PandoranVariance_StatusDef");
+
+                TFTVHarshAttrition.PandoranVariance.StatusDef = variance;
+
+                Tactical.Entities.Statuses.DisarmedStatusDef disarmed = Helper.CreateDefFromClone<Tactical.Entities.Statuses.DisarmedStatusDef>(
+                    null, "{B83D1E57-2A64-4F9C-8D21-5E7C03A9F146}", "TFTV_Disarmed_StatusDef");
+
+                disarmed.EffectName = "TFTV_Disarmed";
+                disarmed.ApplicationConditions = new EffectConditionDef[0];
+                disarmed.DurationTurns = -1;
+                disarmed.ExpireOnEndOfTurn = false;
+                disarmed.DisablesActor = false;
+                disarmed.SingleInstance = true;
+                disarmed.ShowNotification = false;
+                disarmed.VisibleOnPassiveBar = false;
+                disarmed.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                disarmed.VisibleOnStatusScreen = 0;
+                disarmed.HealthbarPriority = vanillaFire.HealthbarPriority;
+                disarmed.StackMultipleStatusesAsSingleIcon = false;
+                disarmed.ParticleEffectPrefab = null;
+                disarmed.EventOnApply = null;
+                disarmed.EventOnUnapply = null;
+                disarmed.Visuals = Helper.CreateDefFromClone(vanillaFire.Visuals, "{4F0A6C93-D7B2-4E18-A5C6-1B93E2F7D058}", "TFTV_Disarmed_StatusDef");
+
+                TFTVHarshAttrition.DisarmedReturn.StatusDef = disarmed;
             }
             catch (Exception e)
             {

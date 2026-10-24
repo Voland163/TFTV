@@ -63,6 +63,7 @@ namespace TFTV
         public bool StrongerPandoransSettingInstance;
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
         public bool NoSecondChances;
+        public bool HarshAttrition;
         public bool DeploymentPromptHidden;
         public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
 
@@ -243,6 +244,7 @@ namespace TFTV
                 TFTVRevenant.TFTVRevenantResearch.RecordAccumulatedRevenantPoints(gsController);
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
                 TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
+                TFTVHarshAttrition.PandoranVariance.RecordAutopsies(gsController);
                 TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
 
                 if (TFTVAircraftReworkMain.AircraftReworkOn && BaseReworkCheck.BaseReworkEnabled)
@@ -313,6 +315,7 @@ namespace TFTV
                 StrongerPandoransSettingInstance = TFTVNewGameOptions.StrongerPandoransSetting,
                 ImpossibleWeaponsAdjustmentsSettingInstance = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 NoSecondChances = TFTVNewGameOptions.NoSecondChances,
+                HarshAttrition = TFTVNewGameOptions.HarshAttritionSetting,
                 DeploymentPromptHidden = TFTVPlayerDeploymentPhase.PromptHidden,
                 EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 RansackResourcesMultiplierInstance = TFTVNewGameOptions.RansackResourcesMultiplier,
@@ -466,6 +469,7 @@ namespace TFTV
                     TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransSettingInstance;
                     TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.ImpossibleWeaponsAdjustmentsSettingInstance;
                     TFTVNewGameOptions.NoSecondChances = data.NoSecondChances;
+                    TFTVNewGameOptions.HarshAttritionSetting = data.HarshAttrition;
                     TFTVNewGameOptions.EtermesResistanceAndVulnerability = data.EtermesVulnerabilityProtection;
 
                     // Old saves will have RansackResourcesMultiplierInstance == 0f; derive from difficulty in that case.
@@ -545,6 +549,7 @@ namespace TFTV
                     $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
                     $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
                     $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}" +
+                    $"\nHarshAttrition: {TFTVNewGameOptions.HarshAttritionSetting}" +
                     $"\nNewTrainingFacilities: {TFTVNewGameOptions.NewTrainingFacilities}" +
                     $"\nBaseRework: {TFTVNewGameOptions.BaseRework}");
 
