@@ -64,6 +64,9 @@ namespace TFTV
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
         public bool NoSecondChances;
         public bool HarshAttrition;
+        /// <summary>Harsh Attrition: Pandoran templates and body parts killed or captured (TFTVHarshAttrition.PandoranVariance).</summary>
+        public List<string> HarshAttritionTemplates;
+        public List<string> HarshAttritionParts;
         public bool DeploymentPromptHidden;
         public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
 
@@ -316,6 +319,8 @@ namespace TFTV
                 ImpossibleWeaponsAdjustmentsSettingInstance = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 NoSecondChances = TFTVNewGameOptions.NoSecondChances,
                 HarshAttrition = TFTVNewGameOptions.HarshAttritionSetting,
+                HarshAttritionTemplates = TFTVHarshAttrition.PandoranVariance.EncounteredTemplates.ToList(),
+                HarshAttritionParts = TFTVHarshAttrition.PandoranVariance.EncounteredParts.ToList(),
                 DeploymentPromptHidden = TFTVPlayerDeploymentPhase.PromptHidden,
                 EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 RansackResourcesMultiplierInstance = TFTVNewGameOptions.RansackResourcesMultiplier,
@@ -366,6 +371,8 @@ namespace TFTV
                 TFTVBehemothAndRaids.targetsForBehemoth = data.targetsForBehemoth;
                 TFTVBehemothAndRaids.flyersAndHavens = data.flyersAndHavens;
                 TFTVBehemothAndRaids.checkHammerfall = data.checkHammerfall;
+                // The pre-mission snapshot plus whatever the mission just played killed or captured.
+                TFTVHarshAttrition.PandoranVariance.RestoreEncounters(data.HarshAttritionTemplates, data.HarshAttritionParts);
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
                 TFTVRevenant.daysRevenantLastSeen = data.timeRevenantLasteSeenSaveData;
 
@@ -635,6 +642,7 @@ namespace TFTV
             TFTVConfig config = TFTVMain.Main.Config;
 
             TFTVPlayerDeploymentPhase.PromptHidden = false;
+            TFTVHarshAttrition.PandoranVariance.ClearCampaignKnowledge();
 
             if (BaseReworkCheck.BaseReworkEnabled)
             {

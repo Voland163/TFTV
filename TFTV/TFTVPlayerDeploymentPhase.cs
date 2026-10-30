@@ -271,9 +271,8 @@ namespace TFTV
         }
 
         /// <summary>
-        /// No phase after all (option off, not base defense, whole squad on the map). Such a mission holds no sides
-        /// (they already spawned in vanilla's order), so this only closes the pending state and runs anything the
-        /// mod deferred; held sides, if any, would still spawn here inside TacMission.OnLevelStart.
+        /// No phase after all (option off, not base defense, whole squad on the map): spawn the held sides now,
+        /// still inside TacMission.OnLevelStart, which is where vanilla spawns them.
         /// </summary>
         private static void ReleaseAtLevelStart()
         {
@@ -770,9 +769,7 @@ namespace TFTV
 
                     _holdingDuringLevelStart = false;
 
-                    // Nothing held and nothing to place. An option-off mission holds nothing by design and only needs
-                    // the phase if part of the squad did not fit, so it goes on to the reserve check.
-                    if (_pending.HeldSpawns.Count == 0 && !_pending.OnlyIfReserve)
+                    if (_pending.HeldSpawns.Count == 0)
                     {
                         _pending = null;
                         return;
@@ -830,14 +827,6 @@ namespace TFTV
                         {
                             // Even if none of the squad fits, the reserve needs the spawn to bring them in from.
                             _pending.PlayerSpawn = __instance;
-                            return true;
-                        }
-
-                        // Option off, not base defense: nobody places anything, so the other sides spawn in vanilla's
-                        // own order. Holding them until after the squad made them spawn in sight of it and arrive
-                        // Alerted - a whole Nest prepared to hatch at once before the first shot.
-                        if (_pending.OnlyIfReserve)
-                        {
                             return true;
                         }
 
