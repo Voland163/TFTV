@@ -1048,8 +1048,10 @@ namespace TFTV.TFTVBaseRework
                 if (!targetBase.Site.GetAllCharacters().Any(c => c == character))
                 {
                     GeoPhoenixBase currentBase = phoenix.Bases.FirstOrDefault(b => b.Site.GetAllCharacters().Any(c => c == character));
+                    // Remove first: every add or remove also creates or drops the replenish loadout,
+                    // so the other order leaves the operative with none.
+                    currentBase?.Site.RemoveCharacter(character);
                     targetBase.Site.AddCharacter(character);
-                    currentBase.Site.RemoveCharacter(character);
                     TFTVLogger.Always($"[Training] Redeployed {character?.DisplayName} from {currentBase?.Site?.LocalizedSiteName} to {targetBase?.Site?.LocalizedSiteName} at a cost of {cost} skill points.");
                 }
                 else
