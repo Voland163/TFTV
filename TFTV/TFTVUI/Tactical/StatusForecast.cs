@@ -124,8 +124,8 @@ namespace TFTV.TFTVUI.Tactical
                     return null;
                 }
 
-                // Forecasts read armour and Hit Points: a Pandoran the player has not studied keeps the stock text.
-                if (TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Studied)
+                // Forecasts read armour and Hit Points: a Pandoran whose real Hit Points the player does not know keeps the stock text.
+                if (!TFTVHarshAttrition.PandoranVariance.GetInsight(actor).RealHealth)
                 {
                     return null;
                 }
@@ -170,7 +170,7 @@ namespace TFTV.TFTVUI.Tactical
             try
             {
                 if (actor == null || actor.Health == null
-                    || TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Studied)
+                    || !TFTVHarshAttrition.PandoranVariance.GetInsight(actor).RealHealth)
                 {
                     return null;
                 }

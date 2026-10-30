@@ -342,6 +342,10 @@ namespace TFTV
 
                 TFTVAircraftReworkMain.InternalData.ClearDataOnLoad();
 
+                // Harsh Attrition: what an abandoned mission killed or captured does not count (a loaded tactical
+                // save brings its own back).
+                TFTVHarshAttrition.PandoranVariance.ClearNewEncounters();
+
                 TFTVLogger.Always($"Variables cleared on load");
 
             }
@@ -358,6 +362,7 @@ namespace TFTV
             {
                 TFTVRevenant.InternalData.RevenantDataToClearOnMissionRestartOnly();
                 TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnMissionRestartOnly();
+                TFTVHarshAttrition.PandoranVariance.ClearNewEncounters();
 
 
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();

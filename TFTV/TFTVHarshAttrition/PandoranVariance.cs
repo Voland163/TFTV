@@ -1,5 +1,6 @@
 using Base.Entities.Statuses;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical;
@@ -22,16 +23,19 @@ namespace TFTV
     internal static partial class TFTVHarshAttrition
     {
         /// <summary>
-        /// Every Pandoran rolls its toughness when it enters play: max HP, and each body part's max HP and
-        /// armour, each an independent uniform 60-140%. The rolls are AddMax modifications on the stats with
-        /// the status def as source, so they are saved with the stats and never re-rolled.
+        /// Every Pandoran rolls its toughness when it enters play: max HP (through Endurance - Health's maximum is
+        /// recalculated from it on every UpdateStats, which wiped a roll put on Health itself), and each body part's
+        /// max HP and armour, each an independent roll of 60-90% or 110-140%; Perception and Speed -3..+3; Willpower -5..+5.
+        /// The rolls are modifications on the stats with the status def as source, so they are saved with the stats
+        /// and never re-rolled.
         ///
-        /// What the player sees depends on knowledge of the species and of the individual:
-        /// Unknown (species not autopsied) - "UNKNOWN SPECIMEN", no health bar and no stats, only the damage it has taken;
-        /// Known (autopsied) - health as a bar only, armour and the info screen at the species' base values
-        /// marked "~", no damage prediction;
-        /// Studied (autopsied, and a player unit got within half its vision range of this individual, as
-        /// adjusted for the target's size and stealth) - everything, as vanilla, for the rest of the mission.
+        /// What the player sees is unlocked piece by piece (see <see cref="Insight"/>):
+        /// - neither researched - "UNKNOWN SPECIMEN", no health bar and no stats, only the damage it has taken;
+        /// - autopsy - Hit Points of templates, and HP and armour of body parts, killed or captured in an earlier mission;
+        /// - vivisection - Will Points, movement, Perception, Stealth, Accuracy, abilities and its own statuses
+        ///   (a species with no vivisection gets these from its autopsy);
+        /// - study (a player unit got within half its vision range of this individual, as adjusted for the target's
+        ///   size and stealth) - what is unlocked shows this individual's rolled values instead of the template's ("N?").
         /// Floating damage numbers and the status icons stay at every tier.
         /// </summary>
         internal static class PandoranVariance
@@ -40,34 +44,96 @@ namespace TFTV
 
             internal const float MinRoll = 0.6f;
             internal const float MaxRoll = 1.4f;
+            /// <summary>The smallest a percentage roll moves a value, either way.</summary>
+            internal const float MinDeviation = 0.1f;
+            /// <summary>Rolled max HP moves in steps of this many points.</summary>
+            internal const float HealthStep = 10f;
             /// <summary>Studied within this share of the vision range between the two actors.</summary>
             internal const float StudyRangeShare = 0.5f;
 
             private const string UnknownNameKey = "TFTV_UNKNOWN_SPECIMEN";
             private const string PlayerFactionCommandName = "px";
 
-            internal enum Knowledge
+            /// <summary>What the player knows about one creature. Everything is known about anything that is not an enemy Pandoran.</summary>
+            internal sealed class Insight
             {
-                Unknown,
-                Known,
-                Studied,
+                internal static readonly Insight Everything = new Insight(true, true, true, true, true, null);
+
+                /// <summary>Autopsied or vivisected: its name and its body parts' names.</summary>
+                internal readonly bool Identified;
+                /// <summary>Autopsied: body parts killed or captured in an earlier mission give their HP and armour.</summary>
+                internal readonly bool Autopsied;
+                /// <summary>Autopsied, and this template killed or captured in an earlier mission: Hit Points, and every part.</summary>
+                internal readonly bool Health;
+                /// <summary>Vivisected: Will Points, movement, Perception, Stealth, Accuracy, abilities and its own statuses.</summary>
+                internal readonly bool Stats;
+                /// <summary>A soldier studied this individual up close: what is unlocked shows its own values, not the template's.</summary>
+                internal readonly bool Studied;
+
+                private readonly TacticalActor _actor;
+
+                internal Insight(bool identified, bool autopsied, bool health, bool stats, bool studied, TacticalActor actor)
+                {
+                    Identified = identified;
+                    Autopsied = autopsied;
+                    Health = health;
+                    Stats = stats;
+                    Studied = studied;
+                    _actor = actor;
+                }
+
+                /// <summary>Something is held back: anything else shows as vanilla.</summary>
+                internal bool Gated => !(Health && Stats && Studied);
+
+                /// <summary>Its real Hit Points (and so damage predictions and lethal-shot warnings).</summary>
+                internal bool RealHealth => Health && Studied;
+
+                /// <summary>The body part in this slot gives its HP and armour (every item in it met before).</summary>
+                internal bool KnowsPart(ItemSlot slot)
+                {
+                    if (Health || slot == null)
+                    {
+                        return Health;
+                    }
+
+                    return Autopsied && slot.GetAllDirectItems(false).All(item => item?.TacticalItemDef == null || EncounteredParts.Contains(item.TacticalItemDef.name));
+                }
+
+                /// <summary>
+                /// The same for the slot whose health stat this is (a free-aim bar shows one part); false when none matches.
+                /// A known template knows every part - and <see cref="Everything"/> (humans, allies, the option off) has no
+                /// actor to look the slot up on, so it must answer before the lookup.
+                /// </summary>
+                internal bool KnowsPartWithHealth(StatusStat health)
+                {
+                    if (Health)
+                    {
+                        return true;
+                    }
+
+                    ItemSlot slot = FindSlot(_actor, health);
+                    return slot != null && KnowsPart(slot);
+                }
             }
 
             private sealed class Species
             {
                 internal readonly string ClassTag;
-                internal readonly string[] Research;
+                internal readonly string Autopsy;
+                /// <summary>Null for a species that cannot be vivisected (eggs, sentinels, nodes): its autopsy unlocks everything.</summary>
+                internal readonly string Vivisection;
 
-                internal Species(string classTag, params string[] research)
+                internal Species(string classTag, string autopsy, string vivisection = null)
                 {
                     ClassTag = classTag;
-                    Research = research;
+                    Autopsy = autopsy;
+                    Vivisection = vivisection;
                 }
             }
 
             /// <summary>
-            /// Pandoran class tags and the autopsy (or live capture) researches that make them known. Eggs first:
-            /// an actor takes the first entry whose tag it has.
+            /// Pandoran class tags with their autopsy and vivisection (live capture) researches. Eggs first: an actor
+            /// takes the first entry whose tag it has.
             /// </summary>
             private static readonly Species[] AllSpecies =
             {
@@ -100,6 +166,25 @@ namespace TFTV
             /// </summary>
             internal static List<string> AutopsiedClassTags = new List<string>();
 
+            /// <summary>Class tags vivisected (or, for a species with no vivisection, autopsied). Kept like <see cref="AutopsiedClassTags"/>.</summary>
+            internal static List<string> VivisectedClassTags = new List<string>();
+
+            /// <summary>
+            /// Templates (<see cref="ComputeTemplate"/>) and body-part item defs killed or captured in earlier missions.
+            /// Saved with the campaign; a mission reads them as they stood when it started.
+            /// </summary>
+            internal static HashSet<string> EncounteredTemplates = new HashSet<string>();
+            internal static HashSet<string> EncounteredParts = new HashSet<string>();
+
+            /// <summary>
+            /// Met for the first time this mission: they count from the next one. Carried back to the geoscape in memory
+            /// (its own data is the pre-mission snapshot) and merged there; saved with the tactical data.
+            /// </summary>
+            internal static HashSet<string> NewTemplates = new HashSet<string>();
+            internal static HashSet<string> NewParts = new HashSet<string>();
+
+            private const char TemplateSeparator = '|';
+
             private static List<KeyValuePair<ClassTagDef, string>> _speciesTags;
 
             #region species and knowledge
@@ -109,6 +194,7 @@ namespace TFTV
                 try
                 {
                     List<string> autopsied = new List<string>();
+                    List<string> vivisected = new List<string>();
 
                     if (controller?.PhoenixFaction?.Research == null)
                     {
@@ -117,19 +203,65 @@ namespace TFTV
 
                     foreach (Species species in AllSpecies)
                     {
-                        if (species.Research.Any(id => controller.PhoenixFaction.Research.HasCompleted(id)))
+                        bool autopsy = controller.PhoenixFaction.Research.HasCompleted(species.Autopsy);
+
+                        if (autopsy)
                         {
                             autopsied.Add(species.ClassTag);
+                        }
+
+                        if (species.Vivisection == null ? autopsy : controller.PhoenixFaction.Research.HasCompleted(species.Vivisection))
+                        {
+                            vivisected.Add(species.ClassTag);
                         }
                     }
 
                     AutopsiedClassTags = autopsied;
-                    TFTVLogger.Always($"[HarshAttrition] Autopsied species: {string.Join(", ", autopsied)}");
+                    VivisectedClassTags = vivisected;
+                    TFTVLogger.Always($"[HarshAttrition] Autopsied species: {string.Join(", ", autopsied)}; vivisected: {string.Join(", ", vivisected)};"
+                        + $" {EncounteredTemplates.Count} templates and {EncounteredParts.Count} body parts killed or captured");
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+
+            /// <summary>
+            /// Back on the geoscape: the saved encounters (the pre-mission snapshot, or the loaded save's) plus whatever the
+            /// mission just played killed or captured.
+            /// </summary>
+            internal static void RestoreEncounters(List<string> templates, List<string> parts)
+            {
+                EncounteredTemplates = new HashSet<string>(templates ?? new List<string>());
+                EncounteredParts = new HashSet<string>(parts ?? new List<string>());
+
+                int newTemplates = NewTemplates.Count(template => EncounteredTemplates.Add(template));
+                int newParts = NewParts.Count(part => EncounteredParts.Add(part));
+
+                if (newTemplates > 0 || newParts > 0)
+                {
+                    TFTVLogger.Always($"[HarshAttrition] Last mission added {newTemplates} templates and {newParts} body parts");
+                }
+
+                ClearNewEncounters();
+            }
+
+            /// <summary>On loading a save or restarting a mission: what an abandoned mission met does not count.</summary>
+            internal static void ClearNewEncounters()
+            {
+                NewTemplates.Clear();
+                NewParts.Clear();
+            }
+
+            /// <summary>A new campaign starts knowing nothing.</summary>
+            internal static void ClearCampaignKnowledge()
+            {
+                AutopsiedClassTags = new List<string>();
+                VivisectedClassTags = new List<string>();
+                EncounteredTemplates = new HashSet<string>();
+                EncounteredParts = new HashSet<string>();
+                ClearNewEncounters();
             }
 
             private static List<KeyValuePair<ClassTagDef, string>> SpeciesTags
@@ -174,34 +306,121 @@ namespace TFTV
                 return null;
             }
 
-            /// <summary>Studied for anything that is not a Pandoran, for Pandorans the player controls, and with the option off.</summary>
-            internal static Knowledge GetKnowledge(TacticalActorBase actorBase)
+            /// <summary>Everything for anything that is not a Pandoran, for Pandorans the player controls, and with the option off.</summary>
+            internal static Insight GetInsight(TacticalActorBase actorBase)
             {
                 if (!IsEnabled || !(actorBase is TacticalActor actor))
                 {
-                    return Knowledge.Studied;
+                    return Insight.Everything;
                 }
 
                 string species = GetSpecies(actor);
 
                 if (species == null || actor.IsControlledByPlayer)
                 {
-                    return Knowledge.Studied;
+                    return Insight.Everything;
                 }
 
-                if (AutopsiedClassTags == null || !AutopsiedClassTags.Contains(species))
-                {
-                    return Knowledge.Unknown;
-                }
-
+                bool autopsied = AutopsiedClassTags != null && AutopsiedClassTags.Contains(species);
+                bool vivisected = VivisectedClassTags != null && VivisectedClassTags.Contains(species);
                 PandoranVarianceStatus status = actor.Status?.GetStatus<PandoranVarianceStatus>();
-                return status != null && status.Studied ? Knowledge.Studied : Knowledge.Known;
+                bool health = autopsied && EncounteredTemplates.Contains(GetTemplate(actor, status));
+
+                return new Insight(autopsied || vivisected, autopsied, health, vivisected, status != null && status.Studied, actor);
             }
 
-            private static bool IsGated(TacticalActorBase actor, out Knowledge knowledge)
+            /// <summary>
+            /// What a "template" is: the species and the body-part item defs it spawned with, sorted - so the same
+            /// mutations make the same template whichever spawn path brought it in, and its Hit Points follow from them.
+            /// </summary>
+            private static string ComputeTemplate(TacticalActor actor)
             {
-                knowledge = GetKnowledge(actor);
-                return knowledge != Knowledge.Studied;
+                IEnumerable<string> parts = (actor.BodyState?.GetHealthSlots() ?? Enumerable.Empty<ItemSlot>())
+                    .SelectMany(slot => slot.GetAllDirectItems(false))
+                    .Where(item => item?.TacticalItemDef != null)
+                    .Select(item => item.TacticalItemDef.name)
+                    .Distinct()
+                    .OrderBy(name => name, StringComparer.Ordinal);
+
+                return GetSpecies(actor) + TemplateSeparator + string.Join(TemplateSeparator.ToString(), parts);
+            }
+
+            /// <summary>The template taken when the creature was rolled; worked out (and kept) for one rolled before templates were.</summary>
+            private static string GetTemplate(TacticalActor actor, PandoranVarianceStatus status)
+            {
+                if (!string.IsNullOrEmpty(status?.Template))
+                {
+                    return status.Template;
+                }
+
+                string template = ComputeTemplate(actor);
+
+                if (status != null)
+                {
+                    status.Template = template;
+                }
+
+                return template;
+            }
+
+            private static ItemSlot FindSlot(TacticalActor actor, StatusStat health)
+            {
+                return health == null ? null : actor?.BodyState?.GetHealthSlots().FirstOrDefault(slot => slot.GetHealth() == health);
+            }
+
+            #endregion
+
+            #region encounters
+
+            /// <summary>A Pandoran killed or captured: its template and body parts count from the next mission.</summary>
+            private static void RecordEncounter(TacticalActorBase actorBase, string how)
+            {
+                if (!IsEnabled || !(actorBase is TacticalActor actor) || GetSpecies(actor) == null)
+                {
+                    return;
+                }
+
+                string template = GetTemplate(actor, actor.Status?.GetStatus<PandoranVarianceStatus>());
+                bool newTemplate = !EncounteredTemplates.Contains(template) && NewTemplates.Add(template);
+                int newParts = template.Split(TemplateSeparator).Skip(1).Count(part => !EncounteredParts.Contains(part) && NewParts.Add(part));
+
+                if (newTemplate || newParts > 0)
+                {
+                    TFTVLogger.Always($"[HarshAttrition] {actor.name} {how}: {(newTemplate ? "new template" : "known template")}, {newParts} new body parts");
+                }
+            }
+
+            /// <summary>
+            /// At the end of a won mission, every capturable Pandoran still paralysed is taken (GeoMission.CaptureLiveAlien
+            /// decides later whether containment has room; subdued counts either way).
+            /// </summary>
+            internal static void RecordCaptures(TacticalLevelController level)
+            {
+                try
+                {
+                    TacticalFaction player = level?.GetFactionByCommandName(PlayerFactionCommandName);
+
+                    if (!IsEnabled || level?.Map == null || player == null || player.State != TacFactionState.Won)
+                    {
+                        return;
+                    }
+
+                    GameTagDef capturable = PhoenixPoint.Common.Core.CommonHelpers.GetSharedGameTags()?.CapturableTag;
+
+                    foreach (TacticalActor actor in level.Map.GetActors<TacticalActor>(null).ToList())
+                    {
+                        if (actor != null && actor.IsAlive && actor.TacticalFaction != player
+                            && actor.Status?.HasStatus<ParalysedStatus>() == true
+                            && (capturable == null || actor.GameTags.Contains(capturable)))
+                        {
+                            RecordEncounter(actor, "captured");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
 
             #endregion
@@ -226,31 +445,51 @@ namespace TFTV
                     return;
                 }
 
-                // Already rolled: a loaded actor brings both the status and the modifications back.
-                if (actor.Status.GetStatus<PandoranVarianceStatus>() != null || OwnDelta(actor.CharacterStats?.Health) != 0f)
+                // Already rolled: a loaded actor brings both the status and the modifications back. The status alone
+                // is not enough - the study check or a hit on the frame it spawned can put it on first (Crabman_8 went
+                // unrolled that way). Saves from before the Rolled flag are told apart by the modifications.
+                PandoranVarianceStatus existing = actor.Status.GetStatus<PandoranVarianceStatus>();
+
+                if (existing != null && existing.Rolled || HasRollModifications(actor))
                 {
                     return;
                 }
 
                 float healthRoll = NextRoll();
                 HashSet<TacticalItem> rolledItems = new HashSet<TacticalItem>();
+                List<float> partHealthRolls = new List<float>();
+                List<float> partArmourRolls = new List<float>();
                 int perceptionRoll;
                 int speedRoll;
+                int willpowerRoll;
+                StatusStat health = actor.CharacterStats?.Health;
+                StatusStat willPoints = actor.CharacterStats?.WillPoints;
+                float healthShare = Fullness(health);
+                float willPointsShare = Fullness(willPoints);
+                float healthMaxBefore = health == null ? 0f : (float)health.Max;
 
                 // While the new maximums go on, Health can dip for a moment (and a low roll lowers it for good). Hurt
-                // reactions listen to that - the Triton camo, eggs starting to hatch, mist - so they are muted until
-                // the roll is done.
+                // reactions listen to that - the Triton camo, eggs starting to hatch, mist - and the new armour and
+                // part values float up as numbers over a creature already on the map (reinforcements), so both are
+                // muted until the roll is done.
                 _rolling = true;
 
                 try
                 {
-                    actor.Status.ApplyStatus(StatusDef);
-                    ApplyRoll(actor.CharacterStats?.Health, healthRoll);
+                    PandoranVarianceStatus status = existing ?? actor.Status.ApplyStatus(StatusDef) as PandoranVarianceStatus;
+
+                    if (status != null)
+                    {
+                        status.Template = ComputeTemplate(actor);
+                    }
+
+                    ApplyHealthRoll(actor, healthRoll);
 
                     foreach (ItemSlot slot in actor.BodyState.GetHealthSlots().ToList())
                     {
                         float partHealthRoll = NextRoll();
                         float partArmourRoll = NextRoll();
+                        bool rolledPart = false;
 
                         foreach (TacticalItem item in slot.GetAllDirectItems(false))
                         {
@@ -262,22 +501,96 @@ namespace TFTV
 
                             ApplyRoll(item.GetHealth(), partHealthRoll);
                             ApplyRoll(item.GetArmor(), partArmourRoll);
+                            rolledPart = true;
+                        }
+
+                        if (rolledPart)
+                        {
+                            partHealthRolls.Add(partHealthRoll);
+                            partArmourRolls.Add(partArmourRoll);
                         }
                     }
 
-                    perceptionRoll = RollFlat(actor, PerceptionStatName);
-                    speedRoll = RollFlat(actor, SpeedStatName);
+                    perceptionRoll = RollFlat(actor, PerceptionStatName, MaxFlatRoll);
+                    speedRoll = RollFlat(actor, SpeedStatName, MaxFlatRoll);
+                    willpowerRoll = RollFlat(actor, WillpowerStatName, MaxWillpowerRoll);
+
+                    // New maximums for Health (from Endurance) and Will Points (from Willpower). The current values
+                    // are only clamped, so a raised maximum would leave the creature short: it keeps the share it had.
                     actor.UpdateStats();
+                    Refill(health, healthShare);
+                    Refill(willPoints, willPointsShare);
+
+                    if (status != null)
+                    {
+                        status.Rolled = true;
+                    }
                 }
                 finally
                 {
                     _rolling = false;
                 }
 
-                TFTVLogger.Always($"[HarshAttrition] Rolled {actor.name}: HP x{healthRoll:0.00}, {rolledItems.Count} body parts, Perception {perceptionRoll:+0;-0;0}, Speed {speedRoll:+0;-0;0}");
+                TFTVLogger.Always($"[HarshAttrition] Rolled {actor.name}: HP x{healthRoll:0.00}, {rolledItems.Count} body parts"
+                    + $" (part HP {DescribeRolls(partHealthRolls)}, armour {DescribeRolls(partArmourRolls)}),"
+                    + $" Perception {perceptionRoll:+0;-0;0}, Speed {speedRoll:+0;-0;0}, Willpower {willpowerRoll:+0;-0;0};"
+                    + $" now HP {Describe(health)} (template max {healthMaxBefore:0}), WP {Describe(willPoints)}");
             }
 
-            /// <summary>Set while a creature's stats are being rolled: its hurt reactions must not take that for damage.</summary>
+            private static string Describe(StatusStat stat)
+            {
+                return stat == null ? "-" : $"{(float)stat:0}/{(float)stat.Max:0}";
+            }
+
+            /// <summary>How full the stat is, 0 to 1 (1 when it has no maximum).</summary>
+            private static float Fullness(StatusStat stat)
+            {
+                float max = stat == null ? 0f : (float)stat.Max;
+                return max > 0f ? Mathf.Clamp01((float)stat / max) : 1f;
+            }
+
+            private static void Refill(StatusStat stat, float share)
+            {
+                if (stat != null)
+                {
+                    stat.Set(Mathf.Round(share * (float)stat.Max));
+                }
+            }
+
+            /// <summary>"x0.72-1.31, mean 1.04", for checking the spread in the log.</summary>
+            private static string DescribeRolls(List<float> rolls)
+            {
+                return rolls.Count == 0 ? "none" : $"x{rolls.Min():0.00}-{rolls.Max():0.00}, mean {rolls.Average():0.00}";
+            }
+
+            /// <summary>Any modification the roll puts on: Health, a body part's health or armour, Perception or Speed.</summary>
+            private static bool HasRollModifications(TacticalActor actor)
+            {
+                // Health: the roll lived there before it moved to Endurance.
+                if (OwnDelta(actor.CharacterStats?.Endurance) != 0f || OwnDelta(actor.CharacterStats?.Health) != 0f
+                    || FlatRoll(actor, PerceptionStatName) != 0f || FlatRoll(actor, SpeedStatName) != 0f || FlatRoll(actor, WillpowerStatName) != 0f)
+                {
+                    return true;
+                }
+
+                foreach (ItemSlot slot in actor.BodyState.GetHealthSlots())
+                {
+                    foreach (TacticalItem item in slot.GetAllDirectItems(false))
+                    {
+                        if (item != null && (OwnDelta(item.GetHealth()) != 0f || OwnDelta(item.GetArmor()) != 0f))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// Set while a creature's stats are being rolled: its hurt reactions must not take that for damage, and
+            /// the changes must not float up as numbers.
+            /// </summary>
             private static bool _rolling;
 
             /// <summary>
@@ -295,14 +608,16 @@ namespace TFTV
             }
 
             internal const int MaxFlatRoll = 3;
+            internal const int MaxWillpowerRoll = 5;
             private const string PerceptionStatName = "Perception";
             private const string SpeedStatName = "Speed";
+            private const string WillpowerStatName = "Willpower";
 
             /// <summary>
-            /// A whole-number roll from -3 to +3 added to the stat, sourced from the status def like the HP rolls. A stat
-            /// at 0 (an egg's or a sentinel's Speed) is left alone, and no roll takes a stat below 1.
+            /// A whole-number roll from -range to +range added to the stat, sourced from the status def like the HP rolls.
+            /// A stat at 0 (an egg's or a sentinel's Speed) is left alone, and no roll takes a stat below 1.
             /// </summary>
-            private static int RollFlat(TacticalActor actor, string statName)
+            private static int RollFlat(TacticalActor actor, string statName, int range)
             {
                 BaseStat stat = actor.Status.GetStat(statName);
 
@@ -312,7 +627,7 @@ namespace TFTV
                 }
 
                 float current = stat;
-                int roll = Rolls.Next(-MaxFlatRoll, MaxFlatRoll + 1);
+                int roll = Rolls.Next(-range, range + 1);
 
                 if (current <= 0f || roll == 0)
                 {
@@ -324,6 +639,16 @@ namespace TFTV
                 if (roll == 0)
                 {
                     return 0;
+                }
+
+                // A stat with a maximum (Willpower, Speed) is often put back to that maximum (Set(Max)), which cancels
+                // an Add on its value: the roll goes on the maximum, and the value follows it.
+                if (stat is StatusStat statusStat && (float)statusStat.Max > 0f && !float.IsInfinity((float)statusStat.Max))
+                {
+                    statusStat.AddStatModification(new StatModification(StatModificationType.AddMax, statName, roll, StatusDef, roll), false);
+                    statusStat.ReapplyModifications();
+                    statusStat.Set(current + roll);
+                    return roll;
                 }
 
                 stat.AddStatModification(new StatModification(StatModificationType.Add, statName, roll, StatusDef, roll), false);
@@ -360,9 +685,14 @@ namespace TFTV
             /// </summary>
             private static readonly System.Random Rolls = new System.Random(Environment.TickCount);
 
+            /// <summary>
+            /// 60-90% or 110-140%, either side equally likely and uniform within it: never within 10% of the template,
+            /// so every individual is noticeably weaker or tougher where it was rolled.
+            /// </summary>
             private static float NextRoll()
             {
-                return MinRoll + (float)Rolls.NextDouble() * (MaxRoll - MinRoll);
+                float deviation = MinDeviation + (float)Rolls.NextDouble() * (MaxRoll - 1f - MinDeviation);
+                return Rolls.Next(2) == 0 ? 1f - deviation : 1f + deviation;
             }
 
             #endregion
@@ -403,6 +733,46 @@ namespace TFTV
 
             #region roll helpers
 
+            /// <summary>
+            /// Max HP is Endurance x EnduranceToHealthMultiplier, so it is rolled through Endurance. The rolled max HP is
+            /// rounded to a multiple of 10, and a roll never rounds away to nothing: it moves at least one step of 10 its
+            /// way. Endurance takes fractions (Add/AddMax values are not rounded), so this holds whatever the multiplier.
+            /// </summary>
+            private static void ApplyHealthRoll(TacticalActor actor, float roll)
+            {
+                StatusStat endurance = actor.CharacterStats?.Endurance;
+                StatusStat health = actor.CharacterStats?.Health;
+                float multiplier = actor.TacticalActorDef?.EnduranceToHealthMultiplier ?? 0f;
+                float enduranceMax = endurance == null ? 0f : (float)endurance.Max;
+
+                if (endurance == null || health == null || multiplier <= 0f || enduranceMax <= 0f || float.IsInfinity(enduranceMax))
+                {
+                    ApplyRoll(endurance, roll);
+                    return;
+                }
+
+                float healthMax = (float)health.Max;
+                float target = Mathf.Round(healthMax * roll / HealthStep) * HealthStep;
+
+                if (Mathf.Abs(target - healthMax) < HealthStep)
+                {
+                    target = healthMax + (roll < 1f ? -HealthStep : HealthStep);
+                }
+
+                target = Mathf.Max(HealthStep, target);
+                float delta = (target - healthMax) / multiplier;
+
+                if (Mathf.Abs(delta) < 0.001f)
+                {
+                    return;
+                }
+
+                float share = Fullness(endurance);
+                endurance.AddStatModification(new StatModification(StatModificationType.AddMax, endurance.Name, delta, StatusDef, delta), false);
+                endurance.ReapplyModifications();
+                endurance.Set(share * (float)endurance.Max);
+            }
+
             /// <summary>Scales the stat's maximum by the roll, keeping it as full (or as hurt) as it was.</summary>
             private static void ApplyRoll(StatusStat stat, float roll)
             {
@@ -412,6 +782,12 @@ namespace TFTV
                 }
 
                 float max = (float)stat.Max;
+
+                if (max <= 0f || float.IsInfinity(max))
+                {
+                    return;
+                }
+
                 float delta = Mathf.Round(max * (roll - 1f));
 
                 if (Mathf.Abs(delta) < 1f)
@@ -419,7 +795,7 @@ namespace TFTV
                     return;
                 }
 
-                float share = max > 0f ? Mathf.Clamp01((float)stat / max) : 1f;
+                float share = Mathf.Clamp01((float)stat / max);
 
                 stat.AddStatModification(new StatModification(StatModificationType.AddMax, stat.Name, delta, StatusDef, delta), false);
                 stat.ReapplyModifications();
@@ -527,7 +903,15 @@ namespace TFTV
 
                 foreach (TacticalActor target in targets.ToList())
                 {
-                    if (target == null || !target.IsAlive || GetKnowledge(target) != Knowledge.Known || !player.Vision.IsRevealed(target))
+                    if (target == null || !target.IsAlive || !player.Vision.IsRevealed(target))
+                    {
+                        continue;
+                    }
+
+                    // Studying only matters once something about the species is unlocked.
+                    Insight insight = GetInsight(target);
+
+                    if (!insight.Gated || insight.Studied || !insight.Identified)
                     {
                         continue;
                     }
@@ -613,21 +997,35 @@ namespace TFTV
                 AccessTools.FieldRefAccess<HealthbarUIActorElement, StatusStat>("_healthStat");
 
             /// <summary>
-            /// Below Studied: no number, no lethal-shot skull, no predicted loss. An unknown specimen has no health bar
-            /// at all; its creature-level bars show the damage it has taken instead, and its body-part bars nothing.
+            /// Whether a bar shows the creature (its Hit Points, known through its template) or one body part (known
+            /// through that part), and whether it may show the real values.
+            /// </summary>
+            private static void ReadBar(HealthbarUIActorElement bar, Insight insight, out bool creatureBar, out bool known, out bool real)
+            {
+                TacticalActor actor = bar?.Actor as TacticalActor;
+                StatusStat health = bar == null ? null : HealthStatField(bar);
+                creatureBar = actor == null || health == null || health == actor.CharacterStats?.Health;
+                known = creatureBar ? insight.Health : insight.KnowsPartWithHealth(health);
+                real = known && insight.Studied;
+            }
+
+            /// <summary>
+            /// Short of the real values: no number, no lethal-shot skull, no predicted loss. With its Hit Points (or this
+            /// part) not unlocked there is no bar at all: a creature-level bar shows the damage taken instead, a part's nothing.
             /// </summary>
             private static void GateHealth(HealthbarUIActorElement bar)
             {
                 TacticalActorBase actor = bar?.Actor as TacticalActorBase;
-                bool gated = IsGated(actor, out Knowledge knowledge);
+                Insight insight = GetInsight(actor);
+                ReadBar(bar, insight, out bool creatureBar, out bool known, out bool real);
 
                 // Healthbars are pooled: one that hid its bar for an unknown specimen may now show anyone.
-                if (bar?.HealthBar != null && knowledge != Knowledge.Unknown && HiddenHealthBars.Remove(bar.HealthBar))
+                if (bar?.HealthBar != null && known && HiddenHealthBars.Remove(bar.HealthBar))
                 {
                     bar.HealthBar.gameObject.SetActive(true);
                 }
 
-                if (!gated)
+                if (bar == null || real)
                 {
                     return;
                 }
@@ -639,7 +1037,7 @@ namespace TFTV
                     bar.FlashingSkull.gameObject.SetActive(false);
                 }
 
-                if (knowledge == Knowledge.Unknown)
+                if (!known)
                 {
                     if (bar.HealthBar != null && bar.HealthBar.gameObject.activeSelf)
                     {
@@ -649,7 +1047,6 @@ namespace TFTV
 
                     if (bar.HealthAmountText != null)
                     {
-                        bool creatureBar = HealthStatField(bar) == null || HealthStatField(bar) == ((TacticalActor)actor).CharacterStats?.Health;
                         bar.HealthAmountText.text = creatureBar ? $"−{Mathf.RoundToInt(GetDamageTaken(actor))}" : string.Empty;
                     }
 
@@ -673,12 +1070,13 @@ namespace TFTV
                 bar.HealthBar.UpdateValue(false);
             }
 
-            /// <summary>No predicted armour loss; the species' base armour marked "~", or nothing for an unknown species.</summary>
+            /// <summary>No predicted armour loss; the template's armour marked "?", or no value at all while it is locked.</summary>
             private static void GateArmour(HealthbarUIActorElement bar, MaskValueBarElement alternate)
             {
                 TacticalActorBase actor = bar?.Actor as TacticalActorBase;
+                ReadBar(bar, GetInsight(actor), out bool creatureBar, out bool known, out bool real);
 
-                if (!IsGated(actor, out Knowledge knowledge))
+                if (bar == null || real)
                 {
                     return;
                 }
@@ -694,7 +1092,7 @@ namespace TFTV
 
                     armourBar.PredictedChange = 0f;
 
-                    if (knowledge == Knowledge.Unknown)
+                    if (!known)
                     {
                         armourBar.CurrentValue = armourBar.MaxValue;
                     }
@@ -702,19 +1100,30 @@ namespace TFTV
                     armourBar.UpdateValue();
                 }
 
-                if (bar.ArmorAmountText != null && bar.ArmorBar != null)
+                if (bar.ArmorAmountText == null || bar.ArmorBar == null)
                 {
-                    bar.ArmorAmountText.text = knowledge == Knowledge.Unknown
-                        ? "?"
-                        : Approximately(Mathf.Ceil(bar.ArmorBar.CurrentValue * PartsBaseShare((TacticalActor)actor, armour: true)));
+                    return;
                 }
+
+                if (!known)
+                {
+                    bar.ArmorAmountText.text = "?";
+                    return;
+                }
+
+                // One part's own roll, or every part's together for the creature.
+                float share = creatureBar
+                    ? PartsBaseShare((TacticalActor)actor, armour: true)
+                    : BaseShare(FindSlot((TacticalActor)actor, HealthStatField(bar))?.GetArmor());
+
+                bar.ArmorAmountText.text = Approximately(Mathf.Ceil(bar.ArmorBar.CurrentValue * share));
             }
 
             #endregion
 
             #region info screen and tooltip
 
-            private static Knowledge _statusScreenKnowledge = Knowledge.Studied;
+            private static Insight _statusScreenInsight = Insight.Everything;
 
             private static string UnknownName => TFTVCommonMethods.ConvertKeyToString(UnknownNameKey);
 
@@ -729,24 +1138,28 @@ namespace TFTV
             }
 
             /// <summary>
-            /// The info screen: an unknown species shows its name and statuses only; a known one shows the
-            /// species' base health and armour (the body parts scaled together, so near enough) marked "~".
+            /// The info screen. Not identified: its name and the statuses others put on it only. Otherwise each part is
+            /// shown as far as it is unlocked: the template's Hit Points and stats marked "?" until it is studied, each
+            /// body-part row on its own (a part never killed or captured reads "?"), abilities with the vivisection.
             /// </summary>
             private static void GateStatusScreenData(UIModuleCharacterStatus.CharacterData data)
             {
                 // Before vanilla fills the screen: what was hidden for the last unknown specimen comes back, and
                 // vanilla then sets it up as it would for anyone.
                 RestoreStatusScreen();
+                _statusScreenPartRow = 0;
+                _statusScreenParts.Clear();
 
                 TacticalActor actor = TFTVUI.Tactical.AcidReadout.UIStateCharacterStatus_SetData_TrackActor_Patch.Current;
-                _statusScreenKnowledge = actor == null ? Knowledge.Studied : GetKnowledge(actor);
+                Insight insight = actor == null ? Insight.Everything : GetInsight(actor);
+                _statusScreenInsight = insight;
 
-                if (_statusScreenKnowledge == Knowledge.Studied || data == null)
+                if (!insight.Gated || data == null)
                 {
                     return;
                 }
 
-                if (_statusScreenKnowledge == Knowledge.Unknown)
+                if (!insight.Identified)
                 {
                     data.Name = UnknownName;
                     data.Abilities?.Clear();
@@ -756,31 +1169,114 @@ namespace TFTV
                     return;
                 }
 
-                data.HitPoints = Scale(data.HitPoints, BaseShare(actor.CharacterStats?.Health));
+                if (!insight.Stats)
+                {
+                    data.Abilities?.Clear();
+                }
+
+                // Health's maximum is Endurance x a multiplier, so it is rolled through Endurance. The bar keeps its fill.
+                if (insight.Health && !insight.Studied)
+                {
+                    data.HitPoints = Scale(data.HitPoints, BaseShare(actor.CharacterStats?.Endurance));
+                }
+
+                _statusScreenHealthBase = Mathf.RoundToInt(data.HitPoints.Max);
 
                 if (data.BodyParts != null)
                 {
-                    float healthShare = PartsBaseShare(actor, armour: false);
-                    float armourShare = PartsBaseShare(actor, armour: true);
+                    List<ItemSlot> slots = actor.BodyState?.GetHealthSlots().ToList() ?? new List<ItemSlot>();
+                    int next = 0;
 
                     for (int i = 0; i < data.BodyParts.Count; i++)
                     {
                         UIModuleCharacterStatus.CharacterData.BodyPartData part = data.BodyParts[i];
-                        part.HitPoints = Scale(part.HitPoints, healthShare);
-                        part.Armour = Scale(part.Armour, armourShare);
-                        data.BodyParts[i] = part;
+
+                        // Rows are built from the health slots in order (empty optional slots skipped), named after the slot.
+                        while (next < slots.Count && !ReferenceEquals(slots[next].ItemSlotDef?.DisplayName, part.Name))
+                        {
+                            next++;
+                        }
+
+                        ItemSlot slot = next < slots.Count ? slots[next++] : null;
+                        bool known = slot != null && insight.KnowsPart(slot);
+                        StatusStat partHealth = slot?.GetHealth();
+                        StatusStat partArmour = slot?.GetArmor();
+
+                        // Template values: this individual's maximum less its own roll.
+                        _statusScreenParts.Add(new PartRow
+                        {
+                            Known = known,
+                            Real = known && insight.Studied,
+                            Health = partHealth == null ? part.HitPoints.Max : (float)partHealth.Max - OwnDelta(partHealth),
+                            Armour = partArmour == null ? part.Armour.Limit : (float)partArmour.Max - OwnDelta(partArmour),
+                        });
+
+                        // A locked part's bars give nothing away either: drawn full.
+                        if (!known)
+                        {
+                            part.HitPoints.Current = part.HitPoints.Max;
+                            part.Armour.Current = part.Armour.Limit;
+                            data.BodyParts[i] = part;
+                        }
                     }
                 }
 
-                // The species' Perception, and the species' base Hit Points and movement for the texts (the bars keep
-                // their real fill), without this individual's rolls.
-                data.Perception -= FlatRoll(actor, PerceptionStatName);
-                _statusScreenHealthBase = Mathf.RoundToInt(data.HitPoints.Max);
+                // The template's Perception, movement and Will Points for the texts, without this individual's rolls.
+                if (insight.Stats && !insight.Studied)
+                {
+                    data.Perception -= FlatRoll(actor, PerceptionStatName);
+                }
+
                 _statusScreenMovementBase = Mathf.RoundToInt(data.ActionPoints.Max - FlatRoll(actor, SpeedStatName));
+                _statusScreenWillBase = Mathf.RoundToInt(data.WillPoints.Max - FlatRoll(actor, WillpowerStatName));
             }
 
             private static int _statusScreenHealthBase;
             private static int _statusScreenMovementBase;
+            private static int _statusScreenWillBase;
+
+            private struct PartRow
+            {
+                internal bool Known;
+                internal bool Real;
+                internal float Health;
+                internal float Armour;
+            }
+
+            /// <summary>What each body-part row may show, in row order; GateBodyPartRow takes them one by one.</summary>
+            private static readonly List<PartRow> _statusScreenParts = new List<PartRow>();
+            private static int _statusScreenPartRow;
+
+            /// <summary>
+            /// A body-part row: its template HP and armour with "?" (or its real ones once studied), or plain "?" for a part
+            /// never killed or captured. Runs inside UIModuleCharacterStatus.SetData, so the insight set by its prefix applies.
+            /// </summary>
+            private static void GateBodyPartRow(PhoenixPoint.Tactical.View.ViewControllers.CharacterStatusBodyPartRowController row, UIModuleCharacterStatus.CharacterData.BodyPartData part)
+            {
+                if (!_statusScreenInsight.Gated || row == null)
+                {
+                    return;
+                }
+
+                PartRow info = _statusScreenPartRow < _statusScreenParts.Count ? _statusScreenParts[_statusScreenPartRow] : default;
+                _statusScreenPartRow++;
+
+                if (info.Real)
+                {
+                    return;
+                }
+
+                if (row.HitPoints != null)
+                {
+                    row.HitPoints.text = info.Known ? Approximately(info.Health) : "?";
+                }
+
+                // Vanilla hides the armour group when Limit is 0.
+                if (row.Armour != null && part.Armour.Limit != 0f)
+                {
+                    row.Armour.text = info.Known ? Approximately(info.Armour) : "?";
+                }
+            }
 
             /// <summary>
             /// How an approximate value reads: the species' base with a "?" after it. A "~" in front looked like a minus
@@ -793,55 +1289,62 @@ namespace TFTV
 
             private static void GateStatusScreenTexts(UIModuleCharacterStatus module)
             {
-                Knowledge knowledge = _statusScreenKnowledge;
-                _statusScreenKnowledge = Knowledge.Studied;
+                Insight insight = _statusScreenInsight;
+                _statusScreenInsight = Insight.Everything;
 
-                if (knowledge == Knowledge.Studied || module == null)
+                if (!insight.Gated || module == null)
                 {
                     return;
                 }
 
-                if (knowledge == Knowledge.Known)
+                Transform[] keys = { module.HitPointsBar?.transform, module.WillPointsBar?.transform, module.ActionPointsBar?.transform, module.PerceptionText?.transform };
+
+                if (!insight.Health)
                 {
-                    // The species' base maximums only: no current values, nothing this individual rolled.
-                    if (module.HitPointsBarText != null)
+                    // No Hit Points: the bar goes, and the class line says how much damage it has taken.
+                    if (module.CharacterClass != null)
                     {
-                        module.HitPointsBarText.text = Approximately(_statusScreenHealthBase);
+                        TacticalActor actor = TFTVUI.Tactical.AcidReadout.UIStateCharacterStatus_SetData_TrackActor_Patch.Current;
+                        module.CharacterClass.text = $"{DamageTakenLabel}: {Mathf.RoundToInt(GetDamageTaken(actor))}";
                     }
 
+                    HideGroup(module, keys, module.HitPointsBar?.transform, module.HitPointsBarText?.transform);
+                }
+                else if (!insight.Studied && module.HitPointsBarText != null)
+                {
+                    // The template's maximum only: no current value, nothing this individual rolled.
+                    module.HitPointsBarText.text = Approximately(_statusScreenHealthBase);
+                }
+
+                if (!insight.Stats)
+                {
+                    HideGroup(module, keys, module.WillPointsBar?.transform, module.WillPointsBarText?.transform);
+
+                    if (module.ActionPointsGroup != null)
+                    {
+                        HideGroup(module, keys, module.ActionPointsGroup.transform, module.ActionPointsBarText?.transform);
+                    }
+
+                    HideGroup(module, keys, module.PerceptionText?.transform, module.StealthText?.transform);
+                    HideGroup(module, keys, module.AccuracyText?.transform, null);
+                }
+                else if (!insight.Studied)
+                {
                     if (module.ActionPointsBarText != null)
                     {
                         module.ActionPointsBarText.text = Approximately(_statusScreenMovementBase);
+                    }
+
+                    if (module.WillPointsBarText != null)
+                    {
+                        module.WillPointsBarText.text = Approximately(_statusScreenWillBase);
                     }
 
                     if (module.PerceptionText != null && float.TryParse(module.PerceptionText.text, out float perception))
                     {
                         module.PerceptionText.text = Approximately(perception);
                     }
-
-                    return;
                 }
-
-                // An unknown specimen: no bars and no stats at all - its name, the damage it has taken (in the class
-                // line) and the statuses others put on it.
-                if (module.CharacterClass != null)
-                {
-                    TacticalActor actor = TFTVUI.Tactical.AcidReadout.UIStateCharacterStatus_SetData_TrackActor_Patch.Current;
-                    module.CharacterClass.text = $"{DamageTakenLabel}: {Mathf.RoundToInt(GetDamageTaken(actor))}";
-                }
-
-                Transform[] keys = { module.HitPointsBar?.transform, module.WillPointsBar?.transform, module.ActionPointsBar?.transform, module.PerceptionText?.transform };
-
-                HideGroup(module, keys, module.HitPointsBar?.transform, module.HitPointsBarText?.transform);
-                HideGroup(module, keys, module.WillPointsBar?.transform, module.WillPointsBarText?.transform);
-
-                if (module.ActionPointsGroup != null)
-                {
-                    HideGroup(module, keys, module.ActionPointsGroup.transform, module.ActionPointsBarText?.transform);
-                }
-
-                HideGroup(module, keys, module.PerceptionText?.transform, module.StealthText?.transform);
-                HideGroup(module, keys, module.AccuracyText?.transform, null);
             }
 
             /// <summary>Hidden on the info screen for an unknown specimen, to switch back on for the next character.</summary>
@@ -902,9 +1405,9 @@ namespace TFTV
             }
 
             /// <summary>
-            /// Statuses an unknown specimen has of its own (Regeneration, say) say what it is; only those put on it by
-            /// someone else - the player's bleeding, poison, fire - stay listed. Every status list in the UI comes
-            /// from these two methods: the info screen and the hover tooltip from the first, the healthbar from the second.
+            /// Statuses a creature has of its own (Regeneration, say) say what it can do: until it is vivisected only those
+            /// put on it by someone else - the player's bleeding, poison, fire - stay listed. Every status list in the UI
+            /// comes from these two methods: the info screen and the hover tooltip from the first, the healthbar from the second.
             /// </summary>
             private static void FilterInnateStatuses(TacticalActorViewBase view, ref List<TacticalActorViewBase.StatusInfo> infos)
             {
@@ -915,7 +1418,7 @@ namespace TFTV
 
                 TacticalActorBase actor = view.ActorBase;
 
-                if (GetKnowledge(actor) != Knowledge.Unknown || actor.Status == null)
+                if (GetInsight(actor).Stats || actor.Status == null)
                 {
                     return;
                 }
@@ -941,7 +1444,7 @@ namespace TFTV
             {
                 TacticalActorBase actor = receiver?.GetActor();
 
-                if (GetKnowledge(actor) != Knowledge.Unknown)
+                if (GetInsight(actor).Identified)
                 {
                     return;
                 }
@@ -950,12 +1453,14 @@ namespace TFTV
             }
 
             /// <summary>
-            /// The free-aim panel for the part under the crosshair: its name, what it does and what disabling it costs.
-            /// None of it for an unknown specimen.
+            /// The free-aim panel for the part under the crosshair: what it does and what disabling it costs comes with
+            /// the vivisection; its name, with either research.
             /// </summary>
             private static void GateTargetPanel(UIModuleFreeFirstPersonShooting module, IDamageReceiver receiver)
             {
-                if (module == null || GetKnowledge(receiver?.GetActor()) != Knowledge.Unknown)
+                Insight insight = GetInsight(receiver?.GetActor());
+
+                if (module == null || insight.Stats)
                 {
                     return;
                 }
@@ -965,7 +1470,7 @@ namespace TFTV
                     module.TargetingInfoPanel.SetActive(false);
                 }
 
-                if (module.NameText != null)
+                if (module.NameText != null && !insight.Identified)
                 {
                     module.NameText.text = UnknownName;
                 }
@@ -974,7 +1479,7 @@ namespace TFTV
             private static readonly FieldInfo StatusBarsField = AccessTools.Field(typeof(UIModuleFreeFirstPersonShooting), "_statusBars");
             private static bool _statusBarsHidden;
 
-            /// <summary>The free-aim part bars carry the damage prediction: hidden below Studied.</summary>
+            /// <summary>The free-aim part bars carry the damage prediction: hidden short of its real Hit Points.</summary>
             private static void GateTargetStatusBars(UIModuleFreeFirstPersonShooting module, IDamageReceiver receiver)
             {
                 if (!(StatusBarsField?.GetValue(module) is Component bars) || bars == null)
@@ -982,7 +1487,7 @@ namespace TFTV
                     return;
                 }
 
-                if (IsGated(receiver?.GetActor(), out _))
+                if (!GetInsight(receiver?.GetActor()).RealHealth)
                 {
                     bars.gameObject.SetActive(false);
                     _statusBarsHidden = true;
@@ -999,7 +1504,7 @@ namespace TFTV
             /// <summary>The target's name over its healthbar when aiming.</summary>
             private static void GateShootTargetName(PhoenixPoint.Tactical.View.ViewStates.UIStateShoot state, PhoenixPoint.Tactical.Entities.Abilities.TacticalAbilityTarget target)
             {
-                if (GetKnowledge(target?.GetTargetActor()) != Knowledge.Unknown)
+                if (GetInsight(target?.GetTargetActor()).Identified)
                 {
                     return;
                 }
@@ -1012,41 +1517,54 @@ namespace TFTV
 
             /// <summary>
             /// The hover tooltip, as TFTV builds it (UICharacterSelectedVanillaFixes.GenerateData): name, Health,
-            /// Will Points, movement, Perception, Stealth, Accuracy, then statuses. Health is never shown below
-            /// Studied; an unknown species shows nothing but its statuses.
+            /// Will Points, movement, Perception, Stealth, Accuracy, then statuses. Each line as far as it is unlocked:
+            /// the template's value with "?" until studied, "?" (or, for Health, the damage taken) while locked.
             /// </summary>
             internal static void GateTooltip(TacticalActor actor, List<ShortActorInfoTooltipDataEntry> entries)
             {
                 try
                 {
-                    if (entries == null || entries.Count < 7 || !IsGated(actor, out Knowledge knowledge))
+                    Insight insight = GetInsight(actor);
+
+                    if (entries == null || entries.Count < 7 || !insight.Gated)
                     {
                         return;
                     }
 
-                    if (knowledge == Knowledge.Known)
+                    if (!insight.Identified)
                     {
-                        SetValue(entries, 1, "?");
+                        ShortActorInfoTooltipDataEntry name = entries[0];
+                        name.TextContent = UnknownName;
+                        entries[0] = name;
+                    }
 
-                        // Movement and Perception at the species' base, without this individual's roll.
+                    if (!insight.Health)
+                    {
+                        // Health becomes the damage taken so far.
+                        ShortActorInfoTooltipDataEntry health = entries[1];
+                        health.TextContent = DamageTakenLabel;
+                        health.ValueContent = Mathf.RoundToInt(GetDamageTaken(actor)).ToString();
+                        entries[1] = health;
+                    }
+                    else if (!insight.Studied)
+                    {
+                        StatusStat maxHealth = actor.CharacterStats?.Health;
+                        SetValue(entries, 1, maxHealth == null ? "?" : Approximately((float)maxHealth.Max * BaseShare(actor.CharacterStats.Endurance)));
+                    }
+
+                    if (!insight.Stats)
+                    {
+                        for (int i = 2; i <= 6; i++)
+                        {
+                            SetValue(entries, i, "?");
+                        }
+                    }
+                    else if (!insight.Studied)
+                    {
+                        // Will Points, movement and Perception at the template's, without this individual's roll.
+                        SetValue(entries, 2, Approximate(entries[2].ValueContent, FlatRoll(actor, WillpowerStatName)));
                         SetValue(entries, 3, Approximate(entries[3].ValueContent, FlatRoll(actor, SpeedStatName)));
                         SetValue(entries, 4, Approximate(entries[4].ValueContent, FlatRoll(actor, PerceptionStatName)));
-                        return;
-                    }
-
-                    // Health becomes the damage taken so far.
-                    ShortActorInfoTooltipDataEntry health = entries[1];
-                    health.TextContent = DamageTakenLabel;
-                    health.ValueContent = Mathf.RoundToInt(GetDamageTaken(actor)).ToString();
-                    entries[1] = health;
-
-                    ShortActorInfoTooltipDataEntry name = entries[0];
-                    name.TextContent = UnknownName;
-                    entries[0] = name;
-
-                    for (int i = 2; i <= 6; i++)
-                    {
-                        SetValue(entries, i, "?");
                     }
                 }
                 catch (Exception e)
@@ -1128,21 +1646,30 @@ namespace TFTV
             /// <summary>
             /// The floating "body part disabled" message reads the slot's DisplayName (TacticalActorViewBase.ShowNotification,
             /// called from TacticalActorNotificationsComp.OnBodySlotBroken/OnBodyPartBroken). For an unknown specimen it
-            /// says "BODY PART" instead of naming the limb.
+            /// says "BODY PART" instead of naming the limb. Nothing is shown while a roll is applied: the new armour
+            /// ("Armor", DamageReceiverImplementation.OnArmorChanged) and part health ("EquipmentDamaged",
+            /// TacticalActor.OnEquipmentHealthChange) would float up as damage over a reinforcement.
             /// </summary>
             [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.ShowNotification))]
             internal static class TacticalActorViewBase_ShowNotification_PandoranVariance_Patch
             {
-                private static void Prefix(TacticalActorViewBase __instance)
+                private static bool Prefix(TacticalActorViewBase __instance)
                 {
+                    if (_rolling)
+                    {
+                        return false;
+                    }
+
                     try
                     {
-                        _maskSlotNames = GetKnowledge(__instance?.ActorBase) == Knowledge.Unknown;
+                        _maskSlotNames = !GetInsight(__instance?.ActorBase).Identified;
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
                     }
+
+                    return true;
                 }
 
                 private static void Finalizer()
@@ -1174,7 +1701,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (NamePopupNameField == null || GetKnowledge(__instance.ActorBase) != Knowledge.Unknown)
+                        if (NamePopupNameField == null || GetInsight(__instance.ActorBase).Identified)
                         {
                             return true;
                         }
@@ -1200,6 +1727,23 @@ namespace TFTV
                     try
                     {
                         OnEnteredPlay(actor);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            /// <summary>A Pandoran killed: a prefix, while its status (and the template on it) is still there.</summary>
+            [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorDied))]
+            internal static class TacticalLevelController_ActorDied_PandoranVariance_Patch
+            {
+                private static void Prefix(DeathReport deathReport)
+                {
+                    try
+                    {
+                        RecordEncounter(deathReport?.Actor, "killed");
                     }
                     catch (Exception e)
                     {
@@ -1312,7 +1856,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (__instance.TargetDamagePredictionText != null && IsGated(__instance.HealthBar?.Actor as TacticalActorBase, out _))
+                        if (__instance.TargetDamagePredictionText != null && !GetInsight(__instance.HealthBar?.Actor as TacticalActorBase).RealHealth)
                         {
                             __instance.TargetDamagePredictionText.text = string.Empty;
                         }
@@ -1404,7 +1948,7 @@ namespace TFTV
                 }
             }
 
-            /// <summary>No part description or disabling effects for an unknown specimen (the panel is hidden as well).</summary>
+            /// <summary>No part description or disabling effects before the vivisection (the panel is hidden as well).</summary>
             [HarmonyPatch(typeof(UIModuleFreeFirstPersonShooting), "UpdateSlotInfoPanel")]
             internal static class UIModuleFreeFirstPersonShooting_UpdateSlotInfoPanel_PandoranVariance_Patch
             {
@@ -1412,7 +1956,7 @@ namespace TFTV
                 {
                     try
                     {
-                        return GetKnowledge(__0?.GetActor()) != Knowledge.Unknown;
+                        return GetInsight(__0?.GetActor()).Stats;
                     }
                     catch (Exception e)
                     {
@@ -1429,7 +1973,7 @@ namespace TFTV
                 {
                     try
                     {
-                        return GetKnowledge(__0?.TacticalActor) != Knowledge.Unknown;
+                        return GetInsight(__0?.TacticalActor).Stats;
                     }
                     catch (Exception e)
                     {
@@ -1475,6 +2019,22 @@ namespace TFTV
                     try
                     {
                         GateStatusScreenTexts(__instance);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(PhoenixPoint.Tactical.View.ViewControllers.CharacterStatusBodyPartRowController), nameof(PhoenixPoint.Tactical.View.ViewControllers.CharacterStatusBodyPartRowController.SetData))]
+            internal static class CharacterStatusBodyPartRowController_SetData_PandoranVariance_Patch
+            {
+                private static void Postfix(PhoenixPoint.Tactical.View.ViewControllers.CharacterStatusBodyPartRowController __instance, UIModuleCharacterStatus.CharacterData.BodyPartData bodyPart)
+                {
+                    try
+                    {
+                        GateBodyPartRow(__instance, bodyPart);
                     }
                     catch (Exception e)
                     {

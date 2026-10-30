@@ -62,6 +62,11 @@ namespace TFTV
         public bool StaminaSetToZeroAfterInjury;
         public bool HarshAttritionTactical;
         public List<string> HarshAttritionAutopsies;
+        public List<string> HarshAttritionVivisections;
+        public List<string> HarshAttritionTemplates;
+        public List<string> HarshAttritionParts;
+        public List<string> HarshAttritionNewTemplates;
+        public List<string> HarshAttritionNewParts;
         public int ODILevel;
         public int internalDifficultyCheck;
         public Dictionary<string, int> PandoransInContainment;
@@ -273,6 +278,7 @@ namespace TFTV
             TFTVLogger.Always("OnTacticalEnd check");
             TFTVRevenant.revenantCanSpawn = false;
             TFTVRevenant.TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
+            TFTVHarshAttrition.PandoranVariance.RecordCaptures(Controller);
 
             base.OnTacticalEnd();
 
@@ -341,6 +347,12 @@ namespace TFTV
                 TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = data.StaminaSetToZeroAfterInjury;
                 TFTVNewGameOptions.HarshAttritionSetting = data.HarshAttritionTactical;
                 TFTVHarshAttrition.PandoranVariance.AutopsiedClassTags = data.HarshAttritionAutopsies ?? new List<string>();
+                // Saves from before vivisections were told apart: the autopsy list held both.
+                TFTVHarshAttrition.PandoranVariance.VivisectedClassTags = data.HarshAttritionVivisections ?? TFTVHarshAttrition.PandoranVariance.AutopsiedClassTags;
+                TFTVHarshAttrition.PandoranVariance.EncounteredTemplates = new HashSet<string>(data.HarshAttritionTemplates ?? new List<string>());
+                TFTVHarshAttrition.PandoranVariance.EncounteredParts = new HashSet<string>(data.HarshAttritionParts ?? new List<string>());
+                TFTVHarshAttrition.PandoranVariance.NewTemplates = new HashSet<string>(data.HarshAttritionNewTemplates ?? new List<string>());
+                TFTVHarshAttrition.PandoranVariance.NewParts = new HashSet<string>(data.HarshAttritionNewParts ?? new List<string>());
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
@@ -476,6 +488,11 @@ namespace TFTV
                 StaminaSetToZeroAfterInjury = TFTVNewGameOptions.StaminaPenaltyFromInjurySetting,
                 HarshAttritionTactical = TFTVNewGameOptions.HarshAttritionSetting,
                 HarshAttritionAutopsies = TFTVHarshAttrition.PandoranVariance.AutopsiedClassTags,
+                HarshAttritionVivisections = TFTVHarshAttrition.PandoranVariance.VivisectedClassTags,
+                HarshAttritionTemplates = TFTVHarshAttrition.PandoranVariance.EncounteredTemplates.ToList(),
+                HarshAttritionParts = TFTVHarshAttrition.PandoranVariance.EncounteredParts.ToList(),
+                HarshAttritionNewTemplates = TFTVHarshAttrition.PandoranVariance.NewTemplates.ToList(),
+                HarshAttritionNewParts = TFTVHarshAttrition.PandoranVariance.NewParts.ToList(),
                 ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,
                 PandoransInContainment = TFTVBaseDefenseTactical.PandoransInContainment,
                 PandoransInContainmentEscaped = TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed,

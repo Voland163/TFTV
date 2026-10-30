@@ -12,6 +12,32 @@ namespace TFTV.Tactical.Entities.Statuses
     [SerializeType(InheritCustomCreateFrom = typeof(TacStatus))]
     public class PandoranVarianceStatus : TacStatus
     {
+        /// <summary>
+        /// The stats were rolled. The status can go on before that (studied or hurt on the frame it spawned), so
+        /// having it does not mean the roll is done.
+        /// </summary>
+        [SerializeMember]
+        private bool _rolled;
+
+        internal bool Rolled
+        {
+            get => _rolled;
+            set => _rolled = value;
+        }
+
+        /// <summary>
+        /// Species and body-part defs it spawned with (TFTVHarshAttrition.PandoranVariance.ComputeTemplate): what the
+        /// player has to have killed or captured before for its Hit Points to be known.
+        /// </summary>
+        [SerializeMember]
+        private string _template;
+
+        internal string Template
+        {
+            get => _template;
+            set => _template = value;
+        }
+
         /// <summary>The player passed the perception check on this individual: exact numbers for the rest of the mission.</summary>
         [SerializeMember]
         private bool _studied;

@@ -139,8 +139,8 @@ namespace TFTV.TFTVUI.Tactical
             }
 
             /// <summary>
-            /// Enemies the player can see and whose movement it knows: under Harsh Attrition an unknown specimen's
-            /// movement is hidden ("?"), so it gets no marker either.
+            /// Enemies the player can see and whose movement it knows: under Harsh Attrition a Pandoran's movement
+            /// stays hidden ("?") until it is vivisected, so it gets no marker either.
             /// </summary>
             private static IEnumerable<TacticalActor> GetKnownMeleeEnemies(TacticalActor selectedActor)
             {
@@ -148,7 +148,7 @@ namespace TFTV.TFTVUI.Tactical
                            .GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false)
                            .OfType<TacticalActor>()
                        where CanThreatenNextTurn(actor)
-                             && TFTVHarshAttrition.PandoranVariance.GetKnowledge(actor) != TFTVHarshAttrition.PandoranVariance.Knowledge.Unknown
+                             && TFTVHarshAttrition.PandoranVariance.GetInsight(actor).Stats
                              && GetBestCloseThreat(actor, out _) != null
                        select actor;
             }

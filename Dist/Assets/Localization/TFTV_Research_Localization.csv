@@ -1305,3 +1305,26 @@ Należy pamiętać, że niektóre warianty detonują po śmierci, uwalniając ch
 Противодействие: все бойцы, заметившие одно из этих существ, должны проявлять крайнюю осторожность, поскольку Мирмидоны обычно действуют группами и быстро занимают выгодные для атаки позиции. Базовый Мирмидон способен атаковать только жалом. Повреждение туловища существа не позволяет ему использовать это оружие, и тогда оно попытается сбежать с поля боя. Всегда атакуйте Мирмидонов с безопасного расстояния.
 
 Имейте в виду, что некоторые типы Мирмидонов взрываются после смерти, выделяя облака токсичного яда или едкой кислоты. Корректируйте тактику ведения боя соответственно.",,
+TFTV_HARSH_LIVECRABMAN_BENEFITS,Text,,"Reveals Arthrons' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.",,,,,,,,
+TFTV_HARSH_LIVEFISHMAN_BENEFITS,Text,,"Reveals Tritons' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.",,,,,,,,
+TFTV_HARSH_LIVESIREN_BENEFITS,Text,,"Reveals Sirens' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.",,,,,,,,
+TFTV_HARSH_LIVECHIRON_BENEFITS,Text,,"Reveals Chirons' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each body part.",,,,,,,,
+TFTV_HARSH_LIVEACHERON_BENEFITS,Text,,"Reveals Acherons' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Hazmat vest, +15% Resistance vs special damages and +2 Armor.",,,,,,,,
+TFTV_HARSH_LIVEACHERON_BENEFITS_AIRCRAFT_REWORK,Text,,"Reveals Acherons' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Hazmat vest, +15% Resistance vs special damages and +2 Armor. Hephaestus Workshop reduces Acid by 20 instead of 10 per turn on bionic body parts and vehicles.",,,,,,,,
+TFTV_HARSH_LIVEQUEEN_BENEFITS,Text,,"Reveals Scyllas' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.",,,,,,,,
+TFTV_HARSH_LIVESWARMER_BENEFITS,Text,,"Reveals Myrmidons' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Hazmat vest, +15% Resistance vs special damages and +2 Armor.",,,,,,,,
+TFTV_HARSH_LIVEMINDFRAGGER_BENEFITS,Text,,"Reveals Mindfraggers' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.",,,,,,,,
+TFTV_HARSH_LIVEACIDWORM_BENEFITS,Text,,"Reveals Acidworms' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each body part (only once for any worm vivisection).",,,,,,,,
+TFTV_HARSH_LIVEFIREWORM_BENEFITS,Text,,"Reveals Fireworms' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each body part (only once for any worm vivisection).",,,,,,,,
+TFTV_HARSH_LIVEPOISONWORM_BENEFITS,Text,,"Reveals Poisonworms' Will Points, movement, Perception, Stealth, Accuracy and abilities in combat.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each body part (only once for any worm vivisection).",,,,,,,,
+TFTV_HARSH_HATCHINGSENTINEL_BENEFITS,Text,,"Reveals Hatching Sentinels' stats and abilities in combat, and their Hit Points and armor once one of the same kind has been killed or captured.",,,,,,,,
+TFTV_HARSH_MISTSENTINEL_BENEFITS,Text,,"Reveals Mist Sentinels' stats and abilities in combat, and their Hit Points and armor once one of the same kind has been killed or captured.",,,,,,,,
+TFTV_HARSH_TERRORSENTINEL_BENEFITS,Text,,"Reveals Terror Sentinels' stats and abilities in combat, and their Hit Points and armor once one of the same kind has been killed or captured.",,,,,,,,
+TFTV_HARSH_SPAWNERY_BENEFITS,Text,,"Reveals Spawneries' stats and abilities in combat, and their Hit Points and armor once one of the same kind has been killed or captured.",,,,,,,,
