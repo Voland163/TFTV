@@ -216,7 +216,7 @@ namespace TFTV.TFTVBaseRework
         /// offered to manufacture the whole set again. Redeployment calls this too, so an operative
         /// dismissed under older code does not come back expecting their old kit either.
         ///
-        /// UpdatePreferredLoadout throws for a character it has no record of, hence the check.
+        /// A character with no record has no old kit to forget, hence the check.
         /// </summary>
         internal static void ResetPreferredLoadout(GeoPhoenixFaction faction, GeoCharacter character)
         {
@@ -239,6 +239,39 @@ namespace TFTV.TFTVBaseRework
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Vanilla throws when asked to update the loadout of a character it has no record of. The
+        /// equip screen makes that call every refresh, before it updates storage and draws the
+        /// soldier, so the throw leaves the geoscape grey and switching soldiers loses items.
+        ///
+        /// Redeploying used to add the operative to the new base before removing them from the old
+        /// one, which left them with no record, and saves made since still hold those operatives.
+        /// Creating the record here repairs them.
+        /// </summary>
+        [HarmonyPatch(typeof(PostmissionReplenishManager), "UpdatePreferredLoadout")]
+        internal static class PostmissionReplenishManager_UpdatePreferredLoadout_AddIfMissing_Patch
+        {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+            private static void Prefix(PostmissionReplenishManager __instance, GeoCharacter character)
+            {
+                try
+                {
+                    if (character == null || __instance.HasLoadout(character))
+                    {
+                        return;
+                    }
+
+                    __instance.AddPreferredLoadout(character);
+                    TFTVLogger.Always($"{LogPrefix} {character.DisplayName} had no replenish loadout, created one.");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
         }
 
