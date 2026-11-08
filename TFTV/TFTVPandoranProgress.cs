@@ -261,13 +261,17 @@ namespace TFTV
                 DateTime myDate = new DateTime(1, 1, 1);
 
                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int roll = UnityEngine.Random.Range(scyllasAlreadySpawned, Mathf.Min(2,scyllasAlreadySpawned + 1));
-                if (roll > allScyllas.Count - 1)
+
+                // Sliding window: the n-th Scylla (n already spawned) is drawn from the three rungs up to
+                // Scylla(n+1), so the order is random, harder ones never come early and the easiest drop out.
+                int lowestRung = Mathf.Max(0, scyllasAlreadySpawned - 2);
+                if (lowestRung > allScyllas.Count - 1)
                 {
                     int newRoll = UnityEngine.Random.Range(allScyllas.Count - 4, allScyllas.Count - 1);
                     TFTVLogger.Always("It's " + myDate.Add(new TimeSpan(controller.Timing.Now.TimeSpan.Ticks)) + " and " + allScyllas[newRoll].name + " will spawn");
                     return allScyllas[newRoll];
                 }
+                int roll = UnityEngine.Random.Range(lowestRung, Mathf.Min(scyllasAlreadySpawned + 1, allScyllas.Count));
                 TFTVLogger.Always("It's " + myDate.Add(new TimeSpan(controller.Timing.Now.TimeSpan.Ticks)) + " and " + allScyllas[roll].name + " will spawn");
                 return allScyllas[roll];
 
