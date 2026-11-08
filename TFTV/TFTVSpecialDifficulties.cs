@@ -617,6 +617,8 @@ namespace TFTV
                                 resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
 
                             }
+                            TFTVVoidOmensExpansion.WorldOmens.ReduceHavenDefenseReward(mission, resources);
+
                             rewardDescription.Resources.Clear();
                             rewardDescription.Resources.AddRange(resources);
                             TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "

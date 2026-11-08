@@ -52,6 +52,13 @@ namespace TFTV
         // public static  timeLastRevenantSpawned = new TimeUnit();
         public static bool revenantCanSpawn = false;
         public static bool revenantSpawned = false;
+        // Days between Revenants, shared with the resistance VO19 brings when no Revenant shows up.
+        internal const int RevenantCooldownDays = 3;
+        // The cooldown has passed: a Revenant, or VO19's resistance, could appear on the next mission.
+        public static bool revenantCooldownOver = false;
+        // VO30: the Revenants beyond the first (revenantID) on this mission.
+        internal const int VO30MaxRevenants = 3;
+        public static List<int> ExtraRevenantIds = new List<int>();
         public static List<string> revenantSpecialResistance = new List<string>();
         public static int revenantID = 0;
         public static string revenantResistanceHintGUID;
@@ -116,6 +123,7 @@ namespace TFTV
                     DeadSoldiersDelirium = new Dictionary<int, int>();
                     revenantSpecialResistance = new List<string>();
                     revenantCanSpawn = false;
+                    revenantCooldownOver = false;
                     daysRevenantLastSeen = 0;
                     Resistance.RevenantResistanceDamageTypeGuid = null;
                     TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
@@ -136,6 +144,8 @@ namespace TFTV
 
                     revenantSpawned = false;
                     revenantID = 0;
+                    ExtraRevenantIds.Clear();
+                    Resistance.VO19ResistanceDeployed = false;
                     Resistance.RevenantResistanceDamageTypeGuid = null;
                     TFTVRevenantResearch.RevenantPoints = 0;
                     TFTVRevenantResearch.PreviousRevenantPoints = 0;
@@ -153,6 +163,8 @@ namespace TFTV
                 {
                     revenantSpawned = false;
                     revenantID = 0;
+                    ExtraRevenantIds.Clear();
+                    Resistance.VO19ResistanceDeployed = false;
                     Resistance.RevenantResistanceDamageTypeGuid = null;
                     TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                     TFTVRevenantResearch.SlugOGStrength = new Dictionary<int, int>();
@@ -674,7 +686,9 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("DeadSoldierDeliriumCount is " + DeadSoldiersDelirium.Count + " and last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
-                    if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= 3)) //UnityEngine.Random.Range(-1, 3))) 
+                    revenantCooldownOver = daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= RevenantCooldownDays;
+
+                    if (DeadSoldiersDelirium.Count > 0 && revenantCooldownOver) //UnityEngine.Random.Range(-1, 3))) 
                     {
                         revenantCanSpawn = true;
                         TFTVLogger.Always("Therefore, a Revenant can spawn is " + revenantCanSpawn);
@@ -1016,6 +1030,9 @@ namespace TFTV
 
         internal class Resistance
         {
+            /// <summary>VO19's resistance was handed out on this mission, which restarts the Revenant cooldown.</summary>
+            public static bool VO19ResistanceDeployed = false;
+
             public static void CheckIfRevenantPresent(TacticalLevelController controller)
             {
                 try
@@ -1452,8 +1469,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[19] && revenantID == 0)
+                    // Only where a Revenant could have appeared: VO19 shares the Revenant's cooldown.
+                    if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[19] && revenantID == 0 && revenantCooldownOver)
                     {
+                        VO19ResistanceDeployed = true;
                         TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
                         foreach (TacticalActorBase pandoranBase in pandorans.Actors)
                         {
@@ -1510,7 +1529,7 @@ namespace TFTV
                 }
             }
 
-            public static GeoTacUnitId RevenantRoll(TacticalLevelController controller)
+            public static GeoTacUnitId RevenantRoll(TacticalLevelController controller, List<GeoTacUnitId> alreadyRolled = null)
             {
                 try
                 {
@@ -1520,6 +1539,11 @@ namespace TFTV
 
                     foreach (int deadSoldier in allDeadSoldiers)
                     {
+                        if (alreadyRolled != null && alreadyRolled.Any(id => id == deadSoldier))
+                        {
+                            continue;
+                        }
+
                         candidates.Add(GetDeadSoldiersIdFromInt(deadSoldier, controller));
                         TFTVLogger.Always("deadSoldier " + deadSoldier + " with GeoTacUnitId "
                             + GetDeadSoldiersIdFromInt(deadSoldier, controller) + " is added to the list of Revenant candidates");
@@ -1605,6 +1629,68 @@ namespace TFTV
 
             }
 
+            /// <summary>
+            /// The biggest Pandoran of a class this soldier's Delirium allows, or null. One already turned is left for
+            /// the next soldier (VO30 turns several).
+            /// </summary>
+            private static TacticalActorBase PickRevenantActor(TacticalLevelController controller, TacticalFaction pandorans, GeoTacUnitId theChosen)
+            {
+                List<ClassTagDef> possibleClasses = GetRevenantClassTag(controller, theChosen);
+                List<TacticalActorBase> candidates = new List<TacticalActorBase>();
+                int availableTags = possibleClasses.Count;
+
+                for (int i = 0; i < availableTags; i++)
+                {
+                    foreach (TacticalActorBase tacticalActorBase in pandorans.Actors.Where(tab => tab.GameTags.Contains(possibleClasses.Last()) && !tab.HasGameTag(AnyRevenantGameTag)))
+                    {
+                        candidates.Add(tacticalActorBase);
+                    }
+
+                    candidates = candidates.OrderByDescending(tab => tab.DeploymentCost).ToList();
+
+                    if (candidates.Count > 0)
+                    {
+                        return candidates.First();
+                    }
+
+                    TFTVLogger.Always(possibleClasses.Last() + " no actor with this tag, removing from list");
+                    possibleClasses.Remove(possibleClasses.Last());
+                }
+
+                return null;
+            }
+
+            private static void TurnIntoRevenant(TacticalLevelController controller, TacticalActorBase actor, GeoTacUnitId theChosen)
+            {
+                TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
+                TacticalActor tacticalActor = actor as TacticalActor;
+                UIandFX.Breath.AddRevenantStatusEffect(actor);
+                SetRevenantTierTag(theChosen, actor, controller);
+                actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
+                // SetDeathTime(theChosen, __instance, timeOfMissionStart);
+                StatsAndClasses.SetRevenantClassAbility(theChosen, controller, tacticalActor);
+                Resistance.AddRevenantResistanceStatus(actor);
+                //  SpreadResistance(__instance);
+
+                TFTVLogger.Always($"is actor Scylla with health below max? {actor.GameTags.Contains(queenTag)} {actor.Health.IntValue} {actor.Health.IntMax}");
+
+                if (actor.GameTags.Contains(queenTag) && actor.Health.IntValue < actor.Health.IntMax)
+                {
+
+                }
+                else
+                {
+                    actor.UpdateStats();
+                }
+
+                ActorClassIconElement actorClassIconElement = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
+
+                TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, actor);
+
+                //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
+                // revenantCanSpawn = false;
+            }
+
             public static void TryToSpawnRevenant(TacticalLevelController controller)
             {
                 try
@@ -1612,72 +1698,51 @@ namespace TFTV
                     if (controller.GetFactionByCommandName("aln") != null)
                     {
                         TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
-                        GeoTacUnitId theChosen = RevenantRoll(controller);
-                        List<ClassTagDef> possibleClasses = GetRevenantClassTag(controller, theChosen);
-                        List<TacticalActorBase> candidates = new List<TacticalActorBase>();
-                        TacticalActorBase actor = new TacticalActorBase();
-                        int availableTags = possibleClasses.Count;
+                        int wanted = TFTVVoidOmens.VoidOmensCheck[30] ? VO30MaxRevenants : 1;
+                        List<GeoTacUnitId> rolled = new List<GeoTacUnitId>();
+                        int spawned = 0;
 
+                        ExtraRevenantIds.Clear();
 
-                        for (int i = 0; i < availableTags; i++)
+                        while (spawned < wanted && rolled.Count < DeadSoldiersDelirium.Count)
                         {
+                            GeoTacUnitId theChosen = RevenantRoll(controller, rolled);
+                            rolled.Add(theChosen);
 
-                            foreach (TacticalActorBase tacticalActorBase in pandorans.Actors.Where(tab => tab.GameTags.Contains(possibleClasses.Last())))
+                            TacticalActorBase actor = PickRevenantActor(controller, pandorans, theChosen);
+
+                            if (actor == null)
                             {
-                                candidates.Add(tacticalActorBase);
+                                TFTVLogger.Always("No eligible Pandoran found for this soldier");
 
+                                // Only VO30 goes on to the next dead soldier: without it, one roll is the only chance.
+                                if (wanted == 1)
+                                {
+                                    return;
+                                }
+
+                                continue;
                             }
-                            candidates = candidates.OrderByDescending(tab => tab.DeploymentCost).ToList();
 
+                            TurnIntoRevenant(controller, actor, theChosen);
 
-
-                            if (candidates.Count > 0)
+                            if (spawned == 0)
                             {
-                                actor = candidates.First();
-                                i = availableTags;
+                                revenantID = theChosen;
                             }
                             else
                             {
-                                TFTVLogger.Always(possibleClasses.Last() + " no actor with this tag, removing from list");
-                                possibleClasses.Remove(possibleClasses.Last());
-
-                                if (i == availableTags - 1)
-                                {
-                                    TFTVLogger.Always("No eligible Pandoran found, no Revenant will spawn this time");
-                                    return;
-                                }
+                                ExtraRevenantIds.Add(theChosen);
                             }
+
+                            spawned++;
                         }
 
-
-                        TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
-                        TacticalActor tacticalActor = actor as TacticalActor;
-                        UIandFX.Breath.AddRevenantStatusEffect(actor);
-                        SetRevenantTierTag(theChosen, actor, controller);
-                        actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
-                        // SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                        revenantID = theChosen;
-                        StatsAndClasses.SetRevenantClassAbility(theChosen, controller, tacticalActor);
-                        Resistance.AddRevenantResistanceStatus(actor);
-                        //  SpreadResistance(__instance);
-
-                        TFTVLogger.Always($"is actor Scylla with health below max? {actor.GameTags.Contains(queenTag)} {actor.Health.IntValue} {actor.Health.IntMax}");
-
-                        if (actor.GameTags.Contains(queenTag) && actor.Health.IntValue < actor.Health.IntMax)
+                        if (spawned == 0)
                         {
-
+                            TFTVLogger.Always("No eligible Pandoran found, no Revenant will spawn this time");
+                            return;
                         }
-                        else
-                        {
-                            actor.UpdateStats();
-                        }
-
-                        ActorClassIconElement actorClassIconElement = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-
-                        TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, actor);
-
-                        //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
-                        // revenantCanSpawn = false;
 
                         foreach (TacticalActorBase pandoranBase in pandorans.Actors)
                         {
@@ -1822,6 +1887,13 @@ namespace TFTV
             {
                 try
                 {
+                    if (Resistance.VO19ResistanceDeployed)
+                    {
+                        daysRevenantLastSeen = controller.Timing.Now.TimeSpan.Days;
+                        Resistance.VO19ResistanceDeployed = false;
+                        TFTVLogger.Always("VO19 resistance deployed on the last mission; the Revenant cooldown restarts on day " + daysRevenantLastSeen);
+                    }
+
                     if (revenantSpawned)
                     {
                         daysRevenantLastSeen = controller.Timing.Now.TimeSpan.Days;
@@ -1927,19 +1999,19 @@ namespace TFTV
 
                         if (deathReport.Actor.HasGameTag(RevenantTier1GameTag))
                         {
-                            TFTVRevenantResearch.RevenantPoints = 1;
+                            TFTVRevenantResearch.RevenantPoints = Math.Max(TFTVRevenantResearch.RevenantPoints, 1);
                             //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
                             // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(2);
                         }
                         else if (deathReport.Actor.HasGameTag(RevenantTier2GameTag))
                         {
-                            TFTVRevenantResearch.RevenantPoints = 5;
+                            TFTVRevenantResearch.RevenantPoints = Math.Max(TFTVRevenantResearch.RevenantPoints, 5);
                             //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
                             // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(4);
                         }
                         else if (deathReport.Actor.HasGameTag(RevenantTier3GameTag))
                         {
-                            TFTVRevenantResearch.RevenantPoints = 10;
+                            TFTVRevenantResearch.RevenantPoints = Math.Max(TFTVRevenantResearch.RevenantPoints, 10);
                             // TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
                             // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
                         }
@@ -2778,15 +2850,15 @@ namespace TFTV
                                     RevenantCaptured = true;
                                     if (pandoranActor.HasGameTag(RevenantTier1GameTag))
                                     {
-                                        RevenantPoints = 1;
+                                        RevenantPoints = Math.Max(RevenantPoints, 1);
                                     }
                                     else if (pandoranActor.HasGameTag(RevenantTier2GameTag))
                                     {
-                                        RevenantPoints = 5;
+                                        RevenantPoints = Math.Max(RevenantPoints, 5);
                                     }
                                     else if (pandoranActor.HasGameTag(RevenantTier3GameTag))
                                     {
-                                        RevenantPoints = 10;
+                                        RevenantPoints = Math.Max(RevenantPoints, 10);
                                     }
                                 }
                             }

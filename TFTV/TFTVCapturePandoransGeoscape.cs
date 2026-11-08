@@ -632,7 +632,7 @@ namespace TFTV
 
                 float mutagensPerDay = 0f;
                 int mutationLabs = CountMutationLabs(pxFaction);
-                int maxMutagensPerDay = ProcessingCapacity * mutationLabs;
+                int maxMutagensPerDay = (int)(ProcessingCapacity * mutationLabs * TFTVVoidOmensExpansion.GeoscapeOmens.GetMutagenMultiplier());
                 int divisor = 10;
 
                 foreach (GeoUnitDescriptor geoUnitDescriptor in capturedUnits)

@@ -28,6 +28,9 @@ namespace TFTV
         public List<string> revenantSpecialResistance;// = TFTVRevenant.revenantSpecialResistance;
         public bool revenantSpawned;// = TFTVRevenant.revenantSpawned;
         public bool revenantCanSpawnSaveDate;// = TFTVRevenant.revenantCanSpawn;
+        public bool revenantCooldownOver;
+        public bool VO19ResistanceDeployed;
+        public List<int> ExtraRevenantIds;
         public Dictionary<string, int> humanEnemiesLeaderTacticsSaveData;// = TFTVHumanEnemies.HumanEnemiesAndTactics;
         public int difficultyLevelForTacticalSaveData;// = TFTVHumanEnemies.difficultyLevel;
         public int infestedHavenPopulationSaveData;// = TFTVInfestationStory.HavenPopulation;
@@ -87,6 +90,8 @@ namespace TFTV
         public int HazmatVestTierIndex;
         public Dictionary<string, int> AffinityTacticalBenefitChoices;
         public Dictionary<string, float> BiotechMedkitOption2RestoreAppliedByActorId;
+        public List<string> AIStanceContactFactions;
+        public List<string> AIStanceTactics;
     }
 
     /// <summary>
@@ -224,13 +229,13 @@ namespace TFTV
             // TFTVTacticalUtils.RevealAllSpawns(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
-            TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
-            TFTVLogger.Always("VO5 Active " + TFTVVoidOmens.VoidOmensCheck[5]);
-            TFTVLogger.Always("VO7 Active " + TFTVVoidOmens.VoidOmensCheck[7]);
-            TFTVLogger.Always("VO10 Active " + TFTVVoidOmens.VoidOmensCheck[10]);
-            TFTVLogger.Always("VO15 Active " + TFTVVoidOmens.VoidOmensCheck[15]);
-            TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmensCheck[16]);
-            TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmensCheck[19]);
+            foreach (TFTVVoidOmensExpansion.VoidOmenEntry voidOmen in TFTVVoidOmensExpansion.VoidOmenCatalog.Entries)
+            {
+                if (voidOmen.TacticalScope != TFTVVoidOmensExpansion.VoidOmenTacticalScope.None)
+                {
+                    TFTVLogger.Always($"VO{voidOmen.Id} Active {TFTVVoidOmens.VoidOmensCheck[voidOmen.Id]}");
+                }
+            }
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenant.TFTVRevenantResearch.ProjectOsiris);
 
             TFTVLogger.Always($"Deployed Aircraft capture capacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
@@ -277,6 +282,7 @@ namespace TFTV
 
             TFTVLogger.Always("OnTacticalEnd check");
             TFTVRevenant.revenantCanSpawn = false;
+            TFTVRevenant.revenantCooldownOver = false;
             TFTVRevenant.TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
             TFTVHarshAttrition.PandoranVariance.RecordCaptures(Controller);
 
@@ -302,7 +308,7 @@ namespace TFTV
 
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
-                TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
+                TFTVVoidOmens.VoidOmensCheck = TFTVVoidOmens.ToFullFlagArray(data.VoidOmensCheck);
                 TFTVTouchedByTheVoid.TBTVVariable = data.TBTVVariable;
                 TFTVTouchedByTheVoid.UmbraResearched = data.UmbraResearched;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
@@ -310,6 +316,9 @@ namespace TFTV
                 TFTVRevenant.revenantSpawned = data.revenantSpawned;
                 TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
                 TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
+                TFTVRevenant.revenantCooldownOver = data.revenantCooldownOver;
+                TFTVRevenant.Resistance.VO19ResistanceDeployed = data.VO19ResistanceDeployed;
+                TFTVRevenant.ExtraRevenantIds = data.ExtraRevenantIds ?? new List<int>();
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
                 TFTVRevenant.TFTVRevenantResearch.PreviousRevenantPoints = data.AccumulatedRevenantPoints;
@@ -428,6 +437,9 @@ namespace TFTV
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
+                TFTVAICombatAbilities.Stances.ImportContacts(data.AIStanceContactFactions);
+                TFTVAICombatAbilities.Stances.ImportTactics(data.AIStanceTactics);
+
             }
             catch (Exception e)
             {
@@ -459,6 +471,9 @@ namespace TFTV
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
+                revenantCooldownOver = TFTVRevenant.revenantCooldownOver,
+                VO19ResistanceDeployed = TFTVRevenant.Resistance.VO19ResistanceDeployed,
+                ExtraRevenantIds = TFTVRevenant.ExtraRevenantIds,
                 RevenantResistanceDamageTypeGuid = TFTVRevenant.Resistance.RevenantResistanceDamageTypeGuid,
                 ProjectOsirisStatsTacticalSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats,
                 ProjectOrisisCompletedSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsiris,
@@ -514,6 +529,8 @@ namespace TFTV
                 HazmatVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentHazmatTierIndex,
                 AffinityTacticalBenefitChoices = TFTVIncidents.Affinities.AffinityBenefitsChoices.ExportTacticalBenefitChoiceSnapshot(),
                 BiotechMedkitOption2RestoreAppliedByActorId = TFTVIncidents.BiotechMedkit.ExportOption2RestoreAppliedSnapshot(),
+                AIStanceContactFactions = TFTVAICombatAbilities.Stances.ExportContacts(),
+                AIStanceTactics = TFTVAICombatAbilities.Stances.ExportTactics(),
 
             };
         }

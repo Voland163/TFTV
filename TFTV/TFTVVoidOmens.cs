@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV.TFTVBaseRework;
+using TFTV.TFTVVoidOmensExpansion;
 using UnityEngine;
 
 namespace TFTV
@@ -61,7 +62,7 @@ namespace TFTV
 
         private static readonly PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
 
-        public static bool[] VoidOmensCheck = new bool[20];
+        public static bool[] VoidOmensCheck = new bool[VoidOmenCatalog.HighestId + 1];
 
         //VO#1 is harder ambushes
         //VO#2 is All diplomatic penalties and rewards halved
@@ -180,255 +181,19 @@ namespace TFTV
                 int[] inPlayArray = CheckFordVoidOmensInPlay(controller);
                 var inPlay = new HashSet<int>(inPlayArray.Where(vo => vo != 0));
 
-                // Helper: toggle VO check flag
-                void SetVoFlag(int vo, bool active)
+                // Reverts first: VO2 and VO27 write the same values, and the one in play has to have the last word.
+                foreach (VoidOmenEntry entry in VoidOmenCatalog.Entries.Where(e => !inPlay.Contains(e.Id) && VoidOmensCheck[e.Id]))
                 {
-                    VoidOmensCheck[vo] = active;
-                    TFTVLogger.Always($"The check for VO#{vo} went ok");
+                    VoidOmensCheck[entry.Id] = false;
+                    entry.Revert?.Invoke(controller);
+                    TFTVLogger.Always($"The check for VO#{entry.Id} went ok");
                 }
 
-                // Helper: apply ambush mission settings
-                void SetAmbushMissions(float reinfPart, int reinfTurns, int cratesMin, int cratesMax)
+                foreach (VoidOmenEntry entry in VoidOmenCatalog.Entries.Where(e => inPlay.Contains(e.Id)))
                 {
-                    foreach (CustomMissionTypeDef ambushMission in _ambushMissions)
-                    {
-                        ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Max = reinfPart;
-                        ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Min = reinfPart;
-                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = reinfTurns;
-                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = reinfTurns;
-                        ambushMission.CratesDeploymentPointsRange.Min = cratesMin;
-                        ambushMission.CratesDeploymentPointsRange.Max = cratesMax;
-                    }
+                    VoidOmensCheck[entry.Id] = true;
+                    entry.Apply?.Invoke(controller);
                 }
-
-                // Helper: toggle haven defenders hostility and crates/hints
-                void ToggleHavenDefenders(bool hostile)
-                {
-                    ContextHelpHintDbDef hintsDb = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
-                    ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
-
-                    if (hostile)
-                    {
-                        if (!hintsDb.Hints.Contains(hostileDefenders))
-                        {
-                            hintsDb.Hints.Add(hostileDefenders);
-                        }
-                    }
-                    else
-                    {
-                        if (hintsDb.Hints.Contains(hostileDefenders))
-                        {
-                            hintsDb.Hints.Remove(hostileDefenders);
-                        }
-                    }
-
-                    foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
-                    {
-                        if (!missionTypeDef.name.Contains("Haven") || missionTypeDef.name.Contains("Infestation"))
-                        {
-                            continue;
-                        }
-
-                        // Civ missions have resident index 1, others 2
-                        int relationIndex = missionTypeDef.name.Contains("Civ") ? 1 : 2;
-                        missionTypeDef.ParticipantsRelations[relationIndex].MutualRelation = hostile ? FactionRelation.Enemy : FactionRelation.Friend;
-
-                        if (hostile)
-                        {
-                            missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
-                            missionTypeDef.MissionSpecificCrates = cratesNotResources;
-                            missionTypeDef.FactionItemsRange.Min = 2;
-                            missionTypeDef.FactionItemsRange.Max = 7;
-                            missionTypeDef.CratesDeploymentPointsRange.Min = 20;
-                            missionTypeDef.CratesDeploymentPointsRange.Max = 30;
-                            missionTypeDef.DontRecoverItems = true;
-                        }
-                        else
-                        {
-                            missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = new EffectDef[] { defendersCanBeRecruited };
-                            missionTypeDef.FactionItemsRange.Min = 0;
-                            missionTypeDef.FactionItemsRange.Max = 0;
-                            missionTypeDef.CratesDeploymentPointsRange.Min = 0;
-                            missionTypeDef.CratesDeploymentPointsRange.Max = 0;
-                            missionTypeDef.DontRecoverItems = false;
-                        }
-                    }
-                }
-
-                // VO1: Harder ambushes
-                if (inPlay.Contains(1))
-                {
-                    SetAmbushMissions(0.2f, 1, 50, 70);
-                    VoidOmensCheck[1] = true;
-                }
-                else if (VoidOmensCheck[1])
-                {
-                    SetAmbushMissions(0.3f, 3, 30, 50);
-                    SetVoFlag(1, false);
-                }
-
-                // VO2: Halved diplomatic penalties/rewards
-                if (inPlay.Contains(2))
-                {
-                    partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 0.5f;
-                    partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 0.75f;
-                    VoidOmensCheck[2] = true;
-                }
-                else if (VoidOmensCheck[2])
-                {
-                    partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 1f;
-                    partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 1.5f;
-                    SetVoFlag(2, false);
-                }
-
-                // VO3: WP cost +50%
-                VoidOmensCheck[3] = inPlay.Contains(3);
-                if (!inPlay.Contains(3) && VoidOmensCheck[3]) SetVoFlag(3, false);
-
-                // VO4: Limited deployment (xp handled elsewhere)
-                VoidOmensCheck[4] = inPlay.Contains(4);
-                if (!inPlay.Contains(4) && VoidOmensCheck[4]) SetVoFlag(4, false);
-
-                // VO5: Haven defenders hostile and crates available
-                if (inPlay.Contains(5))
-                {
-                    ToggleHavenDefenders(true);
-                    VoidOmensCheck[5] = true;
-                }
-                else if (VoidOmensCheck[5])
-                {
-                    ToggleHavenDefenders(false);
-                    SetVoFlag(5, false);
-                }
-
-                // VO6: Reactive evolution and research boost
-                if (inPlay.Contains(6))
-                {
-                    controller.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 20;
-                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 30;
-                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 60;
-                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 90;
-                    DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef").ProgressEvolutionWhenAlienMissionIsWon = true;
-                    VoidOmensCheck[6] = true;
-                    controller.PhoenixFaction.Research.Update();
-
-                }
-                else if (VoidOmensCheck[6])
-                {
-                    controller.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 0;
-                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0;
-                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 0;
-                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0;
-                    DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef").ProgressEvolutionWhenAlienMissionIsWon = false;
-                    SetVoFlag(6, false);
-                }
-
-                // VO7: More mist (tactical patch reads VoidOmensCheck)
-                VoidOmensCheck[7] = inPlay.Contains(7);
-                if (!inPlay.Contains(7) && VoidOmensCheck[7]) SetVoFlag(7, false);
-
-                // VO8: Haven lab provides more research
-                if (inPlay.Contains(8))
-                {
-                    havenLab.ProvidesResearch = 2;
-                    VoidOmensCheck[8] = true;
-                }
-                else if (VoidOmensCheck[8])
-                {
-                    havenLab.ProvidesResearch = 1;
-                    SetVoFlag(8, false);
-                }
-
-                // VO9: Adjust FS haven attack counter
-                if (inPlay.Contains(9))
-                {
-                    festeringSkiesSettingsDef.HavenAttackCounterModifier = 0.66f;
-                    VoidOmensCheck[9] = true;
-                }
-                else if (VoidOmensCheck[9])
-                {
-                    festeringSkiesSettingsDef.HavenAttackCounterModifier = 1.33f;
-                    SetVoFlag(9, false);
-                }
-
-                // VO10: No delirium limit
-                VoidOmensCheck[10] = inPlay.Contains(10);
-                if (!inPlay.Contains(10) && VoidOmensCheck[10]) SetVoFlag(10, false);
-
-                // VO11: Behemoth roams more (forcing UpdateHourly both ways)
-                if (inPlay.Contains(11))
-                {
-                    VoidOmensCheck[11] = true;
-                    controller.AlienFaction.Behemoth?.UpdateHourly();
-                }
-                else if (VoidOmensCheck[11])
-                {
-                    VoidOmensCheck[11] = false;
-                    controller.AlienFaction.Behemoth?.UpdateHourly();
-
-                }
-
-                // VO12: Stronger haven defense attackers (applied elsewhere)
-                VoidOmensCheck[12] = inPlay.Contains(12);
-                if (!inPlay.Contains(12) && VoidOmensCheck[12]) SetVoFlag(12, false);
-
-                // VO13: Faster alien base construction
-                if (inPlay.Contains(13))
-                {
-                    controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 45;
-                    controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 50;
-                    controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 90;
-                    VoidOmensCheck[13] = true;
-                }
-                else if (VoidOmensCheck[13])
-                {
-                    if (controller.CurrentDifficultyLevel.Order > 5)
-                    {
-                        controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 73;
-                        controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 80;
-                        controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 144;
-                    }
-                    else
-                    {
-                        controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
-                        controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 100;
-                        controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 180;
-                    }
-                    SetVoFlag(13, false);
-                    TFTVLogger.Always("The check for VO#13 went ok so Pandoran nests take " + controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
-                }
-
-                // VO14: Reduced perception range
-                if (inPlay.Contains(14))
-                {
-                    tacticalPerceptionDef.PerceptionRange = 20;
-                    VoidOmensCheck[14] = true;
-                }
-                else if (VoidOmensCheck[14])
-                {
-                    tacticalPerceptionDef.PerceptionRange = 30;
-                    SetVoFlag(14, false);
-                }
-
-                // VO15: More Umbra
-                VoidOmensCheck[15] = inPlay.Contains(15);
-                if (!inPlay.Contains(15) && VoidOmensCheck[15]) SetVoFlag(15, false);
-
-                // VO16: Umbras anywhere
-                VoidOmensCheck[16] = inPlay.Contains(16);
-                if (!inPlay.Contains(16) && VoidOmensCheck[16]) SetVoFlag(16, false);
-
-                // VO17: Extra global condition (used elsewhere)
-                VoidOmensCheck[17] = inPlay.Contains(17);
-                if (!inPlay.Contains(17) && VoidOmensCheck[17]) SetVoFlag(17, false);
-
-                // VO18: Extra defense points, less rewards (applied in patch)
-                VoidOmensCheck[18] = inPlay.Contains(18);
-                if (!inPlay.Contains(18) && VoidOmensCheck[18]) SetVoFlag(18, false);
-
-                // VO19: Reactive evolution price changes (currently toggles a flag)
-                VoidOmensCheck[19] = inPlay.Contains(19);
-                if (!inPlay.Contains(19) && VoidOmensCheck[19]) SetVoFlag(19, false);
 
                 // Logging and bookkeeping preserved
                 var voidOmensInPlayLog = new List<int>(inPlayArray);
@@ -452,93 +217,193 @@ namespace TFTV
             }
         }
 
+        // VO1: Harder ambushes
+        internal static void ApplyVO1(GeoLevelController controller) => SetAmbushMissions(0.2f, 1, 50, 70);
+        internal static void RevertVO1(GeoLevelController controller) => SetAmbushMissions(0.3f, 3, 30, 50);
+
+        private static void SetAmbushMissions(float reinfPart, int reinfTurns, int cratesMin, int cratesMax)
+        {
+            foreach (CustomMissionTypeDef ambushMission in _ambushMissions)
+            {
+                ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Max = reinfPart;
+                ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Min = reinfPart;
+                ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = reinfTurns;
+                ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = reinfTurns;
+                ambushMission.CratesDeploymentPointsRange.Min = cratesMin;
+                ambushMission.CratesDeploymentPointsRange.Max = cratesMax;
+            }
+        }
+
+        // VO2: Halved diplomatic penalties/rewards
+        internal static void ApplyVO2(GeoLevelController controller) => SetInfiltrationMultipliers(0.5f, 0.75f);
+        internal static void RevertVO2(GeoLevelController controller) => SetInfiltrationMultipliers(1f, 1.5f);
+
+        internal static void SetInfiltrationMultipliers(float faction, float leader)
+        {
+            partyDiplomacySettingsDef.InfiltrationFactionMultiplier = faction;
+            partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = leader;
+        }
+
+        // VO5: Haven defenders hostile and crates available
+        internal static void ApplyVO5(GeoLevelController controller) => ToggleHavenDefenders(true);
+        internal static void RevertVO5(GeoLevelController controller) => ToggleHavenDefenders(false);
+
+        // Helper: toggle haven defenders hostility and crates/hints
+        private static void ToggleHavenDefenders(bool hostile)
+        {
+            ContextHelpHintDbDef hintsDb = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+            ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
+
+            if (hostile)
+            {
+                if (!hintsDb.Hints.Contains(hostileDefenders))
+                {
+                    hintsDb.Hints.Add(hostileDefenders);
+                }
+            }
+            else
+            {
+                if (hintsDb.Hints.Contains(hostileDefenders))
+                {
+                    hintsDb.Hints.Remove(hostileDefenders);
+                }
+            }
+
+            foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+            {
+                if (!missionTypeDef.name.Contains("Haven") || missionTypeDef.name.Contains("Infestation"))
+                {
+                    continue;
+                }
+
+                // Civ missions have resident index 1, others 2
+                int relationIndex = missionTypeDef.name.Contains("Civ") ? 1 : 2;
+                missionTypeDef.ParticipantsRelations[relationIndex].MutualRelation = hostile ? FactionRelation.Enemy : FactionRelation.Friend;
+
+                if (hostile)
+                {
+                    missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
+                    missionTypeDef.MissionSpecificCrates = cratesNotResources;
+                    missionTypeDef.FactionItemsRange.Min = 2;
+                    missionTypeDef.FactionItemsRange.Max = 7;
+                    missionTypeDef.CratesDeploymentPointsRange.Min = 20;
+                    missionTypeDef.CratesDeploymentPointsRange.Max = 30;
+                    missionTypeDef.DontRecoverItems = true;
+                }
+                else
+                {
+                    missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = new EffectDef[] { defendersCanBeRecruited };
+                    missionTypeDef.FactionItemsRange.Min = 0;
+                    missionTypeDef.FactionItemsRange.Max = 0;
+                    missionTypeDef.CratesDeploymentPointsRange.Min = 0;
+                    missionTypeDef.CratesDeploymentPointsRange.Max = 0;
+                    missionTypeDef.DontRecoverItems = false;
+                }
+            }
+        }
+
+        // VO6: Reactive evolution and research boost
+        internal static void ApplyVO6(GeoLevelController controller)
+        {
+            controller.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 20;
+            controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 30;
+            controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 60;
+            controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 90;
+            DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef").ProgressEvolutionWhenAlienMissionIsWon = true;
+            controller.PhoenixFaction.Research.Update();
+        }
+
+        internal static void RevertVO6(GeoLevelController controller)
+        {
+            controller.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 0;
+            controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0;
+            controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 0;
+            controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0;
+            DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef").ProgressEvolutionWhenAlienMissionIsWon = false;
+        }
+
+        // VO8: Haven lab provides more research
+        internal static void ApplyVO8(GeoLevelController controller) => havenLab.ProvidesResearch = 2;
+        internal static void RevertVO8(GeoLevelController controller) => havenLab.ProvidesResearch = 1;
+
+        // VO9: Adjust FS haven attack counter
+        internal static void ApplyVO9(GeoLevelController controller) => festeringSkiesSettingsDef.HavenAttackCounterModifier = 0.66f;
+        internal static void RevertVO9(GeoLevelController controller) => festeringSkiesSettingsDef.HavenAttackCounterModifier = 1.33f;
+
+        // VO11: Behemoth roams more (forcing UpdateHourly both ways)
+        internal static void ApplyVO11(GeoLevelController controller) => controller.AlienFaction.Behemoth?.UpdateHourly();
+        internal static void RevertVO11(GeoLevelController controller) => controller.AlienFaction.Behemoth?.UpdateHourly();
+
+        // VO13: Faster alien base construction
+        internal static void ApplyVO13(GeoLevelController controller)
+        {
+            controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 45;
+            controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 50;
+            controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 90;
+        }
+
+        internal static void RevertVO13(GeoLevelController controller)
+        {
+            if (controller.CurrentDifficultyLevel.Order > 5)
+            {
+                controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 73;
+                controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 80;
+                controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 144;
+            }
+            else
+            {
+                controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
+                controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 100;
+                controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 180;
+            }
+            TFTVLogger.Always("The check for VO#13 went ok so Pandoran nests take " + controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
+        }
+
+        // VO14: Reduced perception range
+        internal static void ApplyVO14(GeoLevelController controller) => tacticalPerceptionDef.PerceptionRange = 20;
+        internal static void RevertVO14(GeoLevelController controller) => tacticalPerceptionDef.PerceptionRange = 30;
+
         public static void CheckForVoidOmensRequiringTacticalPatching(GeoLevelController level)
         {
-            TFTVConfig config = TFTVMain.Main.Config;
-
             try
             {
-
                 int[] rolledVoidOmens = CheckFordVoidOmensInPlay(level);
 
-                if (rolledVoidOmens.Contains(3))
+                foreach (VoidOmenEntry entry in VoidOmenCatalog.Entries)
                 {
-                    VoidOmensCheck[3] = true;
-                    TFTVLogger.Always("All abilities cost +50% WP, but Delirium has no effect on WP");
-                }
-                else
-                {
-                    VoidOmensCheck[3] = false;
+                    if (entry.TacticalScope == VoidOmenTacticalScope.None)
+                    {
+                        continue;
+                    }
 
-                }
+                    VoidOmensCheck[entry.Id] = rolledVoidOmens.Contains(entry.Id) && (entry.ConfigAllows == null || entry.ConfigAllows());
 
-                if (rolledVoidOmens.Contains(5))
-                {
-                    VoidOmensCheck[5] = true;
-                    TFTVLogger.Always("Haven defenders always hostile, but crates available for looting");
+                    if (VoidOmensCheck[entry.Id])
+                    {
+                        TFTVLogger.Always($"VO#{entry.Id} active for the next mission");
+                    }
                 }
-                else
-                {
-                    VoidOmensCheck[5] = false;
-
-                }
-
-                if (rolledVoidOmens.Contains(7) && config.MoreMistVO)
-                {
-                    VoidOmensCheck[7] = true;
-                    TFTVLogger.Always("More Mist in missions");
-                }
-                else
-                {
-                    VoidOmensCheck[7] = false;
-
-                }
-                if (rolledVoidOmens.Contains(10))
-                {
-                    VoidOmensCheck[10] = true;
-                    TFTVLogger.Always("No limit to Delirium, regardless of ODI level");
-                }
-                else
-                {
-                    VoidOmensCheck[10] = false;
-
-                }
-                if (rolledVoidOmens.Contains(15))
-                {
-                    VoidOmensCheck[15] = true;
-                    TFTVLogger.Always("More Umbras");
-                }
-                else
-                {
-                    VoidOmensCheck[15] = false;
-
-                }
-                if (rolledVoidOmens.Contains(16))
-                {
-                    VoidOmensCheck[16] = true;
-                    TFTVLogger.Always("Umbras can appear anywhere and attack anyone");
-                }
-                else
-                {
-                    VoidOmensCheck[16] = false;
-
-                }
-                if (rolledVoidOmens.Contains(19))
-                {
-                    VoidOmensCheck[19] = true;
-                    TFTVLogger.Always("Reactive evolution");
-                }
-                else
-                {
-                    VoidOmensCheck[19] = false;
-
-                }
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        /// <summary>
+        /// A tactical save from before the expansion carries a shorter flag array: copied into a full one, so the
+        /// omens it had stay on and the new ids read false instead of throwing.
+        /// </summary>
+        internal static bool[] ToFullFlagArray(bool[] saved)
+        {
+            bool[] full = new bool[VoidOmenCatalog.HighestId + 1];
+
+            if (saved != null)
+            {
+                Array.Copy(saved, full, Math.Min(saved.Length, full.Length));
+            }
+
+            return full;
         }
 
         public static List<int> CheckForAlreadyRolledVoidOmens(GeoLevelController geoLevelController)

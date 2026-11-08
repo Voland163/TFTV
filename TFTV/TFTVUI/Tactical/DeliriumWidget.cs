@@ -548,7 +548,8 @@ namespace TFTV.TFTVUI.Tactical
 
                 GameTagDef havenDefenseTag = DefCache.GetDef<GameTagDef>("MissionTypeHavenDefense_MissionTagDef");
                 bool havenDefense = controller.TacMission.MissionData.MissionType.Tags.Contains(havenDefenseTag);
-                List<int> voidOmens = new List<int> { 3, 5, 7, 10, 14, 15, 16, 19 };
+                bool pandoransPresent = controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln"));
+                List<int> voidOmens = TFTVVoidOmensExpansion.VoidOmenCatalog.GetForMission(pandoransPresent, havenDefense).ToList();
 
                 //VO#1 is harder ambushes
                 //VO#2 is All diplomatic penalties and rewards halved
@@ -582,12 +583,10 @@ namespace TFTV.TFTVUI.Tactical
                 // Add faction objectives for void omens that are in play
                 foreach (int vo in voidOmens)
                 {
-                    if (TFTVVoidOmens.VoidOmensCheck[vo])
+                    // VO19 is only felt on missions where a Revenant could have appeared
+                    if (TFTVVoidOmens.VoidOmensCheck[vo] && (vo != 19 || TFTVRevenant.Resistance.VO19ResistanceDeployed))
                     {
-                        if (vo != 5 || vo == 5 && havenDefense)
-                        {
-                            _ODISitrepList.Add((_voidOmenSprite, TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_TITLE_" + vo), ODIDetailType.VoidOmen));
-                        }
+                        _ODISitrepList.Add((_voidOmenSprite, TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_TITLE_" + vo), ODIDetailType.VoidOmen));
                     }
                 }
             }
@@ -776,19 +775,7 @@ namespace TFTV.TFTVUI.Tactical
 
                 GameTagDef havenDefenseTag = DefCache.GetDef<GameTagDef>("MissionTypeHavenDefense_MissionTagDef");
                 bool havenDefense = controller.TacMission.MissionData.MissionType.Tags.Contains(havenDefenseTag);
-                List<int> voidOmens = new List<int> { 3, 7, 10, 14 };
-
-                if (havenDefense)
-                {
-                    voidOmens.Add(5);
-                }
-
-                if (pandoransPresent)
-                {
-                    voidOmens.Add(15);
-                    voidOmens.Add(16);
-                    voidOmens.Add(19);
-                }
+                IEnumerable<int> voidOmens = TFTVVoidOmensExpansion.VoidOmenCatalog.GetForMission(pandoransPresent, havenDefense);
 
                 bool relevantVoidOmens = false;
                 // Add faction objectives for void omens that are in play

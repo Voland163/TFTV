@@ -1632,6 +1632,14 @@ namespace TFTV
                     }
                 }
 
+                // Passives such as Extreme Focus apply their status when the actor enters play, which has
+                // already happened by now, so adding them here left them without effect.
+                foreach (ApplyStatusAbility passive in tacticalActor.GetAbilities<ApplyStatusAbility>()
+                    .Where(a => !a.ActiveAbility && a.ShouldApplyOnEnterPlay && allAbilities.Contains(a.AbilityDef)).ToList())
+                {
+                    passive.ApplyStatusIfNotApplied(tacticalActor);
+                }
+
                 tacticalActor.UpdateStats();
 
             }

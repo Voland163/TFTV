@@ -1,12 +1,18 @@
+using Base.AI;
 using HarmonyLib;
+using PhoenixPoint.Tactical.AI;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace TFTV.TFTVVanillaFixes.Tactical
 {
@@ -79,6 +85,82 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                 {
                     TFTVLogger.Error(e);
                     return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// An AI shield raised towards a far-off group with an enemy right behind it.
+        ///
+        /// AIDeployShieldConsideration faces the direction with the most known enemies, however far away, and
+        /// averages them, so three soldiers 12 tiles off beat one 2 tiles behind. Whether to deploy at all is left
+        /// to vanilla; this only re-aims it, with each enemy counting for 1/distance squared so the closest decide.
+        /// Directions vanilla rules out (adjacent cover) stay out, and with no enemy in any open direction
+        /// DeployAlways keeps vanilla's facing along the path to the closest enemy.
+        /// </summary>
+        [HarmonyPatch(typeof(AIDeployShieldConsideration), nameof(AIDeployShieldConsideration.Evaluate))]
+        internal static class AIDeployShieldConsideration_Evaluate_Patch
+        {
+            private static void Postfix(AIDeployShieldConsideration __instance, IAIActor actor, IAITarget target, float __result)
+            {
+                try
+                {
+                    if (__result <= 0f || !(actor is TacticalActor tacActor) || !(target is TacAITarget aiTarget))
+                    {
+                        return;
+                    }
+
+                    List<TacticalActor> enemies = tacActor.TacticalFaction.AIBlackboard
+                        .GetEnemies(tacActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask), true)
+                        .OfType<TacticalActor>().ToList();
+
+                    Vector3 pos = tacActor.Pos;
+                    float halfFov = __instance.Def.ShieldProtectionFOV / 2f;
+                    float bestWeight = 0f;
+                    Vector3 bestDirection = Vector3.zero;
+
+                    foreach (Vector3 gridDirection in TacticalMap.AllGridDirections)
+                    {
+                        Vector3 coverDirection = tacActor.TacticalPerception.GetCoverDirection(pos, gridDirection);
+
+                        if (tacActor.Map.GetCoverInfoInDirection(pos, coverDirection, tacActor.TacticalPerception.Height).CoverType != CoverType.None)
+                        {
+                            continue;
+                        }
+
+                        float weight = 0f;
+                        Vector3 direction = Vector3.zero;
+
+                        foreach (TacticalActor enemy in enemies)
+                        {
+                            Vector3 toEnemy = enemy.Pos - pos;
+                            toEnemy.y = 0f;
+
+                            if (Vector3.Angle(gridDirection, toEnemy) > halfFov)
+                            {
+                                continue;
+                            }
+
+                            float enemyWeight = 1f / Mathf.Max(toEnemy.sqrMagnitude, 1f);
+                            weight += enemyWeight;
+                            direction += toEnemy.normalized * enemyWeight;
+                        }
+
+                        if (weight > bestWeight)
+                        {
+                            bestWeight = weight;
+                            bestDirection = direction;
+                        }
+                    }
+
+                    if (bestWeight > 0f)
+                    {
+                        aiTarget.Direction = bestDirection.normalized;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
         }

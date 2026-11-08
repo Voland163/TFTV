@@ -533,7 +533,7 @@ Efekt: −0.5 Punktu Akcji w następnej turze.","Беспокоящий огон
 Efecto: −0.5 Puntos de Acción el próximo turno.",
 TFTV_SUPPRESSION_STATUS_1_NAME,Text,,MODERATE SUPPRESSION,,SUPPRESSION MODÉRÉE,MÄSSIGE UNTERDRÜCKUNG,,UMIARKOWANE PRZYTŁUMIENIE,ПРИЖАТ ПЛОТНЫМ ОГНЕМ,SUPRESIÓN MODERADA,
 TFTV_SUPPRESSION_STATUS_1_DESC,Text,,"Sustained enemy fire is forcing you to keep your head down.
-Effect: −1 Action Point next turn.",,"Le feu soutenu des ennemis vous oblige à rester à couvert.
+Effect: −1 Action Point next turn. No overwatch or return fire until your next turn.",,"Le feu soutenu des ennemis vous oblige à rester à couvert.
 Effet : −1 PA au prochain tour.","Anhaltendes Feindfeuer zwingt dich, in Deckung zu bleiben.
 Effekt: -1 Aktionspunkt im nächsten Zug.",,"Długotrwały ostrzał wroga zmusza cię do trzymania głowy nisko.
 Efekt: −1 Punkt Akcji w następnej turze.","Плотный вражеский огонь прижимает к земле.
@@ -541,7 +541,7 @@ Efekt: −1 Punkt Akcji w następnej turze.","Плотный вражеский 
 Efecto: −1 Punto de Acción el próximo turno.",
 TFTV_SUPPRESSION_STATUS_2_NAME,Text,,HEAVY SUPPRESSION,,SUPPRESSION INTENSE,STARKE UNTERDRÜCKUNG,,CIĘŻKIE PRZYTŁUMIENIE,ПОДАВЛЕН СИЛЬНЫМ ОГНЕМ,SUPRESIÓN PESADA,
 TFTV_SUPPRESSION_STATUS_2_DESC,Text,,"Relentless gunfire has pinned you down, severely limiting your ability to act.
-Effect: −1.5 Action Points next turn.",,"Un feu nourri vous cloue au sol, limitant fortement votre liberté de mouvement.
+Effect: −1.5 Action Points next turn. No overwatch or return fire until your next turn.",,"Un feu nourri vous cloue au sol, limitant fortement votre liberté de mouvement.
 Effet : −1,5 PA au prochain tour.","Unnachgiebiger Beschuss hält dich nieder und schränkt deine Handlungsfähigkeit stark ein.
 Effekt: -1,5 Aktionspunkte im nächsten Zug.",,"Nieustanny grad kul przygwoździł cię do osłony, poważnie ograniczając twoją zdolność działania.
 Efekt: −1.5 Punktu Akcji w następnej turze.","Шквальный огонь существенно ограничивает маневренность.
@@ -551,3 +551,23 @@ MUTOG_AGILE_LEGS_NAME,Text,,AGILE MUTOG LEGS,,PATTES AGILES DE MUTOG,AGILE MUTOG
 MUTOG_REGENERATIVE_LEGS_NAME,Text,,REGENERATIVE MUTOG LEGS,,PATTES RÉGÉNÉRANTE DE MUTOG,REGENERATIVE MUTOG-BEINE,,REGENERUJĄCE NOGI MUTOGA,РЕГЕНЕРИРУЮЩИЕ НОГИ МУТОГА,PATAS REGENERATIVAS DE MUTOG,
 TFTV_DRILL_override_MINDCONTROL_STATUS_NAME,Text,,HACKED,,PIRATÉ,GEHACKT,,ZHAKOWANY,УПРАВЛЕНИЕ ВЗЛОМАНО,PIRATEADO,
 TFTV_DRILL_override_MINDCONTROL_STATUS_DESC,Text,,Remote Control established.,,Contrôle à distance activé.,Fernbedienung eingerichtet.,,Nawiązano Zdalne Sterowanie.,Производится дистанционное управление,Control Remoto establecido.,
+TFTV_SQUAD_SUPPRESS_ORDER_0,Text,,Pin down that overwatch!,,,,,,,,
+TFTV_SQUAD_SUPPRESS_ORDER_1,Text,,"Suppress them, we're moving in!",,,,,,,,
+TFTV_SQUAD_SUPPRESS_ORDER_2,Text,,Keep their heads down!,,,,,,,,
+TFTV_SQUAD_SUPPRESS_REPLY_0,Text,,On it!,,,,,,,,
+TFTV_SQUAD_SUPPRESS_REPLY_1,Text,,Covering!,,,,,,,,
+TFTV_SQUAD_SUPPRESS_REPLY_2,Text,,Suppressing!,,,,,,,,
+TFTV_SQUAD_SUPPRESS_SELF_0,Text,,"Covering fire, move in!",,,,,,,,
+TFTV_SQUAD_SUPPRESS_SELF_1,Text,,"I'll pin them down, go!",,,,,,,,
+TFTV_SQUAD_SUPPRESS_SELF_2,Text,,"Keep moving, I've got them!",,,,,,,,
+TFTV_SQUAD_PANDORAN_CALL,Text,,*shrieks a command*,,,,,,,,
+TFTV_SQUAD_PANDORAN_REPLY,Text,,*chitters in reply*,,,,,,,,
+TFTV_SQUAD_FOCUS_ORDER_0,Text,,Focus fire on that one!,,,,,,,,
+TFTV_SQUAD_FOCUS_ORDER_1,Text,,Everyone on that target!,,,,,,,,
+TFTV_SQUAD_FOCUS_ORDER_2,Text,,"Take that one down, together!",,,,,,,,
+TFTV_SQUAD_FOCUS_REPLY_0,Text,,Got it!,,,,,,,,
+TFTV_SQUAD_FOCUS_REPLY_1,Text,,On target!,,,,,,,,
+TFTV_SQUAD_FOCUS_REPLY_2,Text,,Engaging!,,,,,,,,
+TFTV_SQUAD_FOCUS_SELF_0,Text,,Concentrate fire on my target!,,,,,,,,
+TFTV_SQUAD_FOCUS_SELF_1,Text,,Hit the one I'm hitting!,,,,,,,,
+TFTV_SQUAD_FOCUS_SELF_2,Text,,All together on this one!,,,,,,,,

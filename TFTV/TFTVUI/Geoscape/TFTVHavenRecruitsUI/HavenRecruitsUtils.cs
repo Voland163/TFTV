@@ -262,7 +262,7 @@ namespace TFTV.TFTVHavenRecruitsUI
         /// recruiting, and with a leader willing to deal. Counting and listing share this so the two
         /// can never disagree about who is on offer.
         /// </summary>
-        private static IEnumerable<GeoHaven> GetRecruitingHavens(GeoFaction faction)
+        internal static IEnumerable<GeoHaven> GetRecruitingHavens(GeoFaction faction)
         {
             if (faction == null)
             {

@@ -259,64 +259,7 @@ namespace TFTV
         {
             try
             {
-                TFTVConfig config = TFTVMain.Main.Config;
-                List<int> voidOmensList = new List<int> { 1, 2, 5, 6, 8, 9, 12, 13, 14, 18 };
-                int currentODIlevel = controller.EventSystem.GetVariable("BC_SDI");
-                // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
-                int odiPerc = currentODIlevel * 5;
-
-
-                if (config.MoreMistVO)
-                {
-                    voidOmensList.Add(7);
-                }
-
-                if (config.LimitedDeploymentVO && !TFTVAircraftReworkMain.AircraftReworkOn)
-                {
-                    voidOmensList.Add(4);
-                }
-
-                if (odiPerc < 30) //45) //only add unlimited Delirium if max Delirium is not reached
-                {
-                    voidOmensList.Add(10);
-                }
-
-                if (controller.AlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))
-                {
-                    voidOmensList.Add(15);
-                    voidOmensList.Add(16);
-
-                }
-                if (controller.EventSystem.GetVariable("BehemothEggHatched") == 1 && controller.AlienFaction.Behemoth != null)
-                {
-                    TFTVLogger.Always("Behemoth vo check");
-                    voidOmensList.Add(11);
-
-                }
-                if (controller.EventSystem.GetVariable("Infestation_Encounter_Variable") == 1)
-                {
-                    voidOmensList.Add(17);
-
-                }
-                if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(controller).Count >= 8)
-                {
-                    voidOmensList.Add(3);
-                }
-                if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(controller).Count >= 5 && TFTVRevenant.DeadSoldiersDelirium.Keys.Count == 0)
-                {
-                    voidOmensList.Add(19);
-                }
-
-                foreach (int voidOmensInPlay in TFTVVoidOmens.CheckFordVoidOmensInPlay(controller))
-                {
-                    if (voidOmensList.Contains(voidOmensInPlay))
-                    {
-                        voidOmensList.Remove(voidOmensInPlay);
-                    }
-                }
-
-                return voidOmensList;
-
+                return TFTVVoidOmensExpansion.VoidOmenCatalog.GetEligible(controller);
             }
 
             catch (Exception e)

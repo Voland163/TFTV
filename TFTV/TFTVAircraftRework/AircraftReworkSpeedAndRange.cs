@@ -377,6 +377,12 @@ namespace TFTV
             {
                 float speed = speedOutsideOfMist;
 
+                // VO22: the Mist costs maintenance instead, and no longer changes speed either way
+                if (TFTVVoidOmens.VoidOmensCheck[22])
+                {
+                    return speed;
+                }
+
                 if (geoVehicle.VehicleDef != blimp)
                 {
                     float penaltyMultiplier = TFTVIncidents.AffinityGeoscapeEffects.GetMistPenaltyMultiplier(geoVehicle);

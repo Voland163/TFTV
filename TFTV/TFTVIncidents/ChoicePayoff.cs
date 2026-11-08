@@ -75,6 +75,12 @@ namespace TFTV.TFTVIncidents
                 AddResourceEntries(outcome, entries);
                 AddDiplomacyEntries(outcome, entries);
                 AddPersonnelEntry(outcome, entries);
+
+                // VO34 halves what the incident pays out, so the strip shows the smaller size.
+                if (TFTVVoidOmens.VoidOmensCheck[34])
+                {
+                    entries.ForEach(entry => entry.Tier = Mathf.Max(1, (entry.Tier + 1) / 2));
+                }
             }
             catch (Exception e)
             {

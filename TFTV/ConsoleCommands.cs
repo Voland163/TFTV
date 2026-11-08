@@ -29,6 +29,133 @@ namespace MadSkunkyTweaks.Tools
     public class ConsoleCommands
     {
         [ConsoleCommand(
+    Command = "void_omen_force",
+    Description = "Usage: void_omen_force <id>: puts a Void Omen in play on the geoscape, ignoring its gate (and lifting a ban). Pushes out the oldest if all slots are full.")]
+        public static void ForceVoidOmen(IConsole console, int id)
+        {
+            try
+            {
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+                if (level == null)
+                {
+                    TFTVLogger.Always("[VoidOmens] This command must be used in geoscape.");
+                    return;
+                }
+
+                if (TFTV.TFTVVoidOmensExpansion.VoidOmenCatalog.Get(id) == null || TFTVVoidOmens.CheckFordVoidOmensInPlay(level).Contains(id))
+                {
+                    TFTVLogger.Always($"[VoidOmens] VO{id} does not exist or is already in play.");
+                    return;
+                }
+
+                if (!TFTVVoidOmens.CheckFordVoidOmensInPlay(level).Contains(0))
+                {
+                    TFTVVoidOmens.RemoveEarliestVoidOmen(level, 2);
+                }
+
+                int freeSlot = Array.IndexOf(TFTVVoidOmens.CheckFordVoidOmensInPlay(level), 0) + 1;
+
+                if (TFTV.TFTVVoidOmensExpansion.VoidOmenCatalog.IsBanned(level, id))
+                {
+                    TFTV.TFTVVoidOmensExpansion.VoidOmenCatalog.SetBanned(level, id, false);
+                    TFTVLogger.Always($"[VoidOmens] VO{id} was banned; the ban is lifted.");
+                }
+
+                level.EventSystem.SetVariable("VoidOmen_" + freeSlot, id);
+                TFTVVoidOmens.CreateVoidOmenObjective("VOID_OMEN_TITLE_" + id, "VOID_OMEN_DESCRIPTION_TEXT_" + id, level);
+                TFTVVoidOmens.ImplementVoidOmens(level);
+
+                TFTVLogger.Always($"[VoidOmens] VO{id} forced into slot {freeSlot}.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+    Command = "void_omen_remove",
+    Description = "Usage: void_omen_remove <id> [ban] [replace]: takes a Void Omen out of play on the geoscape and reverts its effect. " +
+            "ban: it never rolls again in this playthrough (void_omen_force lifts that). replace: a random Void Omen that could roll now takes its slot. " +
+            "Without ban it is not recorded as already rolled, so it can roll again.")]
+        public static void RemoveVoidOmen(IConsole console, int id, params string[] options)
+        {
+            try
+            {
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+                if (level == null)
+                {
+                    TFTVLogger.Always("[VoidOmens] This command must be used in geoscape.");
+                    return;
+                }
+
+                List<string> flags = (options ?? new string[0]).Select(o => o?.Trim().ToLowerInvariant()).Where(o => !string.IsNullOrEmpty(o)).ToList();
+                List<string> unknown = flags.Where(f => f != "ban" && f != "replace").ToList();
+
+                if (unknown.Count > 0)
+                {
+                    TFTVLogger.Always($"[VoidOmens] Unknown option(s) {string.Join(", ", unknown)}: use ban and/or replace.");
+                    return;
+                }
+
+                bool ban = flags.Contains("ban");
+                bool replace = flags.Contains("replace");
+                int slot = Array.IndexOf(TFTVVoidOmens.CheckFordVoidOmensInPlay(level), id) + 1;
+
+                if (id == 0 || slot == 0)
+                {
+                    // Banning one that is not in play is still useful: it will never roll.
+                    if (ban && TFTV.TFTVVoidOmensExpansion.VoidOmenCatalog.Get(id) != null)
+                    {
+                        TFTV.TFTVVoidOmensExpansion.VoidOmenCatalog.SetBanned(level, id, true);
+                        TFTVLogger.Always($"[VoidOmens] VO{id} is not in play; banned from this playthrough.");
+                        return;
+                    }
+
+                    TFTVLogger.Always($"[VoidOmens] VO{id} is not in play.");
+                    return;
+                }
+
+                if (ban)
+                {
+                    TFTV.TFTVVoidOmensExpansion.VoidOmenCatalog.SetBanned(level, id, true);
+                }
+
+                level.EventSystem.SetVariable("VoidOmen_" + slot, 0);
+                TFTVVoidOmens.RemoveVoidOmenObjective("VOID_OMEN_TITLE_" + id, level);
+
+                int replacement = 0;
+
+                if (replace)
+                {
+                    // As the ODI roll does: what could roll now, less what has rolled before; if that is nothing, anything that could roll.
+                    List<int> eligible = TFTVODIandVoidOmenRoll.GetPossibleVoidOmens(level).Where(vo => vo != id).ToList();
+                    List<int> rolledBefore = TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(level);
+                    List<int> fresh = eligible.Where(vo => !rolledBefore.Contains(vo)).ToList();
+                    List<int> pool = fresh.Count > 0 ? fresh : eligible;
+
+                    if (pool.Count > 0)
+                    {
+                        replacement = pool[UnityEngine.Random.Range(0, pool.Count)];
+                        level.EventSystem.SetVariable("VoidOmen_" + slot, replacement);
+                        TFTVVoidOmens.CreateVoidOmenObjective("VOID_OMEN_TITLE_" + replacement, "VOID_OMEN_DESCRIPTION_TEXT_" + replacement, level);
+                    }
+                }
+
+                TFTVVoidOmens.ImplementVoidOmens(level);
+
+                TFTVLogger.Always($"[VoidOmens] VO{id} removed from slot {slot}{(ban ? ", banned from this playthrough" : "")}"
+                    + (replace ? (replacement != 0 ? $"; replaced by VO{replacement}." : "; no Void Omen could roll to replace it.") : "."));
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
     Command = "monster_tint_debug",
     Description = "Usage: monster_tint_debug <actorNameContains> <primary|secondary>")]
         public static void DebugMonsterTint(
