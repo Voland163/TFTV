@@ -690,6 +690,11 @@ namespace TFTV
                                     }
                                 }
 
+                                if (TFTVVoidOmens.VoidOmensCheck[23])
+                                {
+                                    multiplier *= TFTVVoidOmensExpansion.GeoscapeOmens.VO23BaseAttackMultiplier;
+                                }
+
                                 int adjustedCounter = (int)(colonyCounter * multiplier);
                                 totalCounterPerDayForBase += adjustedCounter;
 
@@ -995,6 +1000,11 @@ namespace TFTV
                         }
 
                         int deployRollChance = (int)(deployValue / 100) + 18 - (int)timer;
+
+                        if (TFTVVoidOmens.VoidOmensCheck[24])
+                        {
+                            deployRollChance = (int)(deployRollChance * TFTVVoidOmensExpansion.GeoscapeOmens.VO24EscapeMultiplier);
+                        }
 
                         GeoPhoenixBase phoenixBase = geoSite.GetComponent<GeoPhoenixBase>();
                         PhoenixFacilityDef securityStationDef = DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef");

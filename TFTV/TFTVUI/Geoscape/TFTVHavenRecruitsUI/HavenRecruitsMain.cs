@@ -705,6 +705,7 @@ namespace TFTV
                     {
                         ApplySortMode(SortMode.Level, refresh: false);
                         RefreshColumns();
+                        HavenRecruitsButton.MarkRecruitsSeen();
                     }
 
                     _isOverlayVisible = show;

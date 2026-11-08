@@ -232,7 +232,8 @@ namespace TFTV
                         int before = spawn.TacticalFaction.TacticalActors.Count();
                         spawn.DeployForTurn(0);
                         int after = spawn.TacticalFaction.TacticalActors.Count();
-                        TFTVLogger.Always($"[DeploymentPhase] {spawn.ParticipantKind} ({spawn.TacticalFaction.TacticalFactionDef.name}) spawned {after - before} actor(s); {DescribeSpawnRules(spawn)}");
+                        TFTVLogger.Always($"[DeploymentPhase] {spawn.ParticipantKind} ({spawn.TacticalFaction.TacticalFactionDef.name}) spawned {after - before} actor(s), "
+                            + $"{spawn.DeploymentPointsUsed:0} of {spawn.MissionFactionData?.InitialDeploymentPoints:0} points; {DescribeSpawnRules(spawn)}");
                     }
                 }
                 finally

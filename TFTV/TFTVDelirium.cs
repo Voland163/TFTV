@@ -57,6 +57,25 @@ namespace TFTV
 
         public static Dictionary<int, int> CharactersDeliriumPerksAndMissions = new Dictionary<int, int>();
 
+        /// <summary>VO33 and VO36: a random Delirium perk the character does not have yet, or null.</summary>
+        internal static TacticalAbilityDef RollDeliriumPerk(IEnumerable<TacticalAbilityDef> owned)
+        {
+            List<TacticalAbilityDef> perks = new List<TacticalAbilityDef>
+            {
+                wolverineDef, InnerSight_AbilityDef, newAnxietyDef, hyperalgesiaAbilityDef, fasterSynapsesDef, Terror_AbilityDef,
+                newDerealizationDef, oneOfThemDef, bloodthirstyAbilityDef, feralDeliriumPerk
+            };
+
+            if (owned.Contains(wolverineCuredDef))
+            {
+                perks.Remove(wolverineDef);
+            }
+
+            perks = perks.Except(owned).ToList();
+
+            return perks.Count == 0 ? null : perks.GetRandomElement(new Random((int)Stopwatch.GetTimestamp()));
+        }
+
 
 
         [HarmonyPatch(typeof(CorruptionStatus), nameof(CorruptionStatus.GetMultiplier))]

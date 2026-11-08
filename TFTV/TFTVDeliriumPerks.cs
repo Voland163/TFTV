@@ -124,6 +124,32 @@ namespace TFTV
         }
 
       
+        /// <summary>VO36: what ImplementDeliriumPerks does at mission start, for a perk gained during the mission.</summary>
+        internal static void ApplyPerkGainedInMission(TacticalActor tacticalActor, TacticalAbilityDef perk)
+        {
+            if (perk == fasterSynapsesDef)
+            {
+                tacticalActor.Status.ApplyStatus(frenzy);
+            }
+            else if (perk == newAnxietyDef && !tacticalActor.Status.HasStatus(anxiety))
+            {
+                tacticalActor.Status.ApplyStatus(anxiety);
+            }
+            else if (perk == oneOfThemDef && !tacticalActor.HasGameTag(mistResistanceTag))
+            {
+                tacticalActor.Status.ApplyStatus(mistResistance);
+                tacticalActor.GameTags.Add(mistResistanceTag, GameTagAddMode.ReplaceExistingExclusive);
+            }
+            else if (perk == wolverineDef && !tacticalActor.Status.HasStatus(wolverinePassiveStatus))
+            {
+                tacticalActor.Status.ApplyStatus(wolverinePassiveStatus);
+            }
+            else if (perk == newDerealizationDef && !tacticalActor.Status.HasStatus(ignorePain))
+            {
+                tacticalActor.Status.ApplyStatus(ignorePain);
+            }
+        }
+
         public static void ApplyDeliriumPerksHyperAlgesiaFeralBloodThirstyTacticalActorOnAnotherActorDeath(TacticalActor tacticalActor, DeathReport death)
         {
             try 
@@ -169,6 +195,8 @@ namespace TFTV
                 try
                 {
                   
+                    TFTVVoidOmensExpansion.TacticalOmens.OnActorHurt(__instance, damageResult);
+
                     TacticalAbility hyperalgesia = __instance.GetAbilityWithDef<TacticalAbility>(hyperalgesiaAbilityDef);
                    
                     if (__instance.IsAlive && hyperalgesia != null && damageResult.HealthDamage>=1)

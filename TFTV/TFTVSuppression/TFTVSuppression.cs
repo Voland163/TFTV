@@ -1,7 +1,9 @@
-﻿using Base.Entities;
+using Base.Entities;
 using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
@@ -12,6 +14,7 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -80,7 +83,24 @@ namespace TFTV
 
             private static readonly object StatusSource = new object();
 
-            private static bool IsSuppressionEnabled => TFTVMain.Main?.Config?.TFTVSuppression ?? true;
+            internal static bool IsSuppressionEnabled => TFTVMain.Main?.Config?.TFTVSuppression ?? true;
+
+            /// <summary>
+            /// Suppression points still needed, on top of what landed since the actor's last turn, to pin it down
+            /// (Moderate). 0 when it already is; infinity when it can't be suppressed at all.
+            /// </summary>
+            internal static float PointsToModerate(TacticalActor actor)
+            {
+                if (actor == null || IsSuppressionExcluded(actor))
+                {
+                    return float.PositiveInfinity;
+                }
+
+                float threshold = SuppressionSettings.ModerateSuppressionThreshold * SuppressionSettings.GetThresholdMultiplierFor(actor);
+                float pending = ActorStates.TryGetValue(actor, out ActorSuppressionState state) ? state.Tracker.PendingSuppression : 0f;
+
+                return Mathf.Max(0f, threshold - pending);
+            }
 
             private static ActorSuppressionState GetActorState(TacticalActor actor)
             {
@@ -90,7 +110,7 @@ namespace TFTV
             /// <summary>
             /// Registers a suppression event for the supplied actor and weapon combination.
             /// </summary>
-            public static void RegisterSuppressionEvent(TacticalActor actor, Weapon weapon, float weight = 1f)
+            public static void RegisterSuppressionEvent(TacticalActor actor, Weapon weapon, float weight = 1f, string how = "hit")
             {
                 if (actor == null || !actor.IsAlive || weapon == null || weapon.WeaponDef == null || !weapon.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))
                 {
@@ -111,7 +131,13 @@ namespace TFTV
 
 
                 ActorSuppressionState state = GetActorState(actor);
+                float before = state.Tracker.PendingSuppression;
                 state.Tracker.RegisterEvent(actor, weapon, weight);
+
+                // Diagnostic for tuning the AI's Suppress estimate: one line per point (or pellet share) received.
+                TFTVLogger.Always($"[Suppression] {actor.DisplayName} +{state.Tracker.PendingSuppression - before:0.##} ({how}) from " +
+                    $"{shooter?.DisplayName} {weapon.WeaponDef.name}: {state.Tracker.PendingSuppression:0.#} of " +
+                    $"{SuppressionSettings.ModerateSuppressionThreshold * SuppressionSettings.GetThresholdMultiplierFor(actor):0} for Moderate");
 
                 if (ShouldApplyImmediatePenalty(actor))
                 {
@@ -137,6 +163,37 @@ namespace TFTV
                 }
 
                 UpdateSuppressionStatus(actor, state);
+                CancelReactionsIfPinned(actor, state);
+            }
+
+            /// <summary>
+            /// Moderate suppression or worse taken since the actor's last turn: it keeps its head down until that turn,
+            /// so it neither holds overwatch nor returns fire. What counts is the suppression that landed since its last
+            /// turn (pending), so the actor can set overwatch again on its own turn.
+            /// </summary>
+            public static bool BlocksReactionFire(TacticalActor actor)
+            {
+                if (!IsSuppressionEnabled || actor == null || IsSuppressionExcluded(actor) || !ActorStates.TryGetValue(actor, out ActorSuppressionState state))
+                {
+                    return false;
+                }
+
+                return SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression, actor).Level >= SuppressionLevel.Moderate;
+            }
+
+            private static void CancelReactionsIfPinned(TacticalActor actor, ActorSuppressionState state)
+            {
+                if (!actor.IsAlive || actor.Status == null
+                    || SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression, actor).Level < SuppressionLevel.Moderate)
+                {
+                    return;
+                }
+
+                foreach (OverwatchStatus overwatch in actor.Status.GetStatuses<OverwatchStatus>().ToList())
+                {
+                    actor.Status.UnapplyStatus(overwatch);
+                    TFTVLogger.Always($"[Suppression] {actor.DisplayName} is pinned down (moderate suppression): overwatch cancelled, no return fire until its turn");
+                }
             }
 
             /// <summary>
@@ -265,48 +322,145 @@ namespace TFTV
                 UpdateSuppressionStatus(actor, state);
             }
 
-            internal static void TryRegisterSuppressionNearMiss(ProjectileLogic logic, CastHit hit)
+            private static readonly AccessTools.FieldRef<ProjectileLogic, DamageAccumulation> DamageAccumRef =
+                AccessTools.FieldRefAccess<ProjectileLogic, DamageAccumulation>("_damageAccum");
+
+            private static readonly AccessTools.FieldRef<DamageAccumulation, List<DamageAccumulation.TargetData>> TargetsDataRef =
+                AccessTools.FieldRefAccess<DamageAccumulation, List<DamageAccumulation.TargetData>>("_targetsData");
+
+            private static GameTagDef _gunTag;
+            private static GameTagDef GunTag => _gunTag ?? (_gunTag = DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"));
+
+            /// <summary>
+            /// Every gun projectile, hit or miss, suppresses each enemy of the shooter whose body its path passed within
+            /// NearMissRadius of, along the whole flight: a burst over someone's head into the far wall counts, not only
+            /// an impact next to them. Actors it hit are left out (the hit itself suppresses them), and so are the
+            /// shooter's friends, or every shot past a team mate would pin him down.
+            /// </summary>
+            internal static void RegisterPassBySuppression(ProjectileLogic logic, CastHit lastHit)
             {
-                if (logic == null || logic.IsSimulation)
+                if (logic == null || logic.IsSimulation || logic.Trajectory == null)
                 {
                     return;
                 }
 
                 TacticalActor shooter = logic.TacticalActor;
-                if (shooter == null || !shooter.IsAlive || hit.Collider == null)
+                Weapon weapon = logic.Weapon;
+
+                if (shooter == null || weapon?.WeaponDef == null || !weapon.WeaponDef.Tags.Contains(GunTag) || shooter.TacticalLevel?.Map == null)
                 {
                     return;
                 }
 
-                if (hit.Collider.GetComponentInParent<TacticalActorBase>() != null)
+                logic.Trajectory.Sample(0f, out Vector3 from, out _);
+                Vector3 to;
+
+                if (lastHit.Collider != null)
                 {
-                    return;
+                    to = lastHit.Point;
+                }
+                else
+                {
+                    logic.Trajectory.Sample(logic.Trajectory.Length, out to, out _);
                 }
 
-                TacticalMap map = shooter.TacticalLevel.Map;
-                if (map == null)
+                HashSet<TacticalActorBase> hit = new HashSet<TacticalActorBase>();
+                DamageAccumulation accumulation = DamageAccumRef(logic);
+                List<DamageAccumulation.TargetData> targets = accumulation != null ? TargetsDataRef(accumulation) : null;
+
+                if (targets != null)
                 {
-                    return;
+                    foreach (DamageAccumulation.TargetData data in targets)
+                    {
+                        TacticalActorBase target = data?.Target?.GetActor();
+
+                        if (target != null)
+                        {
+                            hit.Add(target);
+                        }
+                    }
                 }
 
-                Vector3 impactPoint = hit.Point;
-                float radius = SuppressionSettings.NearMissRadius;
-                float sqrRadius = radius * radius;
+                TacticalActorBase struck = lastHit.Collider != null ? lastHit.Collider.GetComponentInParent<TacticalActorBase>() : null;
 
-                foreach (TacticalActor nearbyActor in map.GetActors((TacticalActor candidate) => candidate.IsAlive))
+                if (struck != null)
                 {
-                    if (nearbyActor == shooter)
+                    hit.Add(struck);
+                }
+
+                foreach (TacticalActor actor in shooter.TacticalLevel.Map.GetActors<TacticalActor>(a => a.IsAlive && a != shooter))
+                {
+                    if (hit.Contains(actor) || actor.RelationTo(shooter) != FactionRelation.Enemy)
                     {
                         continue;
                     }
 
-                    Vector3 offset = nearbyActor.Pos - impactPoint;
-                    offset.y = 0f;
-                    if (offset.sqrMagnitude <= sqrRadius)
+                    float agentRadius = actor.NavigationComponent != null ? actor.NavigationComponent.AgentNavSettings.AgentRadius : 0.5f;
+                    float reach = SuppressionSettings.NearMissRadius + Mathf.Max(0f, agentRadius - 0.5f);
+                    Vector3 feet = actor.Pos;
+                    Vector3 head = feet + Vector3.up * Mathf.Max(1.8f, agentRadius * 2f);
+
+                    float distanceSqr = SegmentDistanceSqr(from, to, feet, head);
+
+                    if (distanceSqr <= reach * reach)
                     {
-                        RegisterSuppressionEvent(nearbyActor, logic.Weapon, 1f);
+                        RegisterSuppressionEvent(actor, weapon, 1f, $"near miss {Mathf.Sqrt(distanceSqr):0.0}m");
                     }
                 }
+            }
+
+            /// <summary>Squared shortest distance between segments p1-q1 and p2-q2.</summary>
+            private static float SegmentDistanceSqr(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)
+            {
+                Vector3 d1 = q1 - p1;
+                Vector3 d2 = q2 - p2;
+                Vector3 r = p1 - p2;
+                float a = Vector3.Dot(d1, d1);
+                float e = Vector3.Dot(d2, d2);
+                float f = Vector3.Dot(d2, r);
+                float s;
+                float t;
+
+                if (a <= 1e-6f && e <= 1e-6f)
+                {
+                    return r.sqrMagnitude;
+                }
+
+                if (a <= 1e-6f)
+                {
+                    s = 0f;
+                    t = Mathf.Clamp01(f / e);
+                }
+                else
+                {
+                    float c = Vector3.Dot(d1, r);
+
+                    if (e <= 1e-6f)
+                    {
+                        t = 0f;
+                        s = Mathf.Clamp01(-c / a);
+                    }
+                    else
+                    {
+                        float b = Vector3.Dot(d1, d2);
+                        float denom = a * e - b * b;
+                        s = denom > 1e-6f ? Mathf.Clamp01((b * f - c * e) / denom) : 0f;
+                        t = (b * s + f) / e;
+
+                        if (t < 0f)
+                        {
+                            t = 0f;
+                            s = Mathf.Clamp01(-c / a);
+                        }
+                        else if (t > 1f)
+                        {
+                            t = 1f;
+                            s = Mathf.Clamp01((b - c) / a);
+                        }
+                    }
+                }
+
+                return ((p1 + d1 * s) - (p2 + d2 * t)).sqrMagnitude;
             }
 
             private static bool ShouldApplyImmediatePenalty(TacticalActor actor)
@@ -541,15 +695,21 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(ProjectileLogic), "AffectTarget")] //VERIFIED
-                private static class ProjectileLogic_AffectTarget_Patch
+                // A prefix: OnTrajectoryEnd applies the damage and then clears the accumulation that says whom it hit.
+                [HarmonyPatch(typeof(ProjectileLogic), "OnTrajectoryEnd")]
+                private static class ProjectileLogic_OnTrajectoryEnd_Patch
                 {
-                    private static void Postfix(ProjectileLogic __instance, CastHit hit)
+                    private static void Prefix(ProjectileLogic __instance, CastHit lastHit)
                     {
-                        if (!IsSuppressionEnabled) return;
-
-
-                        TryRegisterSuppressionNearMiss(__instance, hit);
+                        try
+                        {
+                            if (!IsSuppressionEnabled) return;
+                            RegisterPassBySuppression(__instance, lastHit);
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
                     }
                 }
 
@@ -581,7 +741,7 @@ namespace TFTV
             public const float MaxSuppressionPoints = HeavySuppressionThreshold;
 
             /// <summary>
-            /// Radius in world units that counts as a near miss when a projectile hits non-actor geometry.
+            /// How close (world units) a projectile's path must pass to an enemy's body to suppress it.
             /// </summary>
             public const float NearMissRadius = 1.5f;
 
@@ -646,6 +806,11 @@ namespace TFTV
             {
                 float maxSuppression = GetMaxSuppressionFor(actor);
                 return Mathf.Clamp(value, 0f, maxSuppression);
+            }
+
+            internal static float GetThresholdMultiplierFor(TacticalActor actor)
+            {
+                return GetThresholdMultiplier(actor);
             }
 
             private static float GetThresholdMultiplier(TacticalActor actor)

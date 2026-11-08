@@ -116,11 +116,8 @@ namespace TFTV
                     return;
                 }
 
-                // Healing the arm's parts to full re-enables the slot, as any restoration does.
-                foreach (TacticalItem item in arm.GetAllDirectItems(false))
-                {
-                    item?.GetHealth()?.SetToMax();
-                }
+                // Healing the arm to full re-enables the slot, as any restoration does.
+                arm.GetHealth()?.SetToMax();
 
                 Weapon gun = actor.Equipments?.GetWeapons()?.FirstOrDefault(weapon => weapon?.WeaponDef != null && PincerForGun.ContainsKey(weapon.WeaponDef.name));
                 string regrown = "pincer restored";

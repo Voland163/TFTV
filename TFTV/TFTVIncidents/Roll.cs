@@ -340,6 +340,11 @@ namespace TFTV.TFTVIncidents
         private static void ScheduleNextRoll(GeoLevelController geoLevelController, int currentHour)
         {
             int hoursUntilNextRoll = UnityEngine.Random.Range(MinRollHours, MaxRollHours + 1);
+
+            if (TFTVVoidOmens.VoidOmensCheck[34])
+            {
+                hoursUntilNextRoll /= TFTVVoidOmensExpansion.GeoscapeOmens.VO34IncidentFrequency;
+            }
             geoLevelController.EventSystem.SetVariable(IncidentNextRollHourVariable, currentHour + hoursUntilNextRoll);
             TFTVLogger.Always($"[Incidents] Next roll scheduled in {hoursUntilNextRoll} hours.");
         }

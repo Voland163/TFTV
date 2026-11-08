@@ -100,6 +100,8 @@ namespace TFTV
                 TFTVVanillaFixes.Geoscape.GeoscapeVanillaFixes.ApplyGenerateFactionReward(__instance, eventID, ref __result);
                 TFTVAircraftReworkMain.MarketPlace.ApplyGenerateFactionReward(__instance, faction);
                 TFTVIncidents.AffinityGeoscapeEffects.ExplorationGeoscapeBenefits.ApplyExplorationBenefitOption1IncreasedReward(context, eventID, ref __result);
+                TFTVVoidOmensExpansion.GeoscapeOmens.HalveIncidentRewards(eventID, __result);
+                TFTVVoidOmensExpansion.WorldOmens.RaiseMistExplorationRewards(context, __result);
             }
         }
 
@@ -217,6 +219,7 @@ namespace TFTV
                     TFTVODIandVoidOmenRoll.ApplyNewODIGeoAlienFactionFactionDailyUpdate(__instance, ____evolutionProgress);
                     TFTVPandoranProgress.AddPandoranEvolutionPointsGeoAlienFactionUpdateFactionDaily(__instance);
                     TFTVPandoranColonyRange.AbandonColoniesWithoutTargets(__instance);
+                    TFTVVoidOmensExpansion.WorldOmens.OnDailyUpdate(__instance.GeoLevel);
                 }
                 catch (Exception e)
                 {

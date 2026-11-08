@@ -1,10 +1,13 @@
 ﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +16,17 @@ namespace TFTV.TFTVHavenRecruitsUI
 {
     internal class HavenRecruitsButton
     {
+        // Kept on the event system so a pulse the player has not answered survives saves.
+        private const string NewRecruitsVariable = "TFTV_HavenRecruitsUnseen";
+
+        private static readonly Color FlashColor = new Color(1f, 0.4f, 0f, 1f);
+
         private static Image _recruitButtonIcon;
+
+        // Who was on offer at the last check. A save brings every recruit back as a new object, so a new level
+        // starts over from what it has instead of reading the whole list as new.
+        private static GeoLevelController _watchedLevel;
+        private static Dictionary<GeoHaven, GeoUnitDescriptor> _knownRecruits = new Dictionary<GeoHaven, GeoUnitDescriptor>();
 
         [HarmonyPatch(typeof(UIModuleSiteManagement), nameof(UIModuleSiteManagement.Awake))]
         public static class AddRecruitsButton_OnSiteManagementAwake
@@ -398,6 +411,53 @@ namespace TFTV.TFTVHavenRecruitsUI
             }
         }
 
+        /// <summary>The overlay was opened: the button stops calling for attention.</summary>
+        internal static void MarkRecruitsSeen()
+        {
+            try
+            {
+                GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.EventSystem?.SetVariable(NewRecruitsVariable, 0);
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        /// <summary>
+        /// Someone joined the list the overlay shows since the player last opened it: a recruit spawned, or a haven
+        /// already holding one was found or started dealing with Phoenix.
+        /// </summary>
+        private static bool HasUnseenRecruits(GeoLevelController level)
+        {
+            GeoscapeEventSystem eventSystem = level?.EventSystem;
+
+            if (eventSystem == null)
+            {
+                return false;
+            }
+
+            GeoFaction[] factions = { level.AnuFaction, level.NewJerichoFaction, level.SynedrionFaction };
+
+            // Nothing to compare against until the site data has loaded.
+            if (factions.All(faction => faction == null || !faction.Havens.Any()))
+            {
+                return false;
+            }
+
+            Dictionary<GeoHaven, GeoUnitDescriptor> onOffer = factions
+                .SelectMany(faction => HavenRecruitsUtils.GetRecruitingHavens(faction))
+                .ToDictionary(haven => haven, haven => haven.AvailableRecruit);
+
+            if (_watchedLevel == level
+                && onOffer.Any(pair => !_knownRecruits.TryGetValue(pair.Key, out GeoUnitDescriptor known) || known != pair.Value))
+            {
+                eventSystem.SetVariable(NewRecruitsVariable, 1);
+            }
+
+            _watchedLevel = level;
+            _knownRecruits = onOffer;
+
+            return eventSystem.GetVariable(NewRecruitsVariable) > 0;
+        }
+
         internal static void ResetButtonIconColor()
         {
             try
@@ -452,10 +512,15 @@ namespace TFTV.TFTVHavenRecruitsUI
             controller.Initialize(button);
         }
 
+        /// <summary>Shows the button once the research is done, and pulses its icon while there are recruits the player has not seen.</summary>
         private sealed class HavenRecruitsButtonVisibilityController : MonoBehaviour
         {
+            private const float PulsePeriodSeconds = 1.2f;
+            private const float StateCheckIntervalSeconds = 1f;
+
             private GameObject _button;
             private bool _lastVisible;
+            private bool _hasUnseenRecruits;
             private Coroutine _refreshRoutine;
 
             internal void Initialize(GameObject button)
@@ -486,15 +551,58 @@ namespace TFTV.TFTVHavenRecruitsUI
                     StopCoroutine(_refreshRoutine);
                     _refreshRoutine = null;
                 }
+
+                _hasUnseenRecruits = false;
+                ResetButtonIconColor();
             }
 
             private IEnumerator RefreshRoutine()
             {
-                var wait = new WaitForSecondsRealtime(1f);
+                var wait = new WaitForSecondsRealtime(StateCheckIntervalSeconds);
                 while (true)
                 {
-                    yield return wait;
+                    RefreshState();
+
+                    if (!_hasUnseenRecruits)
+                    {
+                        yield return wait;
+                        continue;
+                    }
+
+                    float nextStateCheck = Time.unscaledTime + StateCheckIntervalSeconds;
+
+                    while (Time.unscaledTime < nextStateCheck)
+                    {
+                        UpdateFlashing();
+                        yield return null;
+                    }
+                }
+            }
+
+            private void RefreshState()
+            {
+                try
+                {
                     UpdateVisibility(force: false);
+
+                    bool wasFlashing = _hasUnseenRecruits;
+                    _hasUnseenRecruits = _lastVisible && HasUnseenRecruits(GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>());
+
+                    // Leaving the pulse behind means the icon is stuck mid-fade.
+                    if (wasFlashing && !_hasUnseenRecruits)
+                    {
+                        ResetButtonIconColor();
+                    }
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private void UpdateFlashing()
+            {
+                if (_recruitButtonIcon != null)
+                {
+                    float t = Mathf.PingPong(Time.unscaledTime * (2f / PulsePeriodSeconds), 1f);
+                    _recruitButtonIcon.color = Color.Lerp(Color.white, FlashColor, t);
                 }
             }
 

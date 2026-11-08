@@ -77,7 +77,9 @@ namespace PRMBetterClasses
                     list = actors
                         // Get alive enemies for the shooter
                         .Where((TacticalActor actor) => {
-                            return actor.IsAlive && actor.RelationTo(shooter) == FactionRelation.Enemy;
+                            // Pinned down by moderate suppression since its last turn: no return fire.
+                            return actor.IsAlive && actor.RelationTo(shooter) == FactionRelation.Enemy
+                                && !TFTVSuppression.SuppressionRuntime.BlocksReactionFire(actor);
                         })
                         // Select the ones that have the return fire ability, ordered by priority
                         // Rmq: it is possible to have an actor twice if he has multiple RF abilities

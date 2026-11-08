@@ -144,6 +144,14 @@ namespace TFTV
                 {
                     TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
                 }
+                foreach (int extraRevenantId in TFTVRevenant.ExtraRevenantIds)
+                {
+                    if (TFTVRevenant.DeadSoldiersDelirium.ContainsKey(extraRevenantId))
+                    {
+                        TFTVRevenant.DeadSoldiersDelirium[extraRevenantId] += 1;
+                    }
+                }
+                TFTVRevenant.ExtraRevenantIds.Clear();
                 TFTVRevenant.TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
                 TFTVProjectOsiris.RunProjectOsiris(gsController);
                 Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));

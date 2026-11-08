@@ -171,6 +171,21 @@ namespace TFTV
                         TacticalActor actor = (TacticalActor)aiTarget.Actor;
                         TacAITarget target = (TacAITarget)aiTarget.Target;
 
+                        //falling back moves to spots no enemy can see on purpose, which Cover() would cancel
+                        if (__instance.ActionDef == TFTVAICombatAbilities.PeekAndFallBackAI.FallBackActionDef)
+                        {
+                            TFTVAICombatAbilities.PeekAndFallBackAI.RecordFallBack(actor, target);
+                            return;
+                        }
+
+                        //so do holding and scouting, and going into the Mist
+                        if (TFTVAICombatAbilities.Stances.RecordMove(__instance.ActionDef, actor, target)
+                            || TFTVAICombatAbilities.MistSeeking.RecordMove(__instance.ActionDef, actor, target)
+                            || TFTVAICombatAbilities.Scavenging.RecordMove(__instance.ActionDef, actor, target))
+                        {
+                            return;
+                        }
+
                         if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize || actor.Status != null && actor.Status.HasStatus<PanicStatus>())
                         {
                             return;

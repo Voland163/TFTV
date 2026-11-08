@@ -1438,6 +1438,11 @@ namespace TFTV.TFTVIncidents
                         count *= 2;
                     }
 
+                    if (TFTVVoidOmens.VoidOmensCheck[34])
+                    {
+                        count = Mathf.Max(1, count / 2);
+                    }
+
                     return true;
                 }
             }

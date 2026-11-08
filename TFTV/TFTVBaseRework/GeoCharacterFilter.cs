@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.Entities.Statuses;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
@@ -235,6 +236,76 @@ namespace TFTV.TFTVBaseRework
 
         }
 
+
+        /// <summary>
+        /// The log's "crew ready" message: vanilla waits for everyone in the aircraft or base to be healed and rested,
+        /// and fires when any of them gets there. Hidden personnel count for neither, so a base full of them no longer
+        /// reports itself ready, and they don't hold back the operatives stationed with them.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoscapeLog), "CheckForRestedInContainer")]
+        internal static class GeoscapeLog_CheckForRestedInContainer_HiddenPersonnel_Patch
+        {
+            private static bool Prefix(GeoCharacter restedCharacter, List<IGeoCharacterContainer> ____justRestedContainer, GeoFaction ____faction)
+            {
+                try
+                {
+                    if (!Enabled)
+                    {
+                        return true;
+                    }
+
+                    if (HiddenOperativeMarkerFilter.ShouldHide(restedCharacter)
+                        || ____justRestedContainer.Any(container => container.GetAllCharacters().Contains(restedCharacter)))
+                    {
+                        return false;
+                    }
+
+                    IGeoCharacterContainer home = ____faction.Vehicles.FirstOrDefault(vehicle => vehicle.GetAllCharacters().Contains(restedCharacter));
+
+                    if (home == null)
+                    {
+                        home = ____faction.Sites.FirstOrDefault(site => site.GetAllCharacters().Contains(restedCharacter));
+                    }
+
+                    if (home == null)
+                    {
+                        return false;
+                    }
+
+                    List<GeoCharacter> operatives = HiddenOperativeMarkerFilter.FilterCharacters(home.GetAllCharacters()).ToList();
+
+                    if (operatives.Count > 0 && operatives.All(character => !character.IsInjured && (character.Fatigue == null || character.Fatigue.IsFullyRested)))
+                    {
+                        ____justRestedContainer.Add(home);
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>The same stamina event logs "exhausted" at 0, which an event draining everyone sets off for hidden personnel.</summary>
+        [HarmonyPatch(typeof(GeoscapeLog), "Stamina_StatChangeEvent")]
+        internal static class GeoscapeLog_Stamina_StatChangeEvent_HiddenPersonnel_Patch
+        {
+            private static bool Prefix(BaseStat __0)
+            {
+                try
+                {
+                    return !HiddenOperativeMarkerFilter.ShouldHide(__0?.Owner as GeoCharacter);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
 
         internal static class HiddenOperativeMarkerFilter
         {

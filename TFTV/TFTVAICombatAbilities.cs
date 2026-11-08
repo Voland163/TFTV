@@ -23,7 +23,7 @@ using UnityEngine;
 namespace TFTV
 {
     /// <summary>
-    /// Three additions to the tactical AI:
+    /// Five additions to the tactical AI:
     ///
     /// 1. Spider drone launcher. The launcher deals (next to) no damage - it drops friendly drones -
     ///    so AIAttackPositionConsideration always scores it 0 and no AI ever fires one. We give the
@@ -36,12 +36,18 @@ namespace TFTV
     ///    "bash with whatever you can" ability - the same attack the player gets on the weapon.
     ///
     /// 3. Mind control reservations. At the start of an AI faction turn we predict which enemy each
-    ///    mind controller is going to take, and stop the rest of the faction from spending its turn
-    ///    shooting that enemy.
+    ///    mind controller is going to take; the squad planner (TFTVAISquadPlanner) then stops the rest
+    ///    of the faction from spending its turn shooting that enemy.
     ///
-    /// See TFTVArtOfCrab for the rest of the AI work; this file only holds the three features above.
+    /// 4. Peek and fall back. Human gunners take a short step, shoot, and step back out of sight
+    ///    instead of standing in the open or walking further in.
+    ///
+    /// 5. Stances (TFTVAIStances.cs). Human factions the player has to wipe out scout with one or two
+    ///    soldiers and hold positions until they have the upper hand.
+    ///
+    /// See TFTVArtOfCrab for the rest of the AI work; this file only holds the five features above.
     /// </summary>
-    internal class TFTVAICombatAbilities
+    internal partial class TFTVAICombatAbilities
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
@@ -53,6 +59,11 @@ namespace TFTV
         {
             SpiderDroneLauncherAI.CreateDefs();
             BashAI.CreateDefs();
+            PeekAndFallBackAI.CreateDefs();
+            Stances.CreateDefs();
+            MistSeeking.CreateDefs();
+            Scavenging.CreateDefs();
+            SuppressAI.CreateDefs();
         }
 
         #region shared def surgery helpers
@@ -806,8 +817,30 @@ namespace TFTV
                 _reservations.Clear();
             }
 
+            /// <summary>Whether <paramref name="controller"/> is still due to mind control <paramref name="target"/> this turn.</summary>
+            internal static bool IsPending(TacticalActor controller, TacticalActorBase target)
+            {
+                foreach (Reservation reservation in _reservations)
+                {
+                    if (reservation.Controller == controller && reservation.Target == target)
+                    {
+                        return IsStillPending(reservation);
+                    }
+                }
+
+                return false;
+            }
+
+            /// <summary>The mind controllers still due to act this turn, each with the enemy it is expected to take.</summary>
+            internal static List<KeyValuePair<TacticalActor, TacticalActorBase>> Pending()
+            {
+                return _reservations.Where(IsStillPending)
+                    .Select(r => new KeyValuePair<TacticalActor, TacticalActorBase>(r.Controller, r.Target))
+                    .ToList();
+            }
+
             /// <summary>
-            /// Called once per AI faction turn, from TFTVArtOfCrab.TurnOrder.SortOutAITurnOrder, with the
+            /// Called once per AI faction turn, by the squad planner's mind control hold pass, with the
             /// faction's actors already in the order they will act in.
             /// </summary>
             internal static void PredictMindControlTargets(List<TacticalActor> sortedAIActors)
@@ -923,38 +956,8 @@ namespace TFTV
                     0f, 1f);
             }
 
-            /// <summary>
-            /// True while some other actor of <paramref name="actor"/>'s faction is still due to mind
-            /// control <paramref name="target"/> this turn. The controller itself is not held back: if
-            /// its mind control falls through, it should still be free to attack.
-            /// </summary>
-            internal static bool IsReservedForMindControl(TacticalActor actor, TacticalActorBase target)
-            {
-                if (_reservations.Count == 0 || actor == null || target == null)
-                {
-                    return false;
-                }
-
-                for (int i = _reservations.Count - 1; i >= 0; i--)
-                {
-                    Reservation reservation = _reservations[i];
-
-                    if (!IsStillPending(reservation))
-                    {
-                        _reservations.RemoveAt(i);
-                        continue;
-                    }
-
-                    if (reservation.Target == target
-                        && reservation.Controller != actor
-                        && reservation.Controller.TacticalFaction == actor.TacticalFaction)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
+            // The hold itself is a 0 weight written by the squad planner's mind control hold pass
+            // (TFTVAISquadFocus.cs), exempting the controller and lapsing through IsPending.
 
             /// <summary>
             /// A reservation only lasts until the controller has taken its turn - or has been killed,
@@ -989,7 +992,366 @@ namespace TFTV
 
         #endregion
 
+        #region 4. peek and fall back
+
+        /// <summary>
+        /// Long-range human gunners shoot and get out of sight again. Two actions do this:
+        ///
+        /// Peek is MoveAndShoot limited to a short step, and only to spots from which the actor still
+        /// has the AP to walk the same distance back after firing.
+        ///
+        /// Fall back fires after any shot from a long-range gun if an enemy can see the actor. It
+        /// outranks a second shot, so an actor with a hiding spot in reach always takes it; one without
+        /// keeps shooting. Afterwards every other plain move is off for the turn, or the leftover AP
+        /// would walk the actor straight back out through Advance or Dash.
+        ///
+        /// Pistols are left out of the peek: AIActionMoveAndAttack spends all of a 1 AP weapon's AP on
+        /// one burst (TFTVArtOfCrab.SingleAPWeaponsMultipleShots), so nothing would be left to step back.
+        /// Shotguns are left out of both by range, and keep rushing.
+        /// </summary>
+        internal static class PeekAndFallBackAI
+        {
+            /// <summary>Share of the actor's full move. Peek shares MoveAndShoot's 0.5 otherwise.</summary>
+            private const float PeekZoneRange = 0.25f;
+
+            /// <summary>Above MoveAndShoot by more than AISettingsDef's 0.75 cut, so peek replaces it where both work.</summary>
+            private const float PeekWeight = 120f;
+
+            /// <summary>Above Reload (1000) and any shot, below Flee (9999).</summary>
+            private const float FallBackWeight = 1500f;
+
+            /// <summary>TFTV's shotguns sit at 13; 17 keeps the indie assault rifle in.</summary>
+            private const int MinEffectiveRange = 17;
+
+            private const int SingleAPWeaponPerc = 25;
+
+            internal static AIActionMoveToPositionDef FallBackActionDef;
+
+            private static AIActionMoveAndAttackDef _peekActionDef;
+            private static AINumberOfAttacksConsiderationDef _canStepBackConsiderationDef;
+            private static AIHasEquipmentConsiderationDef _shouldFallBackConsiderationDef;
+            private static AIHasEquipmentConsiderationDef _hasNotFallenBackConsiderationDef;
+            private static GameTagDef _gunTag;
+
+            internal static AIHasEquipmentConsiderationDef HasNotFallenBackConsiderationDef => _hasNotFallenBackConsiderationDef;
+
+            internal static AIActionMoveAndAttackDef PeekActionDef => _peekActionDef;
+
+            private static readonly HashSet<TacticalActor> ShotThisTurn = new HashSet<TacticalActor>();
+            private static readonly HashSet<TacticalActor> FellBackThisTurn = new HashSet<TacticalActor>();
+            private static readonly HashSet<TacticalActor> FallBackLogged = new HashSet<TacticalActor>();
+
+            internal static void CreateDefs()
+            {
+                try
+                {
+                    _gunTag = DefCache.GetDef<GameTagDef>("GunWeapon_TagDef");
+
+                    AIHasEquipmentConsiderationDef hasGun = DefCache.GetDef<AIHasEquipmentConsiderationDef>("HasGun_AIConsiderationDef");
+
+                    _shouldFallBackConsiderationDef = Helper.CreateDefFromClone(hasGun, "d1da5bb3-2494-4201-abeb-1d8ff74aa3ce", "TFTV_ShouldFallBack_AIConsiderationDef");
+                    _hasNotFallenBackConsiderationDef = Helper.CreateDefFromClone(hasGun, "e8a5a747-25d6-4ddb-89bd-f01abc81ab6c", "TFTV_HasNotFallenBack_AIConsiderationDef");
+
+                    _canStepBackConsiderationDef = Helper.CreateDefFromClone(
+                        DefCache.GetDef<AINumberOfAttacksConsiderationDef>("NumberOfAttacks_AIConsiderationDef"),
+                        "270bfc4d-760b-4082-8635-6f2232062474",
+                        "TFTV_CanStepBack_AIConsiderationDef");
+
+                    CreatePeek();
+                    CreateFallBack();
+
+                    foreach (AIActionMoveToPositionDef move in DefCache.GetDef<AIActionsTemplateDef>(SoldierAITemplate).ActionDefs.OfType<AIActionMoveToPositionDef>())
+                    {
+                        if (move != FallBackActionDef)
+                        {
+                            AddEarlyExit(move, _hasNotFallenBackConsiderationDef);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void CreatePeek()
+            {
+                _peekActionDef = Helper.CreateDefFromClone(
+                    DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndShoot_AIActionDef"),
+                    "9c0dc570-a876-47cf-8462-833128f07e4e",
+                    "TFTV_PeekAndShoot_AIActionDef");
+
+                _peekActionDef.Weight = PeekWeight;
+
+                // NumberOfAttacks halves any move that costs a second shot, and giving that shot up is
+                // the whole point here.
+                RemoveConsiderations(_peekActionDef, typeof(AINumberOfAttacksConsiderationDef));
+
+                AITargetEvaluation positions = _peekActionDef.Evaluations.First(e => e.TargetGeneratorDef is AIActorMovementZoneTargetGeneratorDef);
+
+                AIActorMovementZoneTargetGeneratorDef zone = Helper.CreateDefFromClone(
+                    (AIActorMovementZoneTargetGeneratorDef)positions.TargetGeneratorDef,
+                    "92b2f5b9-b10f-4f81-97be-2d050c8da7c3",
+                    "TFTV_PeekZone_AITargetGeneratorDef");
+
+                zone.ZoneRange = PeekZoneRange;
+
+                positions.TargetGeneratorDef = zone;
+                positions.Considerations = positions.Considerations.AddToArray(new AIAdjustedConsideration
+                {
+                    Consideration = _canStepBackConsiderationDef,
+                    ScoreCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f)
+                });
+
+                AddActionToTemplate(SoldierAITemplate, _peekActionDef);
+            }
+
+            private static void CreateFallBack()
+            {
+                FallBackActionDef = Helper.CreateDefFromClone(
+                    DefCache.GetDef<AIActionMoveToPositionDef>("MoveToSafePosition_AIActionDef"),
+                    "bbdc08f8-10ab-4524-80b4-a8b54667c674",
+                    "TFTV_FallBack_AIActionDef");
+
+                FallBackActionDef.Weight = FallBackWeight;
+
+                AddEarlyExit(FallBackActionDef, _shouldFallBackConsiderationDef);
+
+                AITargetEvaluation positions = FallBackActionDef.Evaluations[0];
+
+                AIActorMovementZoneTargetGeneratorDef zone = Helper.CreateDefFromClone(
+                    (AIActorMovementZoneTargetGeneratorDef)positions.TargetGeneratorDef,
+                    "c7be7f07-3e91-4bb1-8a26-0f43b6d1e5a9",
+                    "TFTV_FallBackZone_AITargetGeneratorDef");
+
+                zone.IncludeSelfActorPosition = false;
+
+                positions.TargetGeneratorDef = zone;
+
+                // MoveToSafePosition's strategic position reads the true enemy positions, so it goes.
+                // Spots mostly in view score nothing; among the rest, Stances adds cover toward the
+                // enemy, and distance only breaks ties: get behind something, don't just run back.
+                positions.Considerations = new AIAdjustedConsideration[]
+                {
+                    new AIAdjustedConsideration
+                    {
+                        Consideration = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("NoLineofSight_AIConsiderationDef"),
+                        ScoreCurve = AnimationCurve.Linear(0.5f, 0f, 1f, 1f)
+                    },
+                    new AIAdjustedConsideration
+                    {
+                        Consideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("ClosestLineToEnemy_AIConsiderationDef"),
+                        ScoreCurve = AnimationCurve.Linear(0f, 1f, 1f, 0.85f)
+                    },
+                    positions.Considerations.First(c => c.Consideration is AISpreadConsiderationDef)
+                };
+
+                AddActionToTemplate(SoldierAITemplate, FallBackActionDef);
+            }
+
+            internal static void AddEarlyExit(AIActionDef actionDef, AIConsiderationDef considerationDef)
+            {
+                actionDef.EarlyExitConsiderations = actionDef.EarlyExitConsiderations.AddToArray(new AIAdjustedConsideration
+                {
+                    Consideration = considerationDef,
+                    ScoreCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f)
+                });
+            }
+
+            /// <summary>Same exclusions as TFTVArtOfCrab.StepOutOfCoverFix: big actors and the panicked.</summary>
+            internal static bool IsRegularSoldier(TacticalActor actor)
+            {
+                return actor.NavigationComponent.AgentNavSettings.AgentRadius < TacticalMap.HalfTileSize
+                    && (actor.Status == null || !actor.Status.HasStatus<PanicStatus>());
+            }
+
+            internal static bool IsGun(Weapon weapon)
+            {
+                return weapon.WeaponDef.Tags.Contains(_gunTag);
+            }
+
+            internal static bool IsLongRangeGun(Weapon weapon)
+            {
+                return weapon.WeaponDef.Tags.Contains(_gunTag) && weapon.WeaponDef.EffectiveRange >= MinEffectiveRange;
+            }
+
+            internal static bool IsCanStepBackConsideration(BaseDef def)
+            {
+                return _canStepBackConsiderationDef != null && def == _canStepBackConsiderationDef;
+            }
+
+            /// <summary>Whether, after walking to the target and firing, there is AP left to walk back.</summary>
+            internal static bool CanStepBack(TacticalActor actor, TacAITarget target)
+            {
+                if (!(target.Equipment is Weapon weapon)
+                    || weapon.WeaponDef.APToUsePerc <= SingleAPWeaponPerc
+                    || !IsLongRangeGun(weapon)
+                    || !IsRegularSoldier(actor))
+                {
+                    return false;
+                }
+
+                float apAfterShot = actor.CharacterStats.ActionPoints - target.PathLength - actor.Equipments.GetAPToUseEquipment(weapon);
+
+                return apAfterShot >= target.PathLength;
+            }
+
+            /// <summary>The two early exits are clones of HasGun; returns false for any other def.</summary>
+            internal static bool TryScoreGate(BaseDef def, TacticalActor actor, out float score)
+            {
+                score = 0f;
+
+                if (actor == null)
+                {
+                    return false;
+                }
+
+                if (_hasNotFallenBackConsiderationDef != null && def == _hasNotFallenBackConsiderationDef)
+                {
+                    score = FellBackThisTurn.Contains(actor) ? 0f : 1f;
+                    return true;
+                }
+
+                if (_shouldFallBackConsiderationDef != null && def == _shouldFallBackConsiderationDef)
+                {
+                    bool shot = ShotThisTurn.Contains(actor);
+                    bool regular = IsRegularSoldier(actor);
+                    bool seen = shot && regular && IsSeen(actor);
+
+                    score = shot && !FellBackThisTurn.Contains(actor) && regular && seen ? 1f : 0f;
+
+                    // Once per shooter and turn: why it will or won't look for a hiding spot.
+                    if (shot && FallBackLogged.Add(actor))
+                    {
+                        TFTVLogger.Always($"TFTV AI fall back: {actor.DisplayName} shot this turn; regular {regular}, seen by an enemy {seen}, " +
+                            $"AP left {(float)actor.CharacterStats.ActionPoints:0.##} of {actor.CharacterStats.ActionPoints.Max:0.##}");
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            internal static bool IsSeen(TacticalActor actor)
+            {
+                float perception = actor.GetAdjustedPerceptionValue();
+                float perceptionRange = perception * perception;
+
+                foreach (TacticalActorBase enemy in actor.TacticalFaction.AIBlackboard.GetEnemies(actor.AIActor.GetEnemyMask(ActorType.Combatant), true))
+                {
+                    if ((actor.Pos - enemy.Pos).sqrMagnitude < perceptionRange
+                        && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, actor, checkAllPoints: true, actor.Pos))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            internal static void RecordShot(ShootAbility ability)
+            {
+                TacticalActor actor = ability.TacticalActor;
+
+                // Overwatch shots land on the enemy's turn and don't count.
+                if (actor?.TacticalFaction != null && actor.TacticalFaction.IsPlayingTurn && ability.Weapon != null && IsLongRangeGun(ability.Weapon))
+                {
+                    ShotThisTurn.Add(actor);
+                }
+            }
+
+            internal static void RecordFallBack(TacticalActor actor, TacAITarget target)
+            {
+                FellBackThisTurn.Add(actor);
+                TFTVLogger.Always($"TFTV AI fall back: {actor.DisplayName} moves {Vector3.Distance(actor.Pos, target.Pos):0.0}m out of sight to {target.Pos}, " +
+                    $"cover {Stances.DescribeCover(actor, target.Pos)}");
+            }
+
+            /// <summary>Called at the start of every faction's turn.</summary>
+            internal static void Clear()
+            {
+                ShotThisTurn.Clear();
+                FellBackThisTurn.Clear();
+                FallBackLogged.Clear();
+                Stances.ClearTurn();
+                MistSeeking.ClearTurn();
+                Scavenging.ClearTurn();
+            }
+        }
+
+        #endregion
+
         #region scoring patches
+
+        [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.Activate))]
+        internal static class TFTV_ShootAbility_Activate_patch
+        {
+            public static void Prefix(ShootAbility __instance, object parameter)
+            {
+                try
+                {
+                    PeekAndFallBackAI.RecordShot(__instance);
+                    TFTVAISquadPlanner.OnAttack(__instance.TacticalActor, parameter as TacticalAbilityTarget);
+                    SuppressAI.LogBurst(__instance, parameter as TacticalAbilityTarget);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AIHasEquipmentConsideration), nameof(AIHasEquipmentConsideration.Evaluate))]
+        internal static class TFTV_AIHasEquipmentConsideration_Evaluate_patch
+        {
+            public static bool Prefix(AIHasEquipmentConsideration __instance, IAIActor actor, ref float __result)
+            {
+                try
+                {
+                    if (PeekAndFallBackAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out float score)
+                        || Stances.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || MistSeeking.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || Scavenging.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || SuppressAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score))
+                    {
+                        __result = score;
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AINumberOfAttacksConsideration), nameof(AINumberOfAttacksConsideration.Evaluate))]
+        internal static class TFTV_AINumberOfAttacksConsideration_Evaluate_patch
+        {
+            public static bool Prefix(AINumberOfAttacksConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+            {
+                try
+                {
+                    if (PeekAndFallBackAI.IsCanStepBackConsideration(__instance.BaseDef))
+                    {
+                        __result = PeekAndFallBackAI.CanStepBack((TacticalActor)actor, (TacAITarget)target) ? 1f : 0f;
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         /// <summary>
         /// One entry point for all three features: the reservation veto, and the two custom scores for
@@ -1010,7 +1372,8 @@ namespace TFTV
                         return true;
                     }
 
-                    if (MindControlReservations.IsReservedForMindControl(tacticalActor, tacAITarget.Actor))
+                    // A 0 weight from the squad planner (mind control hold): skip the scoring altogether.
+                    if (TFTVAISquadPlanner.TargetMultiplier(tacticalActor, tacAITarget.Actor) <= 0f)
                     {
                         __result = 0f;
                         return false;
@@ -1022,9 +1385,21 @@ namespace TFTV
                         return false;
                     }
 
+                    if (SuppressAI.ConsiderationDef != null && __instance.BaseDef == SuppressAI.ConsiderationDef)
+                    {
+                        __result = SuppressAI.Score(tacticalActor, tacAITarget);
+                        return false;
+                    }
+
                     if (BashAI.ConsiderationDef != null && __instance.BaseDef == BashAI.ConsiderationDef)
                     {
                         __result = BashAI.Score(tacticalActor, tacAITarget, BashAI.ConsiderationDef);
+                        return false;
+                    }
+
+                    if (Stances.TryScoreWatchTarget(__instance.BaseDef, tacticalActor, tacAITarget, out float watchScore))
+                    {
+                        __result = watchScore;
                         return false;
                     }
 
@@ -1050,7 +1425,7 @@ namespace TFTV
                 try
                 {
                     if (actor is TacticalActor tacticalActor && target is TacAITarget tacAITarget
-                        && MindControlReservations.IsReservedForMindControl(tacticalActor, tacAITarget.Actor))
+                        && TFTVAISquadPlanner.TargetMultiplier(tacticalActor, tacAITarget.Actor) <= 0f)
                     {
                         __result = 0f;
                         return false;

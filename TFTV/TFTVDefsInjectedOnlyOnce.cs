@@ -430,6 +430,7 @@ namespace TFTV
             CreateBurningStatusDef();
             CreateLimbMalusStatusDef();
             CreatePandoranVarianceStatusDef();
+            TFTVVoidOmensExpansion.TacticalOmens.CreateDefs();
         }
 
         /// <summary>
@@ -8022,7 +8023,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
         public static void Create_VoidOmen_Events()
 
         {
-            for (int x = 0; x < 20; x++)
+            for (int x = 0; x <= TFTVVoidOmensExpansion.VoidOmenCatalog.HighestId; x++)
             {
                 GeoscapeEventDef geoscapeEventDef = TFTVCommonMethods.CreateNewEvent($"VoidOmen_{x}", "", "", null);
                 geoscapeEventDef.GeoscapeEventData.Flavour = "IntroducingSymes";

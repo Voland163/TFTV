@@ -141,7 +141,8 @@ namespace TFTV
                     {
                         List<GeoVehicleModuleDef> modules = geoVehicle.Modules.Select(m => m?.ModuleDef).ToList();
                         int baseMaintenanceLoss = GetMaintenanceFactor(modules);
-                        float maintenanceMultiplier = TFTVIncidents.AffinityGeoscapeEffects.GetAircraftMaintenanceLossMultiplier(geoVehicle);
+                        float maintenanceMultiplier = TFTVIncidents.AffinityGeoscapeEffects.GetAircraftMaintenanceLossMultiplier(geoVehicle)
+                            * TFTVVoidOmensExpansion.GeoscapeOmens.GetMaintenanceMultiplier(geoVehicle);
                         int adjustedMaintenanceLoss = Mathf.Max(0, Mathf.RoundToInt(baseMaintenanceLoss * maintenanceMultiplier));
                         geoVehicle.SetHitpoints(geoVehicle.Stats.HitPoints - adjustedMaintenanceLoss);
                     }

@@ -274,6 +274,24 @@ namespace TFTV.TFTVBaseRework
         internal static void ClearForLevelChange()
         {
             ActivePendingByTimerId.Clear();
+
+            // On a load the event system ticks before OnLevelStart, so the first refresh has already made
+            // the visuals by the time OnLevelStart clears again. Forgetting a live controller without
+            // destroying it left an untracked ring on the site that nothing ever removed: once the
+            // construction finished, the site kept a dark "pending" circle. Controllers destroyed with a
+            // previous level compare equal to null and are skipped.
+            foreach (GeoActorProgressionVisualController controller in PendingConstructionVisuals.Values)
+            {
+                if (controller != null)
+                {
+                    // Destroy waits for the end of the frame: rename and hide it so a refresh later in
+                    // this frame neither shows it nor takes it for an untracked ring.
+                    controller.gameObject.name = PendingVisualObjectName + "_Destroyed";
+                    controller.gameObject.SetActive(false);
+                    UnityEngine.Object.Destroy(controller.gameObject);
+                }
+            }
+
             PendingConstructionVisuals.Clear();
             AppliedProgression.Clear();
             PendingVisualCreationLogged.Clear();
@@ -561,6 +579,9 @@ namespace TFTV.TFTVBaseRework
                         continue;
                     }
 
+                    // Never stack a second ring on the site: drop any of ours that lost its tracking.
+                    DestroyUntrackedPendingVisuals(site);
+
                     controller = UnityEngine.Object.Instantiate(prefab, site.Surface);
                     if (controller == null)
                     {
@@ -572,6 +593,7 @@ namespace TFTV.TFTVBaseRework
                         continue;
                     }
 
+                    controller.gameObject.name = PendingVisualObjectName;
                     PendingConstructionVisuals[site.SiteId] = controller;
 
                     if (!PendingVisualCreationLogged.Contains(site.SiteId))
@@ -630,6 +652,27 @@ namespace TFTV.TFTVBaseRework
                 if (controller != null)
                 {
                     UnityEngine.Object.Destroy(controller.gameObject);
+                }
+            }
+        }
+
+        // Names our rings so they can be told apart from vanilla's exploration visual, which uses the
+        // same prefab under the same site surface.
+        private const string PendingVisualObjectName = "TFTV_PendingConstructionVisual";
+
+        private static void DestroyUntrackedPendingVisuals(GeoSite site)
+        {
+            if (site?.Surface == null)
+            {
+                return;
+            }
+
+            foreach (GeoActorProgressionVisualController existing in site.Surface.GetComponentsInChildren<GeoActorProgressionVisualController>(true))
+            {
+                if (existing != null && existing.gameObject.name == PendingVisualObjectName)
+                {
+                    TFTVLogger.Always(PendingVisualLogPrefix + $"Destroyed an untracked visual on site {site.SiteId}.");
+                    UnityEngine.Object.Destroy(existing.gameObject);
                 }
             }
         }

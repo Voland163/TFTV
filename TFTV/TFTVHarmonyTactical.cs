@@ -361,8 +361,9 @@ namespace TFTV
                     {
                         TFTVArtOfCrab.TurnOrder.SortOutAITurnOrder(__result);
                         __result.Sort((TacticalActor a, TacticalActor b) => a.AIActor.TurnOrderPriority - b.AIActor.TurnOrderPriority);
-                        //after the sort, so that if two controllers want the same enemy the one acting first gets it
-                        TFTVAICombatAbilities.MindControlReservations.PredictMindControlTargets(__result);
+                        //after the sort: the planner's first pass predicts mind control targets (the controller acting
+                        //first gets a contested enemy), later passes may move actors earlier in the list
+                        TFTVAISquadPlanner.PlanTurn(__instance, __result);
                         TFTVHumanEnemies.ApplyTactic(__instance.TacticalLevel);
                         TFTVLogger.Always("TFTV: Art of Crab: Sorted AI Turn Order");
                         //  TFTVPalaceMission.LogEnemyAP(__instance);
@@ -427,6 +428,7 @@ namespace TFTV
                     TFTVPalaceMission.Revenants.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
                     TFTVRevenant.Spawning.RevenentEntersPlayAfterLoad(actor);
+                    TFTVVoidOmensExpansion.TacticalOmens.OnActorEnteredPlay(actor, __instance);
 
 
                 }
@@ -473,6 +475,9 @@ namespace TFTV
                     TFTVVanillaFixes.Tactical.ParalysisDamageTacticalVanillaFixes.ClearDataActorsParalysisDamage();
                     TFTVArtOfCrab.SingleAPWeaponsMultipleShots.ClearData();
                     TFTVAICombatAbilities.MindControlReservations.Clear();
+                    TFTVAISquadPlanner.Clear();
+                    TFTVAICombatAbilities.PeekAndFallBackAI.Clear();
+                    TFTVAICombatAbilities.Stances.OnFactionStartTurn(__instance.Faction);
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
                     TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
@@ -585,6 +590,7 @@ namespace TFTV
                 try
                 {
                     TFTVRevenant.RecordUpkeep.RecordPhoenixDeadForRevenantsAndOsiris(deathReport, __instance);
+                    TFTVVoidOmensExpansion.TacticalOmens.OnActorDied(deathReport);
 
                     TFTVAncients.CyclopsAbilities.CyclopsResistance.AncientKilled(__instance, deathReport);
                     TFTVHumanEnemies.HumanEnemiesTacticsOnDeath(deathReport);
