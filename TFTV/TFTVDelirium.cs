@@ -58,6 +58,17 @@ namespace TFTV
         public static Dictionary<int, int> CharactersDeliriumPerksAndMissions = new Dictionary<int, int>();
 
         /// <summary>VO33 and VO36: a random Delirium perk the character does not have yet, or null.</summary>
+        /// <summary>Position of a perk in the (fixed) Delirium perk list, -1 if it is none; used to save which perk a character keeps.</summary>
+        internal static int DeliriumPerkIndex(TacticalAbilityDef perk)
+        {
+            return perk != null ? DeliriumPerks.IndexOf(perk) : -1;
+        }
+
+        internal static TacticalAbilityDef DeliriumPerkAt(int index)
+        {
+            return index >= 0 && index < DeliriumPerks.Count ? DeliriumPerks[index] : null;
+        }
+
         internal static TacticalAbilityDef RollDeliriumPerk(IEnumerable<TacticalAbilityDef> owned)
         {
             List<TacticalAbilityDef> perks = new List<TacticalAbilityDef>
@@ -794,7 +805,11 @@ namespace TFTV
                 {
                     return false;
                 }
-                foreach (TacticalAbilityDef tacticalAbilityDef in geoCharacter.GetTacticalAbilities().Where(ta => DeliriumPerks.Contains(ta)).ToList())
+
+                // A perk paid for a third augment under Void Omen 33 is permanent: recovery leaves it alone.
+                TacticalAbilityDef permanentPerk = TFTVVoidOmensExpansion.GeoscapeOmens.GetPermanentPerk(geoCharacter);
+
+                foreach (TacticalAbilityDef tacticalAbilityDef in geoCharacter.GetTacticalAbilities().Where(ta => DeliriumPerks.Contains(ta) && ta != permanentPerk).ToList())
                 {
                     TFTVLogger.Always($"removing {tacticalAbilityDef.name} from {geoCharacter.DisplayName}");
                     abilities.Remove(tacticalAbilityDef);

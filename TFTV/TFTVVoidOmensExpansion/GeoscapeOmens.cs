@@ -38,6 +38,30 @@ namespace TFTV.TFTVVoidOmensExpansion
         private const int VanillaMaxAugments = 2;
         private const int VO33MaxAugments = 3;
         private const string VO33PerkGrantedVariable = "VO33_ThirdAugmentPerk_";
+
+        /// <summary>Which perk VO33 gave, as its position in TFTVDelirium's perk list + 1 (0 = none), saved with the campaign.</summary>
+        private const string VO33PerkIndexVariable = "VO33_ThirdAugmentPerkIndex_";
+
+        /// <summary>The Delirium perk this character keeps for good (VO33's third augment), or null.</summary>
+        internal static TacticalAbilityDef GetPermanentPerk(GeoCharacter character)
+        {
+            try
+            {
+                GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+                if (character == null || controller?.EventSystem == null)
+                {
+                    return null;
+                }
+
+                return TFTVDelirium.DeliriumPerkAt(controller.EventSystem.GetVariable(VO33PerkIndexVariable + character.Id) - 1);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
         internal const int VO34IncidentFrequency = 2;
         private const float VO34RewardMultiplier = 0.5f;
 
@@ -172,8 +196,9 @@ namespace TFTV.TFTVVoidOmensExpansion
         }
 
         /// <summary>
-        /// The perk is the omen's price and stays when the omen ends, so the character is not entered for the perk recovery
-        /// rolls in TFTVDelirium. One per character: swapping a third augment does not pay out again.
+        /// The perk is the omen's price and stays when the omen ends. The character is not entered for the perk recovery
+        /// rolls in TFTVDelirium, and the perk is recorded so that recovery from any other Delirium perk (a treatment one
+        /// that enters them after all) skips it. One per character: swapping a third augment does not pay out again.
         /// </summary>
         private static void GrantThirdAugmentPerk(GeoCharacter character, GeoLevelController controller)
         {
@@ -194,6 +219,7 @@ namespace TFTV.TFTVVoidOmensExpansion
                 }
 
                 controller.EventSystem.SetVariable(VO33PerkGrantedVariable + character.Id, 1);
+                controller.EventSystem.SetVariable(VO33PerkIndexVariable + character.Id, TFTVDelirium.DeliriumPerkIndex(perk) + 1);
                 character.Progression.AddAbility(perk);
 
                 GameUtl.GetMessageBox().ShowSimplePrompt(

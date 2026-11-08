@@ -131,9 +131,13 @@ namespace TFTV
                     && PeekAndFallBackAI.IsRegularSoldier(actor);
             }
 
+            /// <summary>
+            /// Rounds loaded, or an item that never needs any. This is exactly the game's HasCharges
+            /// (CurrentCharges > 0 || InfiniteCharges, i.e. ChargesMax <= 0): it does not mean "uses ammunition".
+            /// </summary>
             private static bool HasLoadedCharges(TacticalItem item)
             {
-                return !item.HasCharges || item.InfiniteCharges || item.CommonItemData.CurrentCharges > 0;
+                return item.HasCharges;
             }
 
             private static IEnumerable<TacticalItem> CarriedItems(TacticalActor actor)
@@ -187,7 +191,8 @@ namespace TFTV
                     return item.TacticalItemDef != null && item.TacticalItemDef.HandsToUse <= actor.GetUsableHands() && HasLoadedCharges(weapon);
                 }
 
-                return actor.Equipments.GetWeapons().Any(w => w.IsUsable && w.HasCharges && !w.InfiniteCharges && IsAmmoFor(w, item));
+                // A gun that takes magazines (finite charges), loaded or not: an empty one is the point.
+                return actor.Equipments.GetWeapons().Any(w => w.IsUsable && !w.InfiniteCharges && IsAmmoFor(w, item));
             }
 
             /// <summary>Useful drops around the actor, nearest first, worked out once a frame. Empty if it needs nothing.</summary>
