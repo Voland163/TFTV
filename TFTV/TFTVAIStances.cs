@@ -1,6 +1,7 @@
 using Base.AI;
 using Base.AI.Defs;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -62,6 +63,15 @@ namespace TFTV
         /// </summary>
         internal static class Stances
         {
+            /// <summary>
+            /// Switched off 2026-11-09 after playtests: holders took blind posts, sat on full AP and set
+            /// Overwatch instead of shooting. While off, none of the stance actions (hold, scout, cautious
+            /// advance, watch from cover, infiltrate) reach any AI template, so no faction is managed and
+            /// everyone fights Offensive, the stock behaviour. Peek and fall back (Tritons and Sirens
+            /// included), the bleeding Triton's bite and the fall back's cover rule stay.
+            /// </summary>
+            internal static readonly bool Enabled = false;
+
             internal enum Stance { Offensive, Cautious, Defensive }
 
             /// <summary>What a Defensive faction tries when it is losing the exchange of fire.</summary>
@@ -198,6 +208,21 @@ namespace TFTV
             private static AIRoofAboveConsiderationDef _exposureDef;
             private static AIRoofAboveConsiderationDef _notBleedingVampireDef;
 
+            /// <summary>Scores MoveAndHeal's spots: cover toward the enemies who can see them, and AP left for the heal.</summary>
+            private static AIRoofAboveConsiderationDef _healSpotDef;
+
+            /// <summary>Early exit for MoveAndHeal: the actor or an ally near it is hurt, so its whole move range is worth scoring.</summary>
+            private static AIHasEquipmentConsiderationDef _anyoneToHealDef;
+
+            /// <summary>An ally further than this can't be reached for a heal this turn.</summary>
+            private const float HealReach = 30f;
+
+            /// <summary>A heal spot a known enemy can see scores this, plus credit for the cover toward the enemies who see it.</summary>
+            private const float OpenHealSpot = 0.25f;
+
+            /// <summary>Walking the actor's whole move to heal costs a spot this share of its score: with equal cover, heal close by.</summary>
+            private const float HealWalkPenalty = 0.3f;
+
             /// <summary>A Triton below this share of its HP, with a working blood-sucking arm, would rather bite.</summary>
             private const float WoundedVampireHealth = 0.5f;
 
@@ -333,6 +358,8 @@ namespace TFTV
                     _notBleedingVampireDef = Helper.CreateDefFromClone(roof, "6f2d9a4c-1e87-4b35-a0c9-d47e83b51f26", "TFTV_NotBleedingVampire_AIConsiderationDef");
                     _shouldInfiltrateDef = Helper.CreateDefFromClone(hasGun, "c7f4e0b2-1a95-4d68-8e3c-29b5d16a0f73", "TFTV_ShouldInfiltrate_AIConsiderationDef");
                     _flankPointDef = Helper.CreateDefFromClone(roof, "84b1d6e9-f20c-4a37-95d8-0e6c3a7f1b25", "TFTV_TowardFlank_AIConsiderationDef");
+                    _healSpotDef = Helper.CreateDefFromClone(roof, "a8bb9308-2128-4197-ba24-08c6925f4d6a", "TFTV_HealSpot_AIConsiderationDef");
+                    _anyoneToHealDef = Helper.CreateDefFromClone(hasGun, "788e7f4a-0cd6-4d6b-a622-b260a6a23d37", "TFTV_AnyoneToHeal_AIConsiderationDef");
                     _grenadeTag = DefCache.GetDef<GameTagDef>("GrenadeItem_TagDef");
 
                     _scoutWeaponTags = new[]
@@ -347,41 +374,24 @@ namespace TFTV
                     CreateCautiousAdvance();
                     CreateWatch();
                     CreateInfiltrate();
+                    CreateHealFromCover();
 
-                    AIActionsTemplateDef template = DefCache.GetDef<AIActionsTemplateDef>(SoldierAITemplate);
-
-                    // Holders, scouts and infiltrators get no plain move; scouts and infiltrators have their own.
-                    foreach (AIActionMoveToPositionDef move in template.ActionDefs.OfType<AIActionMoveToPositionDef>())
+                    if (Enabled)
                     {
-                        if (move != HoldActionDef && move != ScoutActionDef && move != InfiltrateActionDef && move != PeekAndFallBackAI.FallBackActionDef)
-                        {
-                            PeekAndFallBackAI.AddEarlyExit(move, _notHoldingDef);
-                        }
+                        AddStanceGates(DefCache.GetDef<AIActionsTemplateDef>(SoldierAITemplate));
                     }
-
-                    PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndShoot_AIActionDef"), _notHoldingDef);
-
-                    // Long-range gunners advance through CautiousAdvance instead.
-                    PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveToPositionDef>("Advance_Normal_AIActionDef"), _notLongGunnerDef);
-                    PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveToPositionDef>("Dash_AIActionDef"), _notLongGunnerDef);
-
-                    // Holders shoot or overwatch from where they stand, or from a walled-in spot within half a move.
-                    AddCoveredWhenHolding(DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndShoot_AIActionDef"));
-                    AddCoveredWhenHolding(DefCache.GetDef<AIActionOverwatchDef>("Overwatch_AIActionDef"));
-
-                    // A holder walked into the open to patch up an ally and was shot to pieces there.
-                    AddCoveredWhenHolding(DefCache.GetDef<AIActionMoveAndHealDef>("MoveAndHeal_AIActionDef"));
+                    else
+                    {
+                        TFTVLogger.Always("TFTV AI: stances are switched off: no hold, scout, cautious advance, watch or infiltrate actions");
+                    }
 
                     // Tritons and Sirens fight like soldiers, keeping their own mist and psychic abilities.
                     // Their plain moves (Advance_Normal, MoveToRandomWaypoint) are the soldiers' own defs,
-                    // so the holding gates above already apply to them.
+                    // so the holding gates already apply to them.
                     foreach (string templateName in new[] { "Fishman_AIActionsTemplateDef", "Siren_AIActionsTemplateDef" })
                     {
                         GiveSoldierActions(DefCache.GetDef<AIActionsTemplateDef>(templateName));
                     }
-
-                    // Their shot is TFTVBetterEnemies' heavier clone of MoveAndShoot.
-                    AddCoveredWhenHolding(DefCache.GetDef<AIActionMoveAndAttackDef>("BC_MoveAndShoot_AIActionDef"));
 
                     // A badly hurt Triton with a blood-sucking arm bites to heal rather than shoots. The shot
                     // weighs 600 against the strike's 350 and nothing values the heal, so the shots are scaled down.
@@ -410,19 +420,87 @@ namespace TFTV
                 }
             }
 
-            private static void GiveSoldierActions(AIActionsTemplateDef template)
+            /// <summary>Keeps holders, scouts and infiltrators off the plain moves, and holders' shots and heals near cover.</summary>
+            private static void AddStanceGates(AIActionsTemplateDef template)
             {
-                AIActionDef[] soldierActions =
+                // Holders, scouts and infiltrators get no plain move; scouts and infiltrators have their own.
+                foreach (AIActionMoveToPositionDef move in template.ActionDefs.OfType<AIActionMoveToPositionDef>())
                 {
-                    PeekAndFallBackAI.PeekActionDef, PeekAndFallBackAI.FallBackActionDef,
-                    HoldActionDef, ScoutActionDef, CautiousAdvanceActionDef, WatchActionDef, InfiltrateActionDef
-                };
+                    if (move != HoldActionDef && move != ScoutActionDef && move != InfiltrateActionDef && move != PeekAndFallBackAI.FallBackActionDef)
+                    {
+                        PeekAndFallBackAI.AddEarlyExit(move, _notHoldingDef);
+                    }
+                }
 
-                template.ActionDefs = template.ActionDefs.Concat(soldierActions.Where(a => a != null && !template.ActionDefs.Contains(a))).ToArray();
-                TFTVLogger.Always($"TFTV AI: gave {template.name} the soldiers' stance, peek and fall back actions");
+                PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndShoot_AIActionDef"), _notHoldingDef);
+
+                // Long-range gunners advance through CautiousAdvance instead.
+                PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveToPositionDef>("Advance_Normal_AIActionDef"), _notLongGunnerDef);
+                PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveToPositionDef>("Dash_AIActionDef"), _notLongGunnerDef);
+
+                // Holders shoot or overwatch from where they stand, or from a walled-in spot within half a move.
+                AddCoveredWhenHolding(DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndShoot_AIActionDef"));
+                AddCoveredWhenHolding(DefCache.GetDef<AIActionOverwatchDef>("Overwatch_AIActionDef"));
+
+                // A holder walked into the open to patch up an ally and was shot to pieces there.
+                AddCoveredWhenHolding(DefCache.GetDef<AIActionMoveAndHealDef>("MoveAndHeal_AIActionDef"));
+
+                // The Tritons' shot is TFTVBetterEnemies' heavier clone of MoveAndShoot.
+                AddCoveredWhenHolding(DefCache.GetDef<AIActionMoveAndAttackDef>("BC_MoveAndShoot_AIActionDef"));
             }
 
-            private static void AddCoveredWhenHolding(AIActionDef actionDef)
+            /// <summary>A stance action goes into the soldiers' template only while stances are on.</summary>
+            private static void AddStanceAction(AIActionDef actionDef)
+            {
+                if (Enabled)
+                {
+                    AddActionToTemplate(SoldierAITemplate, actionDef);
+                }
+            }
+
+            private static void GiveSoldierActions(AIActionsTemplateDef template)
+            {
+                AIActionDef[] soldierActions = Enabled
+                    ? new AIActionDef[]
+                    {
+                        PeekAndFallBackAI.PeekActionDef, PeekAndFallBackAI.FallBackActionDef,
+                        HoldActionDef, ScoutActionDef, CautiousAdvanceActionDef, WatchActionDef, InfiltrateActionDef
+                    }
+                    : new AIActionDef[] { PeekAndFallBackAI.PeekActionDef, PeekAndFallBackAI.FallBackActionDef };
+
+                template.ActionDefs = template.ActionDefs.Concat(soldierActions.Where(a => a != null && !template.ActionDefs.Contains(a))).ToArray();
+                TFTVLogger.Always($"TFTV AI: gave {template.name} the soldiers' {(Enabled ? "stance, " : "")}peek and fall back actions");
+            }
+
+            /// <summary>
+            /// Stock MoveAndHeal only tries the tiles next to each patient and knows nothing of cover, so a
+            /// wounded berserker stepped one tile and patched itself up in the open. Its spots now come from
+            /// the whole move range (the heal position consideration still picks the patient each spot can
+            /// reach), scored by the cover toward the known enemies who can see them, as long as enough AP
+            /// is left for the heal: get behind something, then heal.
+            /// </summary>
+            private static void CreateHealFromCover()
+            {
+                AIActionMoveAndHealDef heal = DefCache.GetDef<AIActionMoveAndHealDef>("MoveAndHeal_AIActionDef");
+                AITargetEvaluation positions = heal.Evaluations.First(e => e.TargetGeneratorDef is AIActorRangeZoneTargetGeneratorDef);
+
+                positions.TargetGeneratorDef = DefCache.GetDef<AIActorMovementZoneTargetGeneratorDef>("MovementZone_AITargetGeneratorDef");
+                positions.Considerations = positions.Considerations.AddToArray(new AIAdjustedConsideration
+                {
+                    Consideration = _healSpotDef,
+                    ScoreCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f)
+                });
+
+                // Scoring the whole move range is wasted when nobody nearby is hurt.
+                PeekAndFallBackAI.AddEarlyExit(heal, _anyoneToHealDef);
+            }
+
+            private static bool IsHurt(TacticalActorBase actor)
+            {
+                return ClassSkillsAI.NeedsHealing(actor);
+            }
+
+            internal static void AddCoveredWhenHolding(AIActionDef actionDef)
             {
                 AITargetEvaluation positions = actionDef.Evaluations.First(e =>
                     e.TargetGeneratorDef is AIActorMovementZoneTargetGeneratorDef || e.TargetGeneratorDef is AIActorRangeZoneTargetGeneratorDef);
@@ -486,7 +564,7 @@ namespace TFTV
                     new AIAdjustedConsideration { Consideration = _watchTargetDef, ScoreCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f) }
                 };
 
-                AddActionToTemplate(SoldierAITemplate, WatchActionDef);
+                AddStanceAction(WatchActionDef);
             }
 
             private static void CreateHold(AIRoofAboveConsiderationDef roof)
@@ -526,7 +604,7 @@ namespace TFTV
                     positions.Considerations.First(c => c.Consideration is AISpreadConsiderationDef)
                 };
 
-                AddActionToTemplate(SoldierAITemplate, HoldActionDef);
+                AddStanceAction(HoldActionDef);
             }
 
             private static void CreateScout()
@@ -554,7 +632,7 @@ namespace TFTV
 
                 SetLineOfSightCurve(positions, AnimationCurve.Linear(0f, 0.4f, 1f, 1f));
 
-                AddActionToTemplate(SoldierAITemplate, ScoutActionDef);
+                AddStanceAction(ScoutActionDef);
             }
 
             /// <summary>
@@ -597,7 +675,7 @@ namespace TFTV
 
                 positions.Considerations = considerations.ToArray();
 
-                AddActionToTemplate(SoldierAITemplate, InfiltrateActionDef);
+                AddStanceAction(InfiltrateActionDef);
             }
 
             private static void CreateCautiousAdvance()
@@ -637,7 +715,7 @@ namespace TFTV
 
                 SetLineOfSightCurve(positions, AnimationCurve.Linear(0f, 0.3f, 1f, 1f));
 
-                AddActionToTemplate(SoldierAITemplate, CautiousAdvanceActionDef);
+                AddStanceAction(CautiousAdvanceActionDef);
             }
 
             /// <summary>The clones may share AIAdjustedConsideration objects with Advance_Normal, so swap rather than edit.</summary>
@@ -1705,6 +1783,13 @@ namespace TFTV
                     return false;
                 }
 
+                if (def == _anyoneToHealDef)
+                {
+                    score = IsHurt(actor) || actor.TacticalFaction.TacticalActors.Any(a => a != actor && IsHurt(a)
+                        && (a.Pos - actor.Pos).sqrMagnitude <= HealReach * HealReach) ? 1f : 0f;
+                    return true;
+                }
+
                 if (def == _shouldHoldDef)
                 {
                     score = IsHolding(actor)
@@ -1725,6 +1810,13 @@ namespace TFTV
 
                 if (def == _shouldWatchDef)
                 {
+                    // With stances off the watch is only for a sniper in its nest (NestAndAmbush) with no shot to take.
+                    if (!Enabled)
+                    {
+                        score = NestAndAmbush.IsNested(actor) && !ShouldShootFirst(actor) ? 1f : 0f;
+                        return true;
+                    }
+
                     // A soldier should move or hold first; holders whose hold kept them in place count as done.
                     bool actedThisTurn = HasActedThisTurn(actor) || HeldThisTurn.Contains(actor);
 
@@ -1827,6 +1919,12 @@ namespace TFTV
                     return true;
                 }
 
+                if (def == _healSpotDef)
+                {
+                    score = HealSpot(actor, target);
+                    return true;
+                }
+
                 if (def == _exposureDef)
                 {
                     score = Exposure(actor, target.Pos);
@@ -1860,7 +1958,7 @@ namespace TFTV
                 return false;
             }
 
-            private static bool IsOwnTile(TacticalActor actor, Vector3 pos)
+            internal static bool IsOwnTile(TacticalActor actor, Vector3 pos)
             {
                 return (pos - actor.Pos).sqrMagnitude <= 0.25f;
             }
@@ -1883,7 +1981,7 @@ namespace TFTV
             /// A gunner with a known enemy in its line of fire, and the AP to shoot and still set
             /// Overwatch afterwards, shoots first: the watch waits until the shot is taken.
             /// </summary>
-            private static bool ShouldShootFirst(TacticalActor actor)
+            internal static bool ShouldShootFirst(TacticalActor actor)
             {
                 Weapon weapon = actor.Equipments?.SelectedWeapon;
 
@@ -1921,13 +2019,13 @@ namespace TFTV
             }
 
             /// <summary>A clear line from the spot, or from a step-out of the high cover in front of it, to the enemy.</summary>
-            private static bool HasLineOfFire(TacticalActor actor, Vector3 pos, Vector3 enemyPos)
+            internal static bool HasLineOfFire(TacticalActor actor, Vector3 pos, Vector3 enemyPos)
             {
                 float distance = Vector3.Distance(pos, enemyPos);
                 return FiringPost(actor, pos, enemyPos, out _, Mathf.Max(1f, distance - 1.5f)) > 0f;
             }
 
-            private static IEnumerable<TacticalActorBase> KnownEnemies(TacticalActor actor)
+            internal static IEnumerable<TacticalActorBase> KnownEnemies(TacticalActor actor)
             {
                 return actor.TacticalFaction.AIBlackboard.GetEnemies(actor.AIActor.GetEnemyMask(ActorType.Combatant), true)
                     .Where(e => e != null && e.IsAlive);
@@ -1978,13 +2076,13 @@ namespace TFTV
                 return Mathf.Clamp01(1f - there / (now + 10f));
             }
 
-            private static float FlatDistance(Vector3 a, Vector3 b)
+            internal static float FlatDistance(Vector3 a, Vector3 b)
             {
                 return Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
             }
 
             /// <summary>1 behind high cover toward the enemy, 0.5 behind low cover, 0 in the open; diagonals share between the two sides.</summary>
-            private static float CoverToward(TacticalActor actor, Vector3 pos, Vector3 enemyPos)
+            internal static float CoverToward(TacticalActor actor, Vector3 pos, Vector3 enemyPos)
             {
                 Vector3 direction = enemyPos - pos;
                 direction.y = 0f;
@@ -2037,7 +2135,55 @@ namespace TFTV
                 return SeenSpot + (1f - SeenSpot) * seers.Average(e => CoverToward(actor, pos, e.Pos));
             }
 
-            private static bool CanSee(TacticalActorBase enemy, TacticalActor actor, Vector3 pos)
+            /// <summary>
+            /// 0 with no hurt patient (the heal position consideration, scored first, names the patient), not
+            /// enough AP left after the walk to heal, or an Overwatch cone on the way. Otherwise 1 where no known
+            /// enemy can see the spot, OpenHealSpot plus credit for cover where one can, a little less the
+            /// further the walk.
+            /// </summary>
+            private static float HealSpot(TacticalActor actor, TacAITarget target)
+            {
+                if (!IsHurt(target.Actor))
+                {
+                    return 0f;
+                }
+
+                HealAbility heal = ClassSkillsAI.HealFor(target, actor);
+
+                if (heal != null && (float)actor.CharacterStats.ActionPoints - target.PathLength < heal.ActionPointCost - 0.01f)
+                {
+                    return 0f;
+                }
+
+                if (CrossesOverwatch(actor, target.Pos))
+                {
+                    return 0f;
+                }
+
+                List<TacticalActorBase> seers = KnownEnemies(actor).Where(e => CanSee(e, actor, target.Pos)).ToList();
+                float cover = seers.Count == 0
+                    ? 1f
+                    : OpenHealSpot + (1f - OpenHealSpot) * seers.Average(e => CoverToward(actor, target.Pos, e.Pos));
+
+                float walk = Mathf.Clamp01(target.PathLength / Mathf.Max(1f, (float)actor.CharacterStats.ActionPoints.Max));
+
+                return cover * (1f - HealWalkPenalty * walk);
+            }
+
+            private static AbilityDef _shadowStep;
+
+            /// <summary>Shinobi legs' Shadow Step: moving does not set off enemy Overwatch, so cones don't matter.</summary>
+            private static bool IgnoresOverwatch(TacticalActor actor)
+            {
+                if (_shadowStep == null)
+                {
+                    _shadowStep = DefCache.GetDef<AbilityDef>("ShadowStep_AbilityDef");
+                }
+
+                return _shadowStep != null && actor.GetAbilityWithDef<Ability>(_shadowStep) != null;
+            }
+
+            internal static bool CanSee(TacticalActorBase enemy, TacticalActor actor, Vector3 pos)
             {
                 float perception = enemy is TacticalActor seer ? seer.GetAdjustedPerceptionValue() : 30f;
 
@@ -2046,9 +2192,9 @@ namespace TFTV
             }
 
             /// <summary>Walking straight from the actor to pos passes through an enemy's Overwatch cone.</summary>
-            private static bool CrossesOverwatch(TacticalActor actor, Vector3 pos)
+            internal static bool CrossesOverwatch(TacticalActor actor, Vector3 pos)
             {
-                if (IsOwnTile(actor, pos))
+                if (IsOwnTile(actor, pos) || IgnoresOverwatch(actor))
                 {
                     return false;
                 }
@@ -2174,7 +2320,7 @@ namespace TFTV
                 return ShotTargetsFromHere(actor, weapon).FirstOrDefault();
             }
 
-            private static IEnumerable<TacticalActorBase> ShotTargetsFromHere(TacticalActor actor, Weapon weapon)
+            internal static IEnumerable<TacticalActorBase> ShotTargetsFromHere(TacticalActor actor, Weapon weapon)
             {
                 ShootAbility shoot = actor.GetAbilities<ShootAbility>().FirstOrDefault(a => a.Weapon == weapon && a.IsDefault)
                     ?? actor.GetAbilities<ShootAbility>().FirstOrDefault(a => a.Weapon == weapon);
@@ -2355,7 +2501,7 @@ namespace TFTV
             /// scores less over low cover and less again in the open. A corner whose step-out runs into
             /// the other wall, or whose cover goes on for two tiles, scores 0.
             /// </summary>
-            private static float FiringPost(TacticalActor actor, Vector3 pos, Vector3 enemyPos, out string kind, float lane = LaneLength)
+            internal static float FiringPost(TacticalActor actor, Vector3 pos, Vector3 enemyPos, out string kind, float lane = LaneLength)
             {
                 Vector3 toEnemy = enemyPos - pos;
                 toEnemy.y = 0f;
@@ -2412,7 +2558,7 @@ namespace TFTV
             private const float LaneSpread = 10f;
 
             /// <summary>0 if the straight line toward the enemy is blocked within the lane, else 0.6 plus 0.2 for each clear side ray.</summary>
-            private static float LaneScore(Vector3 eye, Vector3 enemyPos, float lane)
+            internal static float LaneScore(Vector3 eye, Vector3 enemyPos, float lane)
             {
                 Vector3 direction = (enemyPos + Vector3.up - eye).normalized;
 
@@ -2440,6 +2586,12 @@ namespace TFTV
             /// </summary>
             internal static void LogEndTurn(TacticalActor actor)
             {
+                if (!Enabled)
+                {
+                    LogUnspentShot(actor);
+                    return;
+                }
+
                 if (HoldActionDef == null || actor?.TacticalFaction == null || !UsesStanceTemplate(actor)
                     || GetState(actor.TacticalFaction)?.Managed != true || actor.Status?.HasStatus<OverwatchStatus>() == true)
                 {
@@ -2478,6 +2630,42 @@ namespace TFTV
 
                 TFTVLogger.Always($"TFTV AI stance: {actor.DisplayName} ends its turn with {(float)actor.CharacterStats.ActionPoints:0.#} of {actor.CharacterStats.ActionPoints.Max:0.#} AP: " +
                     $"shot {actor.Equipments.GetAPToUseEquipment(weapon):0.#} AP, {watch}; holding {IsHolding(actor)}, watch gate {gate:0}; {best}");
+            }
+
+            /// <summary>
+            /// With stances off: an AI gunner that ends its turn with the AP for a shot still unspent,
+            /// so playtest logs show who sat idle and whether it had a target.
+            /// </summary>
+            private static void LogUnspentShot(TacticalActor actor)
+            {
+                if (actor?.TacticalFaction == null || actor.TacticalFaction.IsControlledByPlayer || !actor.IsAlive
+                    || actor.Status?.HasStatus<OverwatchStatus>() == true)
+                {
+                    return;
+                }
+
+                Weapon weapon = actor.Equipments?.SelectedWeapon;
+
+                if (weapon == null || !PeekAndFallBackAI.IsGun(weapon))
+                {
+                    return;
+                }
+
+                float ap = actor.CharacterStats.ActionPoints;
+                float shotCost = actor.Equipments.GetAPToUseEquipment(weapon);
+
+                if (ap <= 0f || ap < shotCost)
+                {
+                    return;
+                }
+
+                TacticalActorBase nearest = KnownEnemies(actor).OrderBy(e => FlatDistance(actor.Pos, e.Pos)).FirstOrDefault();
+                string enemy = nearest == null
+                    ? "no known enemy"
+                    : $"nearest known enemy {nearest.DisplayName} {FlatDistance(actor.Pos, nearest.Pos):0.0}m, shot from here {HasShotFromHere(actor, weapon)}";
+
+                TFTVLogger.Always($"TFTV AI: {actor.DisplayName} ends its turn with {ap:0.#} of {actor.CharacterStats.ActionPoints.Max:0.#} AP " +
+                    $"(shot {shotCost:0.#} AP, weapon range {weapon.GetDamagePayload().Range:0}); {enemy}");
             }
 
             /// <summary>For the logs.</summary>
@@ -2697,7 +2885,12 @@ namespace TFTV
                 {
                     if (Stances.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out float score)
                         || MistSeeking.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
-                        || Scavenging.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score))
+                        || Scavenging.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || NestAndAmbush.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || SuppressAI.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || Stalking.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || FiringLine.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || ClassSkillsAI.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score))
                     {
                         __result = score;
                         return false;

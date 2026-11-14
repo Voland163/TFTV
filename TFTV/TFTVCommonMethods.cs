@@ -222,6 +222,8 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAICombatAbilities.Stances.ClearMission();
+                TFTVAICombatAbilities.BottleTest.ClearMission();
+                TFTVAICombatAbilities.NestAndAmbush.ClearMission();
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 // the beam defs are process-global: start every mission/load neutral, like the buff tracking above

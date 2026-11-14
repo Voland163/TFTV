@@ -350,6 +350,7 @@
     <Compile Include="TFTVAIScavenge.cs" />
     <Compile Include="TFTVAISquad.cs" />
     <Compile Include="TFTVAISquadFocus.cs" />
+    <Compile Include="TFTVAISquadProtect.cs" />
     <Compile Include="TFTVAIStances.cs" />
     <Compile Include="TFTVAISuppress.cs" />
     <Compile Include="TFTVArtOfCrab.cs" />
@@ -435,6 +436,13 @@
     <Compile Include="TFTVPlayerDeploymentPrompt.cs" />
     <Compile Include="TFTVPlayerDeploymentPlacement.cs" />
     <Compile Include="TFTVPlayerDeploymentBaseDefenseCulls.cs" />
+    <Compile Include="TFTVEnemySpawnSpots.cs" />
+    <Compile Include="TFTVAIClassSkills.cs" />
+    <Compile Include="TFTVAIScyllaGuns.cs" />
+    <Compile Include="TFTVAIBottleTest.cs" />
+    <Compile Include="TFTVAINestAndAmbush.cs" />
+    <Compile Include="TFTVAIStalk.cs" />
+    <Compile Include="TFTVAIDecisionLog.cs" />
     <Compile Include="TFTVPlayerDeploymentReserve.cs" />
     <Compile Include="TFTVTactical.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

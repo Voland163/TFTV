@@ -42,8 +42,10 @@ namespace TFTV
     ///
     /// Passes, in order:
     /// 1. Mind control hold (every turn, whole side): nobody attacks the soldier a mind controller is about to take.
-    /// 2. Suppression: pin down overwatch that covers a smart attacker's approach.
-    /// 3. Focus fire: share out the smart attackers' damage between targets for the most expected kills and harm,
+    /// 2. Suppression: pin down overwatch that covers a smart attacker's approach, and soldiers who could shoot it
+    ///    where it ends up.
+    /// 3. Protect: attacks go first to the soldiers who can hit a leader or a sniper (TFTVAISquadProtect.cs).
+    /// 4. Focus fire: share out the smart attackers' damage between targets for the most expected kills and harm,
     ///    re-planned each time one of them starts acting (TFTVAISquadFocus.cs).
     /// </summary>
     internal static partial class TFTVAISquadPlanner
@@ -74,6 +76,9 @@ namespace TFTV
             internal string Reason;
             internal bool Announced;
             internal bool Done;
+
+            /// <summary>A suppress order against overwatch, done once the target is off overwatch; otherwise against a soldier who could shoot the beneficiaries.</summary>
+            internal bool OverwatchOnly;
         }
 
         internal sealed class TargetWeight
@@ -120,6 +125,9 @@ namespace TFTV
             internal readonly List<SquadOrder> Orders = new List<SquadOrder>();
             internal readonly List<TargetWeight> Weights = new List<TargetWeight>();
             internal readonly List<KeyValuePair<TacticalActor, TacticalActor>> ActBefore = new List<KeyValuePair<TacticalActor, TacticalActor>>();
+
+            /// <summary>Extra worth of a target for the focus pass (protect: it threatens a leader or sniper).</summary>
+            internal readonly Dictionary<TacticalActorBase, float> TargetWorth = new Dictionary<TacticalActorBase, float>();
             internal SquadContext Context;
 
             internal SquadPlan(TacticalFaction faction)
@@ -170,6 +178,7 @@ namespace TFTV
         {
             new MindControlHoldPass(),
             new SuppressionPass(),
+            new ProtectPass(),
             FocusPass,
         };
 
@@ -465,9 +474,13 @@ namespace TFTV
                 {
                     why = "the target is pinned down";
                 }
-                else if (!target.Status.HasStatus<OverwatchStatus>())
+                else if (order.OverwatchOnly && !target.Status.HasStatus<OverwatchStatus>())
                 {
                     why = "the target is off overwatch";
+                }
+                else if (!order.OverwatchOnly && order.Beneficiaries.All(b => b == null || !b.IsAlive || b.IsDisabled))
+                {
+                    why = "nobody left to cover";
                 }
             }
             else if (order.Kind == OrderKind.FocusFire && !IsFocusAssignment(order.Executor, order.Target))
@@ -515,6 +528,9 @@ namespace TFTV
             if (actor != _actingActor)
             {
                 _actingActor = actor;
+
+                // Mind control holds first: the focus replan has to see who is off limits.
+                MindControlHoldPass.Refresh(_plan);
                 FocusPass.Replan(_plan, actor);
             }
 
@@ -675,6 +691,13 @@ namespace TFTV
             private const int MaxSightChecks = 3;
             private const int MaxSuppressorsPerBlocker = 2;
 
+            /// <summary>Soldiers off overwatch pinned for the approaches per turn, the most dangerous first.</summary>
+            private const int MaxThreatsPinned = 2;
+
+            /// <summary>Within this of the end of an approach a soldier counts as a threat without a line of sight: it can step into one.</summary>
+            private const float ThreatWalkInDistance = 8f;
+            private const int MaxThreatSightChecks = 12;
+
             /// <summary>Expected points have to cover this share of what is needed, or nobody is sent.</summary>
             private const float MinCoverOfNeed = 0.9f;
 
@@ -697,13 +720,6 @@ namespace TFTV
 
             public void Plan(SquadContext context, SquadPlan plan)
             {
-                List<TacticalActor> blockers = context.Enemies.Where(TFTVAICombatAbilities.SuppressAI.IsOverwatchToPin).ToList();
-
-                if (blockers.Count == 0)
-                {
-                    return;
-                }
-
                 List<KeyValuePair<TacticalActor, TacticalActorBase>> mindControl = TFTVAICombatAbilities.MindControlReservations.Pending();
                 List<Approach> approaches = FindApproaches(context, mindControl);
 
@@ -711,6 +727,8 @@ namespace TFTV
                 {
                     return;
                 }
+
+                List<TacticalActor> blockers = context.Enemies.Where(TFTVAICombatAbilities.SuppressAI.IsOverwatchToPin).ToList();
 
                 // Which soldier's overwatch covers which approach.
                 Dictionary<TacticalActor, List<Approach>> covered = new Dictionary<TacticalActor, List<Approach>>();
@@ -733,9 +751,14 @@ namespace TFTV
                     }
                 }
 
-                if (covered.Count == 0)
+                // Soldiers not on overwatch who could shoot an attacker where its approach ends: on their turn, or
+                // as return fire. Moderate suppression takes both away and a quarter of their next turn's AP.
+                Dictionary<TacticalActor, List<Approach>> threats = FindThreats(context, approaches, covered, mindControl);
+
+                if (covered.Count == 0 && threats.Count == 0)
                 {
-                    TFTVLogger.Always($"[AI squad] suppression: {approaches.Count} approaches, {blockers.Count} soldiers on overwatch, none in the way");
+                    TFTVLogger.Always($"[AI squad] suppression: {approaches.Count} approaches ({string.Join(", ", approaches.Select(a => a.Actor.DisplayName))}), " +
+                        $"{blockers.Count} soldiers on overwatch, none in the way, nobody else to pin");
                     return;
                 }
 
@@ -752,8 +775,82 @@ namespace TFTV
                         continue;
                     }
 
-                    AssignSuppressors(context, plan, entry.Key, entry.Value, busy);
+                    AssignSuppressors(context, plan, entry.Key, entry.Value, busy, overwatch: true);
                 }
+
+                foreach (KeyValuePair<TacticalActor, List<Approach>> entry in threats
+                    .OrderByDescending(e => e.Value.Count)
+                    .ThenBy(e => e.Value.Min(a => Vector3.Distance(e.Key.Pos, a.To)))
+                    .Take(MaxThreatsPinned))
+                {
+                    AssignSuppressors(context, plan, entry.Key, entry.Value, busy, overwatch: false);
+                }
+            }
+
+            /// <summary>
+            /// Revealed soldiers with a gun, off overwatch, that could shoot an attacker at the end of its approach:
+            /// within their gun's effective range of that spot, with a line of sight to it (or close enough to walk
+            /// into one). Soldiers suppression can't pin, and mind control targets, are left out.
+            /// </summary>
+            private static Dictionary<TacticalActor, List<Approach>> FindThreats(SquadContext context, List<Approach> approaches,
+                Dictionary<TacticalActor, List<Approach>> covered, List<KeyValuePair<TacticalActor, TacticalActorBase>> mindControl)
+            {
+                Dictionary<TacticalActor, List<Approach>> threats = new Dictionary<TacticalActor, List<Approach>>();
+                int sightChecks = 0;
+
+                foreach (TacticalActor enemy in context.Enemies)
+                {
+                    if (enemy == null || !enemy.IsAlive || covered.ContainsKey(enemy) || mindControl.Any(r => r.Value == enemy)
+                        || SuppressionRuntime.IsSuppressionExcluded(enemy) || SuppressionRuntime.BlocksReactionFire(enemy))
+                    {
+                        continue;
+                    }
+
+                    float reach = 0f;
+
+                    foreach (Weapon weapon in enemy.Equipments.GetWeapons())
+                    {
+                        if (weapon?.WeaponDef != null && weapon.IsUsable && TFTVAICombatAbilities.PeekAndFallBackAI.IsGun(weapon))
+                        {
+                            reach = Mathf.Max(reach, weapon.WeaponDef.EffectiveRange);
+                        }
+                    }
+
+                    if (reach <= 0f)
+                    {
+                        continue;
+                    }
+
+                    foreach (Approach approach in approaches)
+                    {
+                        float distance = Vector3.Distance(enemy.Pos, approach.To);
+
+                        if (distance > reach)
+                        {
+                            continue;
+                        }
+
+                        bool threat = distance <= ThreatWalkInDistance;
+
+                        if (!threat && sightChecks < MaxThreatSightChecks)
+                        {
+                            sightChecks++;
+                            threat = TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, approach.Actor, false, approach.To);
+                        }
+
+                        if (threat)
+                        {
+                            if (!threats.TryGetValue(enemy, out List<Approach> list))
+                            {
+                                threats[enemy] = list = new List<Approach>();
+                            }
+
+                            list.Add(approach);
+                        }
+                    }
+                }
+
+                return threats;
             }
 
             private static List<Approach> FindApproaches(SquadContext context, List<KeyValuePair<TacticalActor, TacticalActorBase>> mindControl)
@@ -865,7 +962,8 @@ namespace TFTV
                 return false;
             }
 
-            private static void AssignSuppressors(SquadContext context, SquadPlan plan, TacticalActor blocker, List<Approach> approaches, HashSet<TacticalActor> busy)
+            private static void AssignSuppressors(SquadContext context, SquadPlan plan, TacticalActor blocker, List<Approach> approaches,
+                HashSet<TacticalActor> busy, bool overwatch)
             {
                 float need = SuppressionRuntime.PointsToModerate(blocker);
 
@@ -909,7 +1007,7 @@ namespace TFTV
 
                 if (chosen.Count == 0 || total < need * MinCoverOfNeed)
                 {
-                    TFTVLogger.Always($"[AI squad] suppression: {blocker.DisplayName}'s overwatch covers {attackers}, but nobody can pin it " +
+                    TFTVLogger.Always($"[AI squad] suppression: {blocker.DisplayName}{(overwatch ? "'s overwatch covers" : " can shoot")} {attackers}, but nobody can pin it " +
                         $"(needs {need:0.#} points, best {total:0.#} from {chosen.Count} gunners of {candidates.Count})");
                     return;
                 }
@@ -925,7 +1023,8 @@ namespace TFTV
                         Executor = gunner,
                         Issuer = leader,
                         Target = blocker,
-                        Reason = $"suppress {blocker.DisplayName} (overwatch) so {attackers} can get through; " +
+                        OverwatchOnly = overwatch,
+                        Reason = $"suppress {blocker.DisplayName} ({(overwatch ? "overwatch" : "can shoot them")}) so {attackers} can get through; " +
                             $"expects {pick.Value:0.#} of {need:0.#} points"
                     };
 
@@ -953,7 +1052,8 @@ namespace TFTV
 
                 foreach (Weapon weapon in gunner.Equipments.GetWeapons())
                 {
-                    if (!TFTVAICombatAbilities.SuppressAI.CanFire(weapon))
+                    // Burst weapons only: single shots barely add up to a pin.
+                    if (!TFTVAICombatAbilities.SuppressAI.CanFire(weapon) || weapon.WeaponDef.DamagePayload.AutoFireShotCount < 2)
                     {
                         continue;
                     }

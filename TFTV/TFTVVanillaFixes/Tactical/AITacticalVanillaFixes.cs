@@ -4,11 +4,14 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,8 +164,69 @@ namespace TFTV.TFTVVanillaFixes.Tactical
             }
         }
 
+        /// <summary>
+        /// Parts a shot should never be aimed at: ones the player can't pick either (WillNotHighlight, e.g. the
+        /// Armadillo's front lights). Not "no hit points": human armour pieces have 0 in their defs and take
+        /// their hit points from the body slot. Every AI shot choice (AIUtil's
+        /// best target and scored list, the attack position scoring, MoveAndAttack's aim) and the shoot screen's
+        /// damage preview get their parts from Weapon.GetShootTargets, and the AI takes whichever part promises the
+        /// most health plus armour damage. The Armadillo's lights have 0 armour and 0 hit points, so the AI put
+        /// nearly every shot into them: shots that did nothing at all, or hit the 60-armour front plate behind.
+        /// They are dropped only when the weapon has another part to aim at, so a target is never lost.
+        /// </summary>
+        [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetShootTargets))]
+        public static class Weapon_GetShootTargets_SkipUntargetableParts_Patch
+        {
+            private static GameTagDef _willNotHighlightTag;
+            private static bool _tagLooked;
 
+            public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result)
+            {
+                try
+                {
+                    if (__result == null)
+                    {
+                        return;
+                    }
 
+                    List<TacticalAbilityTarget> targets = __result.ToList();
+                    __result = targets;
 
+                    if (targets.Count < 2 || !targets.Any(IsUntargetable))
+                    {
+                        return;
+                    }
+
+                    List<TacticalAbilityTarget> kept = targets.Where(t => !IsUntargetable(t)).ToList();
+
+                    if (kept.Count > 0)
+                    {
+                        __result = kept;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static bool IsUntargetable(TacticalAbilityTarget target)
+            {
+                TacticalItemDef def = target?.TacticalItem?.TacticalItemDef;
+
+                if (def == null)
+                {
+                    return false;
+                }
+
+                if (!_tagLooked)
+                {
+                    _tagLooked = true;
+                    _willNotHighlightTag = TFTVMain.Main.DefCache.GetDef<GameTagDef>("WillNotHighlight_TagDef");
+                }
+
+                return _willNotHighlightTag != null && def.Tags != null && def.Tags.Contains(_willNotHighlightTag);
+            }
+        }
     }
 }

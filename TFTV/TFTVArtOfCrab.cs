@@ -172,7 +172,8 @@ namespace TFTV
                         TacAITarget target = (TacAITarget)aiTarget.Target;
 
                         //falling back moves to spots no enemy can see on purpose, which Cover() would cancel
-                        if (__instance.ActionDef == TFTVAICombatAbilities.PeekAndFallBackAI.FallBackActionDef)
+                        if (__instance.ActionDef == TFTVAICombatAbilities.PeekAndFallBackAI.FallBackActionDef
+                            || TFTVAICombatAbilities.ClassSkillsAI.IsCoverMove(__instance.ActionDef))
                         {
                             TFTVAICombatAbilities.PeekAndFallBackAI.RecordFallBack(actor, target);
                             return;
@@ -181,7 +182,8 @@ namespace TFTV
                         //so do holding and scouting, and going into the Mist
                         if (TFTVAICombatAbilities.Stances.RecordMove(__instance.ActionDef, actor, target)
                             || TFTVAICombatAbilities.MistSeeking.RecordMove(__instance.ActionDef, actor, target)
-                            || TFTVAICombatAbilities.Scavenging.RecordMove(__instance.ActionDef, actor, target))
+                            || TFTVAICombatAbilities.Scavenging.RecordMove(__instance.ActionDef, actor, target)
+                            || TFTVAICombatAbilities.NestAndAmbush.RecordMove(__instance.ActionDef, actor, target))
                         {
                             return;
                         }
@@ -1141,7 +1143,12 @@ namespace TFTV
                         //    TFTVLogger.Always("");
                         StartPreparingShootAbility startPreparingShootAbility = actor.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
 
-                        startPreparingShootAbility?.Activate(parameter);
+                        // Not when a friendly (other than a small critter) stands in the guns' cone.
+                        if (startPreparingShootAbility != null
+                            && TFTVAICombatAbilities.ScyllaGunsAI.ClearToFire(actor, startPreparingShootAbility, parameter))
+                        {
+                            startPreparingShootAbility.Activate(parameter);
+                        }
                     }
 
 
@@ -1673,20 +1680,23 @@ namespace TFTV
 
                             TacticalActor obj = (TacticalActor)actor;
                             TacAITarget tacAITarget = (TacAITarget)target;
-                            HealAbility healAbility = obj.GetAbilities<HealAbility>().FirstOrDefault();
-                            if (healAbility == null)
+
+                            // Every heal the unit has (medkit, stimpack, Field Medic, the technician's arms), not just the
+                            // first one: each patient is matched with the heal that does most for it, disabled limbs included.
+                            List<HealAbility> healAbilities = TFTVAICombatAbilities.ClassSkillsAI.UsableHeals(obj).ToList();
+                            if (healAbilities.Count == 0)
                             {
                                 __result = 0f;
                                 return false;
                             }
 
-                            IEnumerable<TacticalAbilityTarget> targetsAt = healAbility.GetTargetsAt(tacAITarget.Pos);
                             TacticalAbilityTarget tacticalAbilityTarget = null;
+                            HealAbility bestHeal = null;
                             float num = 0f;
-                            foreach (TacticalAbilityTarget item in targetsAt)
+                            foreach (HealAbility healAbility in healAbilities)
+                            foreach (TacticalAbilityTarget item in healAbility.GetTargetsAt(tacAITarget.Pos))
                             {
-                                float num2 = item.Actor.Health.Value;
-                                float num3 = (float)item.Actor.Health.Max - num2;
+                                float num3 = TFTVAICombatAbilities.ClassSkillsAI.HealValue(healAbility, item.Actor);
 
                                 // A healing item puts out burning, so it is worth what the fire would still take,
                                 // weighted by its value and the parts it burns on.
@@ -1704,6 +1714,7 @@ namespace TFTV
                                 if (num3 > num)
                                 {
                                     tacticalAbilityTarget = item;
+                                    bestHeal = healAbility;
                                     num = num3;
                                 }
                             }
@@ -1711,6 +1722,7 @@ namespace TFTV
                             if (num > 0f)
                             {
                                 tacAITarget.Actor = tacticalAbilityTarget.Actor;
+                                TFTVAICombatAbilities.ClassSkillsAI.RememberHeal(tacAITarget, bestHeal);
                                 __result = Mathf.Min(1f, num / (float)tacAITarget.Actor.Health.Max);
                                 return false;
                             }

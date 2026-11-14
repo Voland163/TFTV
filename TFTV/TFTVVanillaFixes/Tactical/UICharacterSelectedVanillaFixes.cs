@@ -295,6 +295,13 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         {
             try
             {
+                // Harsh Attrition: an egg's or sentinel's surveillance range is not known until it is researched.
+                if (__result != null && !TFTVHarshAttrition.PandoranVariance.GetInsight(context as TacticalActor).Stats)
+                {
+                    __result = null;
+                    return;
+                }
+
                 if (__result != null)
                 {
                     __result.StartScale /= 2.05f;

@@ -1312,7 +1312,19 @@ namespace TFTV
             /// <summary>The same for what free aim is pointing at: a body part, or the creature itself.</summary>
             private static bool IsReceiverArmourRevealed(IDamageReceiver receiver)
             {
-                if (!(receiver?.GetActor() is TacticalActor actor))
+                TacticalActorBase owner;
+
+                try
+                {
+                    owner = receiver?.GetActor();
+                }
+                catch (Exception)
+                {
+                    // Still pointed at a body part of a creature destroyed this frame: GetActor throws on its rig.
+                    return false;
+                }
+
+                if (!(owner is TacticalActor actor))
                 {
                     return false;
                 }

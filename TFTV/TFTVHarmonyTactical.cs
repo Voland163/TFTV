@@ -478,6 +478,8 @@ namespace TFTV
                     TFTVAISquadPlanner.Clear();
                     TFTVAICombatAbilities.PeekAndFallBackAI.Clear();
                     TFTVAICombatAbilities.Stances.OnFactionStartTurn(__instance.Faction);
+                    TFTVAICombatAbilities.BottleTest.OnFactionStartTurn(__instance.Faction);
+                    TFTVAICombatAbilities.NestAndAmbush.OnFactionStartTurn(__instance.Faction);
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
                     TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);

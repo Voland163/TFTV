@@ -1,16 +1,19 @@
 using Base.AI.Defs;
 using Base.Defs;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
+using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static TFTV.TFTVSuppression;
 
@@ -52,6 +55,7 @@ namespace TFTV
             internal static AIActionMoveAndAttackDef ActionDef;
             internal static AIAttackPositionConsiderationDef ConsiderationDef;
             private static AIHasEquipmentConsiderationDef _shouldSuppressDef;
+            private static AIRoofAboveConsiderationDef _pathClearDef;
 
             /// <summary>Templates of the AI that carries guns; each gets the action only if it already has MoveAndShoot.</summary>
             private static readonly string[] Templates =
@@ -78,6 +82,18 @@ namespace TFTV
 
                     PeekAndFallBackAI.AddEarlyExit(ActionDef, _shouldSuppressDef);
 
+                    // The point of suppressing is to get past overwatch, so the gunner must not walk into it first:
+                    // reaction fire suppressed one on the way, the AP it lost cost it the burst, and it ended its turn.
+                    _pathClearDef = Helper.CreateDefFromClone(DefCache.GetDef<AIRoofAboveConsiderationDef>("RoofAbove_AIConsiderationDef"),
+                        "5f8b2d17-c9e4-4a60-b3d1-8e27a0f6c4b9", "TFTV_SuppressPathClear_AIConsiderationDef");
+
+                    AITargetEvaluation positions = ActionDef.Evaluations.First(e => e.TargetGeneratorDef is AIActorMovementZoneTargetGeneratorDef);
+                    positions.Considerations = positions.Considerations.AddToArray(new AIAdjustedConsideration
+                    {
+                        Consideration = _pathClearDef,
+                        ScoreCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f)
+                    });
+
                     foreach (string templateName in Templates)
                     {
                         AIActionsTemplateDef template = DefCache.GetDef<AIActionsTemplateDef>(templateName);
@@ -95,6 +111,20 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+
+            /// <summary>The suppress move's path check (a clone of RoofAbove): 0 for a spot whose straight path crosses an enemy's overwatch cone.</summary>
+            internal static bool TryScorePosition(BaseDef def, TacticalActor actor, TacAITarget target, out float score)
+            {
+                score = 1f;
+
+                if (_pathClearDef == null || def != _pathClearDef || actor == null || target == null)
+                {
+                    return false;
+                }
+
+                score = Stances.CrossesOverwatch(actor, target.Pos) ? 0f : 1f;
+                return true;
             }
 
             internal static bool TryScoreGate(BaseDef def, TacticalActor actor, out float score)

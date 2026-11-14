@@ -92,6 +92,7 @@ namespace TFTV
         public Dictionary<string, float> BiotechMedkitOption2RestoreAppliedByActorId;
         public List<string> AIStanceContactFactions;
         public List<string> AIStanceTactics;
+        public List<string> AIBottleTest;
     }
 
     /// <summary>
@@ -439,6 +440,7 @@ namespace TFTV
 
                 TFTVAICombatAbilities.Stances.ImportContacts(data.AIStanceContactFactions);
                 TFTVAICombatAbilities.Stances.ImportTactics(data.AIStanceTactics);
+                TFTVAICombatAbilities.BottleTest.Import(data.AIBottleTest);
 
             }
             catch (Exception e)
@@ -531,6 +533,7 @@ namespace TFTV
                 BiotechMedkitOption2RestoreAppliedByActorId = TFTVIncidents.BiotechMedkit.ExportOption2RestoreAppliedSnapshot(),
                 AIStanceContactFactions = TFTVAICombatAbilities.Stances.ExportContacts(),
                 AIStanceTactics = TFTVAICombatAbilities.Stances.ExportTactics(),
+                AIBottleTest = TFTVAICombatAbilities.BottleTest.Export(),
 
             };
         }
