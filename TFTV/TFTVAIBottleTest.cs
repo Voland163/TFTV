@@ -41,7 +41,7 @@ namespace TFTV
         /// none, one is added on the faction's deploy zone farthest from the player. Escaped units no longer count
         /// for the mission's end. A unit with no path to an exit fights on as usual.
         ///
-        /// A unit the player must kill (a kill objective's target) never runs.
+        /// A unit the player must kill (a kill objective's target) never runs, and neither does an Umbra.
         /// </summary>
         internal static class BottleTest
         {
@@ -284,7 +284,14 @@ namespace TFTV
                     && !IsBorrowed(actor)
                     && actor.GetAbility<MoveAbility>() != null
                     && (actor.GetAbility<ExitMissionAbility>() != null || actor.GetAbility<EvacuateMountedActorsAbility>() != null)
-                    && !IsObjectiveTarget(actor);
+                    && !IsObjectiveTarget(actor)
+                    && !NeverRuns(actor);
+            }
+
+            /// <summary>Umbras fight on when their faction breaks (they still count toward its strength).</summary>
+            private static bool NeverRuns(TacticalActor actor)
+            {
+                return TFTVHarshAttrition.PandoranVariance.IsUmbra(actor);
             }
 
             /// <summary>
@@ -316,7 +323,7 @@ namespace TFTV
             {
                 int granted = 0;
 
-                foreach (TacticalActor actor in faction.TacticalActors.Where(a => a != null && a.IsAlive && !a.IsEvacuated && !IsBorrowed(a)))
+                foreach (TacticalActor actor in faction.TacticalActors.Where(a => a != null && a.IsAlive && !a.IsEvacuated && !IsBorrowed(a) && !NeverRuns(a)))
                 {
                     if (_exitMissionDef != null && actor.GetAbility<MoveAbility>() != null
                         && actor.GetAbility<ExitMissionAbility>() == null && actor.GetAbility<EvacuateMountedActorsAbility>() == null)
@@ -330,7 +337,7 @@ namespace TFTV
 
                 if (runners == 0)
                 {
-                    TFTVLogger.Always($"[Bottle] {why}: nobody runs (objective targets stand their ground, the rest can't move); {granted} given the exit ability");
+                    TFTVLogger.Always($"[Bottle] {why}: nobody runs (objective targets and Umbras stand their ground, the rest can't move); {granted} given the exit ability");
                     return;
                 }
 

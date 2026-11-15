@@ -1412,6 +1412,7 @@ namespace TFTV
                 ClassSkillsAI.ClearTurn();
                 ScyllaGunsAI.ClearTurn();
                 TFTVAIClosestPath.ClearTurn();
+                TFTVAIVehicleTargets.ClearTurn();
             }
         }
 

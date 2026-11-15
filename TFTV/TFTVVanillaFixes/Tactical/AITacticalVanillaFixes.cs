@@ -82,13 +82,36 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                         enumerable = enumerable.Where((TacticalAbilityTarget x) => enemies.Contains(x.Actor));
                     }
 
+                    // A blast around the user (Stomp, Chiron's area stun, a spider drone going off) is never
+                    // made where it would catch a friendly. Stomp's targeting doesn't target self, so the
+                    // loop below would centre it on the enemy: it gets the hits around the user instead.
+                    List<TacticalActorBase> stompHits = null;
+                    if (SelfCentredBlastAI.IsSelfCentredBlast(abilityWithDef))
+                    {
+                        List<TacticalActorBase> hits = SelfCentredBlastAI.HitsUnlessFriendly(tacActor, tacAITarget.Pos, abilityWithDef);
+                        if (hits == null)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        if (!abilityWithDef.OriginTargetData.TargetSelf)
+                        {
+                            stompHits = hits;
+                        }
+                    }
+
                     List<TacticalActorBase> list = new List<TacticalActorBase>(10);
                     float num = 0f;
                     foreach (TacticalAbilityTarget item in enumerable)
                     {
                         float num2 = 1f;
                         list.Clear();
-                        if (abilityWithDef.OriginTargetData.TargetSelf)
+                        if (stompHits != null)
+                        {
+                            list.AddRange(stompHits);
+                        }
+                        else if (abilityWithDef.OriginTargetData.TargetSelf)
                         {
                             list.AddRange(AIUtil.GetAffectedTargetsByDamageAbility(tacActor, tacAITarget.Pos, abilityWithDef as IDamageDealer));
                         }
@@ -160,6 +183,100 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                 {
                     TFTVLogger.Error(e);
                     throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Abilities that go off as a blast around their user and don't spare its allies: Stomp, the Chiron's
+        /// area stun, spider drone and worm explosions (ApplyDamageEffectAbility with a sphere payload and
+        /// IgnoreFriendlies off). The damage is applied around the user and spares only the user itself.
+        /// The AI never uses one where it would catch a friendly, or one of its own units under the player's
+        /// Mind Control.
+        /// </summary>
+        internal static class SelfCentredBlastAI
+        {
+            internal static bool IsSelfCentredBlast(TacticalAbility ability)
+            {
+                return ability is ApplyDamageEffectAbility applyDamage
+                    && !applyDamage.ApplyDamageEffectAbilityDef.IgnoreFriendlies
+                    && applyDamage.GetDamagePayload()?.DamageDeliveryType == DamageDeliveryType.Sphere;
+            }
+
+            /// <summary>
+            /// Who the blast would hit if the user set it off at <paramref name="pos"/>, or null when that
+            /// includes a friendly. The user is left out. The prediction ignores walls, so it can only
+            /// overcount victims.
+            /// </summary>
+            internal static List<TacticalActorBase> HitsUnlessFriendly(TacticalActor user, Vector3 pos, TacticalAbility ability)
+            {
+                pos += ((ApplyDamageEffectAbility)ability).ApplyDamageEffectAbilityDef.EffectPositionOffset;
+
+                List<TacticalActorBase> hits = new List<TacticalActorBase>();
+
+                foreach (TacticalActorBase hit in AIUtil.GetAffectedTargetsByDamageAbility(user, pos, ability as IDamageDealer))
+                {
+                    if (hit == user || !(hit is TacticalActor hitActor))
+                    {
+                        continue;
+                    }
+
+                    FactionRelation relation = user.RelationTo(hitActor);
+
+                    if (relation == FactionRelation.Friend)
+                    {
+                        return null;
+                    }
+
+                    if (relation == FactionRelation.Enemy && hitActor.Status != null && hitActor.Status.HasStatus<MindControlStatus>()
+                        && hitActor.Status.GetStatus<MindControlStatus>().OriginalFaction == user.TacticalFaction.TacticalFactionDef)
+                    {
+                        return null;
+                    }
+
+                    hits.Add(hitActor);
+                }
+
+                return hits;
+            }
+        }
+
+        /// <summary>
+        /// Worm explosions (and the Chiron's area stun when scored this way) are rated by how many enemies
+        /// they catch, which never looks at friendlies. A worm set off next to other Pandorans burned,
+        /// poisoned or dissolved them. Here such a blast scores 0. Worms explode where they stand: the self
+        /// target carries no position, so the actor's own is used.
+        /// </summary>
+        [HarmonyPatch(typeof(AIAbilityNumberOfTargetsConsideration), nameof(AIAbilityNumberOfTargetsConsideration.Evaluate))]
+        public static class AIAbilityNumberOfTargetsConsideration_Evaluate_FriendlyBlast_Patch
+        {
+            public static void Postfix(AIAbilityNumberOfTargetsConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+            {
+                try
+                {
+                    if (__result <= 0f || !(actor is TacticalActor tacActor))
+                    {
+                        return;
+                    }
+
+                    TacAITarget tacAITarget = target as TacAITarget;
+                    TacticalAbility ability = __instance.Def.GetAbility(tacActor, tacAITarget);
+
+                    if (ability == null || !SelfCentredBlastAI.IsSelfCentredBlast(ability))
+                    {
+                        return;
+                    }
+
+                    Vector3 pos = tacAITarget == null || tacAITarget.Pos == Vector3.zero ? tacActor.Pos : tacAITarget.Pos;
+
+                    if (SelfCentredBlastAI.HitsUnlessFriendly(tacActor, pos, ability) == null)
+                    {
+                        __result = 0f;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
         }

@@ -441,6 +441,7 @@
     <Compile Include="TFTVAIScyllaGuns.cs" />
     <Compile Include="TFTVAIBottleTest.cs" />
     <Compile Include="TFTVAIClosestPath.cs" />
+    <Compile Include="TFTVAIVehicleTargets.cs" />
     <Compile Include="TFTVAINestAndAmbush.cs" />
     <Compile Include="TFTVAIStalk.cs" />
     <Compile Include="TFTVAIDecisionLog.cs" />

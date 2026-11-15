@@ -1183,6 +1183,41 @@ namespace TFTV
             /// <summary>Health bars removed for an unknown specimen, to switch back on when the element shows someone else.</summary>
             private static readonly HashSet<ValueBarElement> HiddenHealthBars = new HashSet<ValueBarElement>();
 
+            /// <summary>Alpha a bar's own CanvasGroup had before it was hidden (none: one was added here, back to 1).</summary>
+            private static readonly Dictionary<ValueBarElement, float> HiddenBarAlpha = new Dictionary<ValueBarElement, float>();
+
+            /// <summary>
+            /// Hides or shows a health bar without switching it off. Switched off, it dropped out of the healthbar's layout and
+            /// the rest collapsed into its place: status icons blown up to the bar's size and the body-part doll floating
+            /// beside an empty spot. A transparent bar keeps its place.
+            /// </summary>
+            private static void SetBarShown(ValueBarElement healthBar, bool shown)
+            {
+                CanvasGroup group = healthBar.GetComponent<CanvasGroup>();
+
+                if (shown)
+                {
+                    if (group != null)
+                    {
+                        group.alpha = HiddenBarAlpha.TryGetValue(healthBar, out float alpha) ? alpha : 1f;
+                    }
+
+                    HiddenBarAlpha.Remove(healthBar);
+                    return;
+                }
+
+                if (group == null)
+                {
+                    group = healthBar.gameObject.AddComponent<CanvasGroup>();
+                }
+                else if (!HiddenBarAlpha.ContainsKey(healthBar))
+                {
+                    HiddenBarAlpha[healthBar] = group.alpha;
+                }
+
+                group.alpha = 0f;
+            }
+
             private static readonly AccessTools.FieldRef<HealthbarUIActorElement, StatusStat> HealthStatField =
                 AccessTools.FieldRefAccess<HealthbarUIActorElement, StatusStat>("_healthStat");
 
@@ -1212,7 +1247,7 @@ namespace TFTV
                 // Healthbars are pooled: one that hid its bar for an unknown specimen may now show anyone.
                 if (bar?.HealthBar != null && known && HiddenHealthBars.Remove(bar.HealthBar))
                 {
-                    bar.HealthBar.gameObject.SetActive(true);
+                    SetBarShown(bar.HealthBar, true);
                 }
 
                 if (bar == null || real)
@@ -1229,10 +1264,9 @@ namespace TFTV
 
                 if (!known)
                 {
-                    if (bar.HealthBar != null && bar.HealthBar.gameObject.activeSelf)
+                    if (bar.HealthBar != null && HiddenHealthBars.Add(bar.HealthBar))
                     {
-                        bar.HealthBar.gameObject.SetActive(false);
-                        HiddenHealthBars.Add(bar.HealthBar);
+                        SetBarShown(bar.HealthBar, false);
                     }
 
                     if (bar.HealthAmountText != null)

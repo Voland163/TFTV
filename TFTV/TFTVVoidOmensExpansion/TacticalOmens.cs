@@ -545,9 +545,15 @@ namespace TFTV.TFTVVoidOmensExpansion
             }
         }
 
+        /// <summary>Control statuses VO32 is ending, so their unapply keeps the actor's Action Points.</summary>
+        private static readonly HashSet<MindControlStatus> _vo32Switching = new HashSet<MindControlStatus>();
+
         /// <summary>
         /// VO32. On the turn the time runs out the status comes off with the side the actor is on now as its "original"
         /// side, so unapplying it keeps the actor where it is, with no Willpower upkeep from then on.
+        ///
+        /// Only control taken from an enemy switches sides. Haven defenders and civilians that join the player
+        /// (UnderPhoenixControl) are already on the player's side: ending their control would only cost them their turn.
         /// </summary>
         [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.StartTurn))]
         internal static class MindControlStatus_StartTurn_VO32_Patch
@@ -559,7 +565,8 @@ namespace TFTV.TFTVVoidOmensExpansion
                     TacticalActor actor = __instance.TacticalActor;
 
                     if (!TFTVVoidOmens.VoidOmensCheck[32] || actor == null || !actor.IsAlive || __instance.UnapplyRequested
-                        || __instance.TurnNumber - __instance.TurnApplied < VO32TurnsToSwitchSides)
+                        || __instance.TurnNumber - __instance.TurnApplied < VO32TurnsToSwitchSides
+                        || !TakenFromEnemy(__instance, actor))
                     {
                         return;
                     }
@@ -569,7 +576,70 @@ namespace TFTV.TFTVVoidOmensExpansion
                     __instance.OverridenMindControlStatus = null;
                     __instance.OriginalFaction = actor.TacticalFaction.TacticalFactionDef;
                     __instance.OriginalMissionParticipant = actor.MissionParticipant;
+                    _vo32Switching.Add(__instance);
                     __instance.RequestUnapply(actor.Status);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static bool TakenFromEnemy(MindControlStatus status, TacticalActor actor)
+            {
+                TacticalFaction original = actor.TacticalLevel?.Factions?.FirstOrDefault(f => f.TacticalFactionDef == status.OriginalFaction);
+
+                return original != null && original != actor.TacticalFaction
+                    && actor.TacticalFaction.GetRelationTo(original) == FactionRelation.Enemy;
+            }
+        }
+
+        /// <summary>
+        /// VO32. Vanilla ends control by setting the actor's Action Points to the def's APAfterUnapply share (none), which
+        /// is right for a unit going back to its own side during the controller's turn. A unit VO32 keeps has just been
+        /// given its turn on the controller's side, so it keeps the Action Points it had.
+        /// </summary>
+        [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnUnapply))]
+        internal static class MindControlStatus_OnUnapply_VO32_Patch
+        {
+            private static void Prefix(MindControlStatus __instance, out float __state)
+            {
+                __state = -1f;
+
+                try
+                {
+                    if (_vo32Switching.Contains(__instance) && __instance.TacticalActor?.CharacterStats != null)
+                    {
+                        __state = __instance.TacticalActor.CharacterStats.ActionPoints;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void Postfix(MindControlStatus __instance, float __state)
+            {
+                try
+                {
+                    if (!_vo32Switching.Remove(__instance) || __state < 0f)
+                    {
+                        return;
+                    }
+
+                    TacticalActor actor = __instance.TacticalActor;
+
+                    if (actor == null || !actor.IsAlive || actor.CharacterStats == null)
+                    {
+                        return;
+                    }
+
+                    if ((float)actor.CharacterStats.ActionPoints < __state)
+                    {
+                        actor.CharacterStats.ActionPoints.Set(__state);
+                        TFTVLogger.Always($"VO32: {actor.DisplayName} keeps its {__state:0.#} AP after switching sides");
+                    }
                 }
                 catch (Exception e)
                 {
