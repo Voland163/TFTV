@@ -1442,6 +1442,12 @@ namespace TFTV
                             return false;
                         }
 
+                        // Path distance by A*, but only to the enemies that could still be nearest (Dash, worms).
+                        if (TFTVAIClosestPath.TryScore(__instance, actor, target, ref __result))
+                        {
+                            return false;
+                        }
+
                         return true;
                     }
                     catch (Exception e)

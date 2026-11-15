@@ -58,6 +58,7 @@ namespace TFTV
             private static AIActionMoveAndExecuteAbilityDef _remoteControlAction;
             private static AIActionMoveAndExecuteAbilityDef _silenceAction;
             private static StatusDef _silencedStatus;
+            private static ApplyStatusAbilityDef _inducePanic;
             private static GameTagDef _vehicleTag;
 
             /// <summary>Units that cast Neural Disruption this turn.</summary>
@@ -235,7 +236,7 @@ namespace TFTV
                     SpecialShot("TFTV_Gunslinger_AIActionDef", "574f0693-8cef-4eb5-99e8-26a9680169e3", "45e1c51d-3da2-4fae-bdfa-a0a3c28444b2", "9488c02d-6ad2-4930-ac02-bc9826bd44b7", "634f7d87-8286-4dde-b81a-31bbc9dc7372", null, gunslinger, 110f, new[] { handgun }, false);
                 }
 
-                // Free handgun shots, twice a turn: from where the unit stands, so they never cost a move.
+                // Handgun shots for no AP but 2 WP each, twice a turn: from where the unit stands, so they never cost a move.
                 if (gunKata != null)
                 {
                     SpecialShot("TFTV_GunKata_AIActionDef", "5e287769-b45d-4ace-a148-5b5c0976f751", "fb38eba3-995b-42e1-aa54-685504287438", "95f8d7f0-f62e-45b0-b2ee-cc117ff4f670", "fcfd8251-0e9c-42d6-ad60-094cd94bef19", "dd2508b9-cf67-4052-b117-f6f02865bd7d", gunKata, 150f, new[] { handgun }, true);
@@ -312,10 +313,12 @@ namespace TFTV
                 }
 
                 // Panic whoever the priest out-wills, from a spot with some cover.
+                _inducePanic = inducePanic;
+
                 if (inducePanic != null)
                 {
                     TargetedAction("TFTV_InducePanic_AIActionDef", "92db5018-83a9-4e59-b8c3-8573984285d2", "877486fe-4a0a-47ee-81e6-08ffb4dda8c3", "1b0a50e6-27ed-4235-ac57-f63e0e6b0edd", "13473ac3-1139-4235-ba35-db7c6ebcdd8e", "b9f45bf4-0447-426d-b822-d26d59b63889", "64a1e79e-5674-45c8-8e5e-649ea44213a7", inducePanic, 120f, false,
-                        (a, t) => APLeftAt(a, t) >= AbilityCost(a, inducePanic) - 0.01f && !Stances.CrossesOverwatch(a, t.Pos) ? Mathf.Max(0.4f, SpotCover(a, t.Pos)) : 0f,
+                        (a, t) => InducePanicSpot(a, t),
                         (a, t) => PanicValue(a, t));
                 }
 
@@ -342,7 +345,7 @@ namespace TFTV
                 action.EarlyExitConsiderations = new[]
                 {
                     source.EarlyExitConsiderations[0],
-                    Linear(Gate(name + "_Gate", gateGuid, a => SkillUsable(a, ability) ? 1f : 0f))
+                    Linear(Gate(name + "_Gate", gateGuid, a => UsableExplained(a, ability)))
                 };
 
                 AIActorMovementZoneTargetGeneratorDef zone = Helper.CreateDefFromClone(
@@ -564,6 +567,7 @@ namespace TFTV
             {
                 TurnStartAP.Clear();
                 SilencedThisTurn.Clear();
+                Explained.Clear();
             }
 
             #endregion
@@ -575,10 +579,70 @@ namespace TFTV
                 return def == null ? null : actor.GetAbilityWithDef<TacticalAbility>(def);
             }
 
+            /// <summary>
+            /// Usable now, and leaving at least this share of max WP after paying for it. WP is the AI's panic buffer and
+            /// pays for mind control and Dash, so the class skills only spend the top half of it (Gun Kata's 2 WP were
+            /// being spent on every shot it could make). TFTV uses the same 50% for Neural Disruption and Electric Reinforcement.
+            /// </summary>
+            private const float WillPointReserve = 0.5f;
+
             private static bool SkillUsable(TacticalActor actor, AbilityDef def)
             {
+                return WhyNotUsable(actor, def) == null;
+            }
+
+            /// <summary>Null when usable; otherwise why not, for the diagnostic log.</summary>
+            private static string WhyNotUsable(TacticalActor actor, AbilityDef def)
+            {
                 TacticalAbility ability = SkillOf(actor, def);
-                return ability != null && ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected);
+
+                if (ability == null)
+                {
+                    return "doesn't have it";
+                }
+
+                if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                {
+                    return $"disabled ({ability.GetDisabledState()})";
+                }
+
+                float willPoints = actor.CharacterStats.WillPoints;
+                float max = actor.CharacterStats.WillPoints.Max;
+
+                if (ability.WillPointCost > 0f && willPoints - ability.WillPointCost < max * WillPointReserve - 0.01f)
+                {
+                    return $"WP reserve ({willPoints:0} WP, costs {ability.WillPointCost:0}, keeps {max * WillPointReserve:0})";
+                }
+
+                return null;
+            }
+
+            private static readonly HashSet<string> Explained = new HashSet<string>();
+
+            /// <summary>Logs, once per unit, skill and reason each turn, why a skill's action scored nothing.</summary>
+            private static void Explain(TacticalActor actor, AbilityDef def, string reason)
+            {
+                if (reason != null && Explained.Add($"{actor.name}|{def?.name}|{reason}"))
+                {
+                    TFTVLogger.Always($"[ClassSkills AI] {actor.DisplayName} won't use {def?.name?.Replace("_AbilityDef", "")}: {reason}");
+                }
+            }
+
+            /// <summary>A step a skill's action did get through, once per unit, skill and note each turn.</summary>
+            private static void Note(TacticalActor actor, AbilityDef def, string note)
+            {
+                if (Explained.Add($"{actor.name}|{def?.name}|{note}"))
+                {
+                    TFTVLogger.Always($"[ClassSkills AI] {actor.DisplayName}, {def?.name?.Replace("_AbilityDef", "")}: {note}");
+                }
+            }
+
+            /// <summary>Gate for the targeted skills, with the reason logged when it stays shut.</summary>
+            private static float UsableExplained(TacticalActor actor, AbilityDef def)
+            {
+                string why = WhyNotUsable(actor, def);
+                Explain(actor, def, why);
+                return why == null ? 1f : 0f;
             }
 
             private static float APMax(TacticalActor actor)
@@ -656,7 +720,11 @@ namespace TFTV
             /// <summary>The −1 AP lets the unit fire one more shot this turn than it otherwise could.</summary>
             private static bool QuickAimPays(TacticalActor actor, ApplyStatusAbilityDef quickAim)
             {
-                if (!SkillUsable(actor, quickAim))
+                // Not before the unit has done anything this turn: with full AP it often moves or overwatches next,
+                // and Overwatch uses up the buff (playtest 2026-11-14). Quick Aim works as well before the second and
+                // third shots, and it may be used twice a turn. Asked first, so the turn's starting AP is recorded at
+                // the unit's first decision.
+                if (!HasActedThisTurn(actor) || !SkillUsable(actor, quickAim))
                 {
                     return false;
                 }
@@ -667,13 +735,19 @@ namespace TFTV
                 foreach (Weapon weapon in Guns(actor).Where(w => actor.IsProficientWithEquipment(w)))
                 {
                     float cost = actor.Equipments.GetAPToUseEquipment(weapon);
+                    float cheapShot = cost - reduction;
 
-                    if (cost - reduction <= 0.01f || !Stances.HasShotFromHere(actor, weapon))
+                    // Only the next shot is cheaper. The target check must not ask for a full-price shot's AP:
+                    // that is exactly the case Quick Aim is for (it missed a 4.75 AP shot with 6.1 AP left).
+                    if (cheapShot <= 0.01f || ap < cheapShot - 0.01f || !Stances.ShotTargetsFromHere(actor, weapon).Any())
                     {
                         continue;
                     }
 
-                    if (Mathf.FloorToInt((ap + 0.01f) / (cost - reduction)) > Mathf.FloorToInt((AP(actor) + 0.01f) / cost))
+                    int withoutIt = Mathf.FloorToInt((AP(actor) + 0.01f) / cost);
+                    int withIt = 1 + Mathf.FloorToInt((ap - cheapShot + 0.01f) / cost);
+
+                    if (withIt > withoutIt)
                     {
                         return true;
                     }
@@ -889,16 +963,50 @@ namespace TFTV
             private static float PanicValue(TacticalActor actor, TacAITarget target)
             {
                 TacticalActor enemy = target?.Actor as TacticalActor;
+                string why = null;
 
-                if (enemy == null || !enemy.IsAlive || actor.RelationTo(enemy) != PhoenixPoint.Common.Core.FactionRelation.Enemy
-                    || (enemy.Status != null && enemy.Status.HasStatus<PanicStatus>())
-                    || (float)enemy.CharacterStats.WillPoints >= (float)actor.CharacterStats.WillPoints
-                    || TFTVAISquadPlanner.TargetMultiplier(actor, enemy) <= 0f)
+                if (enemy == null || !enemy.IsAlive || actor.RelationTo(enemy) != PhoenixPoint.Common.Core.FactionRelation.Enemy)
+                {
+                    why = $"target {target?.Actor?.DisplayName ?? "none"} is no living enemy";
+                }
+                else if (enemy.Status != null && enemy.Status.HasStatus<PanicStatus>())
+                {
+                    why = $"{enemy.DisplayName} already panicked";
+                }
+                else if ((float)enemy.CharacterStats.WillPoints >= (float)actor.CharacterStats.WillPoints)
+                {
+                    why = $"{enemy.DisplayName} has {(float)enemy.CharacterStats.WillPoints:0} WP, not fewer than its {(float)actor.CharacterStats.WillPoints:0}";
+                }
+                else if (TFTVAISquadPlanner.TargetMultiplier(actor, enemy) <= 0f)
+                {
+                    why = $"{enemy.DisplayName} is kept for mind control";
+                }
+
+                float value = why == null ? Mathf.Clamp01(AIUtil.GetEnemyWeight(actor.TacticalFaction.AIBlackboard, enemy)) : 0f;
+
+                if (why == null && value <= 0f)
+                {
+                    why = $"{enemy.DisplayName} has enemy weight 0";
+                }
+
+                Explain(actor, _inducePanic, why);
+                return value;
+            }
+
+            private static float InducePanicSpot(TacticalActor actor, TacAITarget target)
+            {
+                if (APLeftAt(actor, target) < AbilityCost(actor, _inducePanic) - 0.01f)
                 {
                     return 0f;
                 }
 
-                return Mathf.Clamp01(AIUtil.GetEnemyWeight(actor.TacticalFaction.AIBlackboard, enemy));
+                if (Stances.CrossesOverwatch(actor, target.Pos))
+                {
+                    return 0f;
+                }
+
+                Note(actor, _inducePanic, "has a spot to cast from");
+                return Mathf.Max(0.4f, SpotCover(actor, target.Pos));
             }
 
             /// <summary>1 where no known enemy sees the spot; otherwise 0.25 plus credit for cover toward those who do.</summary>

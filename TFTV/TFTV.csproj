@@ -440,6 +440,7 @@
     <Compile Include="TFTVAIClassSkills.cs" />
     <Compile Include="TFTVAIScyllaGuns.cs" />
     <Compile Include="TFTVAIBottleTest.cs" />
+    <Compile Include="TFTVAIClosestPath.cs" />
     <Compile Include="TFTVAINestAndAmbush.cs" />
     <Compile Include="TFTVAIStalk.cs" />
     <Compile Include="TFTVAIDecisionLog.cs" />

@@ -69,6 +69,9 @@ namespace TFTV
             Stalking.CreateDefs();
             FiringLine.CreateDefs();
             ClassSkillsAI.CreateDefs();
+
+            // Last: swaps a consideration in the plain advances, so clones made above keep their own copy.
+            TFTVAIClosestPath.CreateDefs();
         }
 
         #region shared def surgery helpers
@@ -1408,6 +1411,7 @@ namespace TFTV
                 FiringLine.ClearTurn();
                 ClassSkillsAI.ClearTurn();
                 ScyllaGunsAI.ClearTurn();
+                TFTVAIClosestPath.ClearTurn();
             }
         }
 

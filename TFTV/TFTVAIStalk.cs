@@ -216,10 +216,68 @@ namespace TFTV
                     score = Stances.HasLineOfFire(actor, target.Pos, enemy.Pos) ? 1f : NoLineScore;
                 }
 
+                if (IsTooClose(actor, target.Pos))
+                {
+                    score *= TooCloseScore;
+                }
+
                 return true;
             }
 
-            /// <summary>The enemy a gunner with no shot from here should get a line on; null if it has a shot or none is near. Cached per frame.</summary>
+            /// <summary>
+            /// A gunner's advance shouldn't end right next to an enemy: it gets there with its AP spent and stands in
+            /// the open for the enemy's turn. Tester log (2026-11-14): The Puppeteer ran to 3 m from a Kaos Buggy with
+            /// 0.3 AP left, and the buggy killed it. Advance_Normal scores every spot within 7 m of an enemy the same.
+            /// </summary>
+            private const float TooCloseRange = 3.5f;
+            private const float TooCloseScore = 0.25f;
+
+            /// <summary>Per shot, after armour: below this the gun barely scratches the target and isn't worth closing in for.</summary>
+            private const float MinShotDamage = 10f;
+
+            private static readonly Dictionary<TacticalActor, KeyValuePair<int, List<Vector3>>> GunnerEnemiesByFrame =
+                new Dictionary<TacticalActor, KeyValuePair<int, List<Vector3>>>();
+
+            /// <summary>A gunner (a gun it can fire) on a spot within <see cref="TooCloseRange"/> of a known enemy.</summary>
+            private static bool IsTooClose(TacticalActor actor, Vector3 pos)
+            {
+                int frame = Time.frameCount;
+
+                if (!GunnerEnemiesByFrame.TryGetValue(actor, out KeyValuePair<int, List<Vector3>> cached) || cached.Key != frame)
+                {
+                    List<Vector3> enemies = !actor.IsControlledByPlayer && actor.Equipments != null && actor.Equipments.GetWeapons().Any(SuppressAI.CanFire)
+                        ? Stances.KnownEnemies(actor).Select(e => e.Pos).ToList()
+                        : new List<Vector3>();
+
+                    cached = new KeyValuePair<int, List<Vector3>>(frame, enemies);
+                    GunnerEnemiesByFrame[actor] = cached;
+                }
+
+                foreach (Vector3 enemy in cached.Value)
+                {
+                    if ((enemy - pos).sqrMagnitude < TooCloseRange * TooCloseRange)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            /// <summary>What one shot of the weapon does to the target's health, after its best armour.</summary>
+            private static float ShotDamage(Weapon weapon, TacticalActorBase target)
+            {
+                DamageResult perRound = default(DamageResult);
+                weapon.GetDamagePayload().CalculateDamageResultForAiTarget(target, target, ref perRound);
+
+                DamagePayload payload = weapon.WeaponDef.DamagePayload;
+                return perRound.HealthDamage * Mathf.Max(1, payload.AutoFireShotCount) * Mathf.Max(1, payload.ProjectilesPerShot);
+            }
+
+            /// <summary>
+            /// The enemy a gunner with no shot from here should get a line on: the nearest one its gun can hurt. Null if
+            /// it has a shot, or nobody it can hurt is near. Cached per frame.
+            /// </summary>
             private static TacticalActorBase BlindTarget(TacticalActor actor)
             {
                 int frame = Time.frameCount;
@@ -238,15 +296,25 @@ namespace TFTV
                 {
                     float reach = weapon.WeaponDef.EffectiveRange * 1.5f + actor.MaxMoveRange;
 
-                    enemy = Stances.KnownEnemies(actor)
+                    List<TacticalActorBase> near = Stances.KnownEnemies(actor)
                         .Where(e => Vector3.Distance(actor.Pos, e.Pos) <= reach)
                         .OrderBy(e => (e.Pos - actor.Pos).sqrMagnitude)
-                        .FirstOrDefault();
+                        .ToList();
 
-                    if (enemy != null && LoggedThisTurn.Add(actor))
+                    enemy = near.FirstOrDefault(e => ShotDamage(weapon, e) >= MinShotDamage);
+
+                    if (LoggedThisTurn.Add(actor))
                     {
-                        TFTVLogger.Always($"TFTV AI: {actor.DisplayName} has no shot from where it stands; its advance looks for a line of fire on " +
-                            $"{enemy.DisplayName} {Vector3.Distance(actor.Pos, enemy.Pos):0.0}m away");
+                        if (enemy != null)
+                        {
+                            TFTVLogger.Always($"TFTV AI: {actor.DisplayName} has no shot from where it stands; its advance looks for a line of fire on " +
+                                $"{enemy.DisplayName} {Vector3.Distance(actor.Pos, enemy.Pos):0.0}m away");
+                        }
+                        else if (near.Count > 0)
+                        {
+                            TFTVLogger.Always($"TFTV AI: {actor.DisplayName} has no shot from where it stands, and its {weapon.WeaponDef.name} can't hurt " +
+                                $"anyone near ({string.Join(", ", near.Select(e => $"{e.DisplayName} {ShotDamage(weapon, e):0}"))} per shot): no firing line sought");
+                        }
                     }
                 }
 
@@ -258,6 +326,7 @@ namespace TFTV
             {
                 TargetByFrame.Clear();
                 LoggedThisTurn.Clear();
+                GunnerEnemiesByFrame.Clear();
             }
         }
 

@@ -377,7 +377,14 @@ namespace TFTV
 
                 // TacticalExitZoneDef.CreateInstanceData returns null (map exit zones are placed in the scene, never
                 // spawned), and SpawnActor writes into whatever it gets: hand it the base actor instance data instead.
-                TacticalExitZone made = TacticalDeployZone.SpawnActor(setDef, new TacActorBaseInstanceData(), faction.TacticalFactionDef, side,
+                // SpawnActor clones it, and the clone copies AdditionalGameTags without a null check (the other lists
+                // are checked), so a blank one threw "Value cannot be null" (tester log 2026-11-14).
+                TacActorBaseInstanceData blank = new TacActorBaseInstanceData
+                {
+                    AdditionalGameTags = new List<PhoenixPoint.Common.Entities.GameTags.GameTagDef>()
+                };
+
+                TacticalExitZone made = TacticalDeployZone.SpawnActor(setDef, blank, faction.TacticalFactionDef, side,
                     far.transform.position, far.transform.rotation, null) as TacticalExitZone;
 
                 if (made == null)
