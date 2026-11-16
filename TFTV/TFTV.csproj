@@ -434,6 +434,7 @@
     <Compile Include="TFTVStarts.cs" />
     <Compile Include="TFTVPlayerDeploymentPhase.cs" />
     <Compile Include="TFTVPlayerDeploymentPrompt.cs" />
+    <Compile Include="TFTVFallRescue.cs" />
     <Compile Include="TFTVPlayerDeploymentPlacement.cs" />
     <Compile Include="TFTVPlayerDeploymentBaseDefenseCulls.cs" />
     <Compile Include="TFTVEnemySpawnSpots.cs" />
