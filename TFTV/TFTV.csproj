@@ -320,6 +320,7 @@
     <Compile Include="TFTVVanillaFixes\Tactical\AudioTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\DamageTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\DecimalWPTacticalVanillaFixes.cs" />
+    <Compile Include="TFTVVanillaFixes\Tactical\HealthbarSelectedTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\InventoryDupeTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\FirePathCostTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\MadSkunkyFixes.cs" />
@@ -444,6 +445,8 @@
     <Compile Include="TFTVAIClosestPath.cs" />
     <Compile Include="TFTVAIVehicleTargets.cs" />
     <Compile Include="TFTVAINestAndAmbush.cs" />
+    <Compile Include="TFTVAIRescuees.cs" />
+    <Compile Include="TFTVAIAlert.cs" />
     <Compile Include="TFTVAIStalk.cs" />
     <Compile Include="TFTVAIDecisionLog.cs" />
     <Compile Include="TFTVPlayerDeploymentReserve.cs" />

@@ -215,6 +215,7 @@ namespace TFTV
             ImplementSpecialMissions(tacController);
             ImplementConfigOptions(tacController);
             RunChecksForAllMissions(tacController);
+            TFTVAICombatAbilities.AlertState.AlertOnTacticalStart(tacController);
             RunBetaTestChecks();
 
 

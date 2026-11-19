@@ -183,7 +183,8 @@ namespace TFTV
                         if (TFTVAICombatAbilities.Stances.RecordMove(__instance.ActionDef, actor, target)
                             || TFTVAICombatAbilities.MistSeeking.RecordMove(__instance.ActionDef, actor, target)
                             || TFTVAICombatAbilities.Scavenging.RecordMove(__instance.ActionDef, actor, target)
-                            || TFTVAICombatAbilities.NestAndAmbush.RecordMove(__instance.ActionDef, actor, target))
+                            || TFTVAICombatAbilities.NestAndAmbush.RecordMove(__instance.ActionDef, actor, target)
+                            || TFTVAICombatAbilities.Rescuees.RecordMove(__instance.ActionDef, actor, target))
                         {
                             return;
                         }

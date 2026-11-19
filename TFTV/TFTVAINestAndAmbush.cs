@@ -747,9 +747,10 @@ namespace TFTV
                     return cached.Value;
                 }
 
+                // Only enemies its AI would go for: an unalerted unit can't attack soldiers, so they don't spring it.
                 List<TacticalActorBase> revealed = actor.TacticalFaction.Vision
                     .GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false)
-                    .Where(e => e != null && e.IsAlive && e is TacticalActor)
+                    .Where(e => e != null && e.IsAlive && e is TacticalActor && AlertState.CanTarget(actor, e))
                     .ToList();
 
                 bool can = false;
@@ -815,7 +816,9 @@ namespace TFTV
                     lane = Stances.LaneScore(actor.TacticalPerception.GetVisionPointAt(pos), point, Mathf.Max(1f, distance - 1.5f)) > 0f ? 1f : 0.5f;
                 }
 
-                if (Stances.KnownEnemies(actor).Any(e => Stances.CanSee(e, actor, pos)))
+                // Hidden from every enemy its side has revealed: an unalerted ambusher's own enemy list has no
+                // soldiers in it, so it would hide from nobody.
+                if (AlertState.SeenBySide(actor).Any(e => Stances.CanSee(e, actor, pos)))
                 {
                     return 0f;
                 }

@@ -1810,10 +1810,11 @@ namespace TFTV
 
                 if (def == _shouldWatchDef)
                 {
-                    // With stances off the watch is only for a sniper in its nest (NestAndAmbush) with no shot to take.
+                    // With stances off the watch is only for a sniper in its nest (NestAndAmbush), or a rescuee that
+                    // has taken its position (Rescuees), with no shot to take.
                     if (!Enabled)
                     {
-                        score = NestAndAmbush.IsNested(actor) && !ShouldShootFirst(actor) ? 1f : 0f;
+                        score = (NestAndAmbush.IsNested(actor) || Rescuees.ShouldWatch(actor)) && !ShouldShootFirst(actor) ? 1f : 0f;
                         return true;
                     }
 
@@ -2048,7 +2049,7 @@ namespace TFTV
                 return cached.Value;
             }
 
-            private static float CoverAt(TacticalActor actor, Vector3 pos)
+            internal static float CoverAt(TacticalActor actor, Vector3 pos)
             {
                 List<TacticalActorBase> enemies = KnownEnemies(actor).OrderBy(e => (e.Pos - pos).sqrMagnitude).Take(CoverEnemies).ToList();
 
@@ -2191,7 +2192,10 @@ namespace TFTV
                     && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, actor, checkAllPoints: true, pos);
             }
 
-            /// <summary>Walking straight from the actor to pos passes through an enemy's Overwatch cone.</summary>
+            /// <summary>
+            /// Walking straight from the actor to pos passes through the Overwatch cone of an enemy its side has
+            /// spotted (revealed or located): soldiers it has never seen don't count.
+            /// </summary>
             internal static bool CrossesOverwatch(TacticalActor actor, Vector3 pos)
             {
                 if (IsOwnTile(actor, pos) || IgnoresOverwatch(actor))
@@ -2199,8 +2203,11 @@ namespace TFTV
                     return false;
                 }
 
+                TacticalFactionVision vision = actor.TacticalFaction?.Vision;
+
                 List<Cone> cones = actor.Map.GetActors<TacticalActor>()
-                    .Where(a => a.IsAlive && a.RelationTo(actor) == FactionRelation.Enemy)
+                    .Where(a => a.IsAlive && a.RelationTo(actor) == FactionRelation.Enemy
+                        && (vision == null || vision.IsRevealed(a) || vision.IsLocated(a)))
                     .Select(a => a.Status?.GetStatus<OverwatchStatus>())
                     .Where(s => s != null)
                     .Select(s => s.GetCone())
@@ -2333,7 +2340,8 @@ namespace TFTV
                 return shoot.GetTargetsAt(actor.Pos)
                     .Select(t => t.GetTargetActor())
                     .Where(e => e != null && e.IsAlive && e.RelationTo(actor) == FactionRelation.Enemy
-                        && actor.TacticalFaction.Vision.IsRevealed(e))
+                        && actor.TacticalFaction.Vision.IsRevealed(e)
+                        && AlertState.CanTarget(actor, e))
                     .Distinct();
             }
 
@@ -2480,7 +2488,7 @@ namespace TFTV
             }
 
             /// <summary>1 when no enemy is known yet: there's nothing to face, so the other scores decide.</summary>
-            private static float FiringPostTowardNearest(TacticalActor actor, Vector3 pos, out string kind)
+            internal static float FiringPostTowardNearest(TacticalActor actor, Vector3 pos, out string kind)
             {
                 TacticalActorBase enemy = NearestKnownEnemy(actor, pos);
 
@@ -2890,7 +2898,8 @@ namespace TFTV
                         || SuppressAI.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
                         || Stalking.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
                         || FiringLine.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
-                        || ClassSkillsAI.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score))
+                        || ClassSkillsAI.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || Rescuees.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score))
                     {
                         __result = score;
                         return false;

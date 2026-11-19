@@ -1,6 +1,7 @@
 using Base.AI.Defs;
 using Base.Defs;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
@@ -53,6 +54,9 @@ namespace TFTV
             private static AIRoofAboveConsiderationDef _goToMistPositionDef;
             private static AIRoofAboveConsiderationDef _mistPreferenceDef;
 
+            /// <summary>On the shots' positions (MoveAndShoot and the Tritons' BC_MoveAndShoot): stay in the Mist while healing there.</summary>
+            private static AIRoofAboveConsiderationDef _stayInMistDef;
+
             /// <summary>
             /// The Triton's defensive Mist (stock: spawned whenever its spot is unsafe and an enemy sees it) is skipped when
             /// the Triton already stands in Mist - a second spawn on the same tile changes nothing and cost a sniper its shot -
@@ -63,6 +67,7 @@ namespace TFTV
             private static AIHasEquipmentConsiderationDef _tritonMistDef;
             private const string TritonMistAbility = "Fishman_SpawnMist_AbilityDef";
             private static readonly HashSet<string> TritonMistLogged = new HashSet<string>();
+            private static GameTagDef _meleeTag;
 
             private static readonly Dictionary<TacticalActor, KeyValuePair<int, Vector3?>> NearestMistByFrame = new Dictionary<TacticalActor, KeyValuePair<int, Vector3?>>();
 
@@ -79,7 +84,9 @@ namespace TFTV
                     _notHealingInMistDef = Helper.CreateDefFromClone(hasGun, "b7d24e90-5f13-4a6c-8b81-0c9e3f75d2a8", "TFTV_NotHealingInMist_AIConsiderationDef");
                     _goToMistPositionDef = Helper.CreateDefFromClone(roof, "e1c6a83f-2d79-4f45-a0b2-9d48f6e17c03", "TFTV_GoToMistPosition_AIConsiderationDef");
                     _mistPreferenceDef = Helper.CreateDefFromClone(roof, "5d90b3e7-84a1-4c2f-b6d5-2e7f0a91c864", "TFTV_MistPreference_AIConsiderationDef");
+                    _stayInMistDef = Helper.CreateDefFromClone(roof, "9b2f6d41-0e7c-4a58-b3d9-6c1a8e57f240", "TFTV_StayInMist_AIConsiderationDef");
                     _tritonMistDef = Helper.CreateDefFromClone(hasGun, "c4e81b2a-6f93-4d07-a5b8-1e2d9f70c3a6", "TFTV_TritonMistFirst_AIConsiderationDef");
+                    _meleeTag = DefCache.GetDef<GameTagDef>("MeleeWeapon_TagDef");
 
                     PeekAndFallBackAI.AddEarlyExit(DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("Fishman_MoveAndSpawnMistDefensive_AIActionDef"), _tritonMistDef);
 
@@ -127,7 +134,29 @@ namespace TFTV
                         }
                     }
 
-                    TFTVLogger.Always($"TFTV AI: Go To Mist added to {movers.Count} templates; Mist preference added to {preferring} move evaluations");
+                    int shots = 0;
+
+                    foreach (string shotName in new[] { "MoveAndShoot_AIActionDef", "BC_MoveAndShoot_AIActionDef" })
+                    {
+                        AIActionMoveAndAttackDef shot = DefCache.GetDef<AIActionMoveAndAttackDef>(shotName);
+                        AITargetEvaluation positions = shot?.Evaluations?.FirstOrDefault(e =>
+                            e.TargetGeneratorDef is AIActorMovementZoneTargetGeneratorDef || e.TargetGeneratorDef is AIActorRangeZoneTargetGeneratorDef);
+
+                        if (positions == null || positions.Considerations.Any(c => c.Consideration == _stayInMistDef))
+                        {
+                            continue;
+                        }
+
+                        positions.Considerations = positions.Considerations.Append(new AIAdjustedConsideration
+                        {
+                            Consideration = _stayInMistDef,
+                            ScoreCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f)
+                        }).ToArray();
+
+                        shots++;
+                    }
+
+                    TFTVLogger.Always($"TFTV AI: Go To Mist added to {movers.Count} templates; Mist preference added to {preferring} move evaluations; stay-in-Mist added to {shots} shots");
                 }
                 catch (Exception e)
                 {
@@ -195,6 +224,12 @@ namespace TFTV
                 float max = actor.CharacterStats.Health.Max;
                 float need = max > 0f ? Mathf.Clamp01(1f - health / max) : 0f;
 
+                // A scratch is not worth the walk: a healthy Brute Alpha (7% down) left Jacob 1 m away for the Mist.
+                if (need < MinHealthNeed)
+                {
+                    need = 0f;
+                }
+
                 ItemSlot disabled = actor.BodyState?.GetHealthSlots()?.FirstOrDefault(IsDisabledPart);
 
                 if (disabled != null)
@@ -208,12 +243,45 @@ namespace TFTV
                     }
                 }
 
-                if (actor.Equipments != null && !actor.Equipments.GetWeapons().Any(w => w.IsUsable))
+                // Disarmed only when it has weapons and none of them work: Mindfraggers and worms carry none, and
+                // counted as disarmed they walked to the Mist at full HP every turn.
+                List<Weapon> weapons = actor.Equipments?.GetWeapons()?.ToList();
+
+                if (weapons != null && weapons.Count > 0 && !weapons.Any(w => w.IsUsable))
                 {
                     need = Mathf.Max(need, DisarmedNeed);
                 }
 
                 return need;
+            }
+
+            /// <summary>Missing HP below this share does not count as a need to heal.</summary>
+            private const float MinHealthNeed = 0.25f;
+
+            /// <summary>An enemy this close (horizontally, and within a storey) is next to the actor.</summary>
+            private const float AdjacentRange = 2.5f;
+
+            /// <summary>
+            /// A known enemy right next to the actor and a weapon it can use: it attacks rather than walk to the Mist.
+            /// </summary>
+            private static bool HasAdjacentEnemyToAttack(TacticalActor actor)
+            {
+                if (actor.Equipments == null || !actor.Equipments.GetWeapons().Any(w => w.IsUsable))
+                {
+                    return false;
+                }
+
+                foreach (TacticalActorBase enemy in Stances.KnownEnemies(actor))
+                {
+                    Vector3 offset = enemy.Pos - actor.Pos;
+
+                    if (Mathf.Abs(offset.y) < 1.5f && new Vector2(offset.x, offset.z).magnitude <= AdjacentRange)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             /// <summary>
@@ -343,7 +411,7 @@ namespace TFTV
                     else if (def == _shouldGoToMistDef)
                     {
                         score = HealingMist && IsPandoran(actor) && actor.IsAlive && !IsTouchingMist(actor)
-                            && Need(actor) > 0f && NearestMist(actor) != null ? 1f : 0f;
+                            && Need(actor) > 0f && NearestMist(actor) != null && !HasAdjacentEnemyToAttack(actor) ? 1f : 0f;
                     }
                     else
                     {
@@ -423,7 +491,7 @@ namespace TFTV
                     return false;
                 }
 
-                if (def != _mistPreferenceDef && def != _goToMistPositionDef)
+                if (def != _mistPreferenceDef && def != _goToMistPositionDef && def != _stayInMistDef)
                 {
                     return false;
                 }
@@ -431,12 +499,14 @@ namespace TFTV
                 // An error here would stop the AI's turn (the scoring patch rethrows), so it counts as no preference.
                 try
                 {
-                    score = def == _mistPreferenceDef ? MistPreference(actor, target.Pos) : GoToMistScore(actor, target);
+                    score = def == _mistPreferenceDef ? MistPreference(actor, target.Pos)
+                        : def == _stayInMistDef ? StayInMist(actor, target.Pos)
+                        : GoToMistScore(actor, target);
                 }
                 catch (Exception e)
                 {
                     LogOnce(e);
-                    score = def == _mistPreferenceDef ? 1f : 0f;
+                    score = def == _goToMistPositionDef ? 0f : 1f;
                 }
 
                 return true;
@@ -465,7 +535,32 @@ namespace TFTV
                     return InMistEdge + (1f - InMistEdge) * MistDepth(actor.TacticalLevel.VoxelMatrix, pos);
                 }
 
-                return HealingMist ? Mathf.Max(OutsideMistFloor, OutsideMist - OutsideMistPerNeed * Need(actor)) : OutsideMist;
+                if (!HealingMist)
+                {
+                    return OutsideMist;
+                }
+
+                float need = Need(actor);
+
+                // In the Mist and still in need: leaving it, to shoot or to advance, is a last resort (a Triton walked
+                // out to shoot and ended its turn outside, unhealed).
+                if (need > 0f && IsTouchingMist(actor))
+                {
+                    return OutsideMistFloor;
+                }
+
+                return Mathf.Max(OutsideMistFloor, OutsideMist - OutsideMistPerNeed * need);
+            }
+
+            /// <summary>A shot from outside the Mist counts little for a Pandoran healing in it; anything else is untouched.</summary>
+            private static float StayInMist(TacticalActor actor, Vector3 pos)
+            {
+                if (!HealingMist || !IsPandoran(actor) || !IsTouchingMist(actor) || IsMist(actor.TacticalLevel.VoxelMatrix, pos))
+                {
+                    return 1f;
+                }
+
+                return Need(actor) > 0f ? OutsideMistFloor : 1f;
             }
 
             /// <summary>Need times: 1 in the Mist (less the further the walk), else how much nearer the Mist it gets.</summary>
@@ -509,16 +604,58 @@ namespace TFTV
             /// <summary>Null when the actor has no shot from here; else whether the walk to the target leaves AP for it.</summary>
             private static bool? KeepsShotAP(TacticalActor actor, TacAITarget target, out float shotCost)
             {
-                shotCost = 0f;
-                Weapon weapon = actor.Equipments?.SelectedWeapon;
+                shotCost = CheapestShotFromHere(actor);
 
-                if (weapon == null || !weapon.IsUsable || !PeekAndFallBackAI.IsGun(weapon) || !Stances.HasShotFromHere(actor, weapon))
+                if (shotCost < 0f)
                 {
                     return null;
                 }
 
-                shotCost = actor.Equipments.GetAPToUseEquipment(weapon);
                 return actor.CharacterStats.ActionPoints - target.PathLength >= shotCost;
+            }
+
+            private static readonly Dictionary<TacticalActor, KeyValuePair<int, float>> ShotCostByFrame = new Dictionary<TacticalActor, KeyValuePair<int, float>>();
+
+            /// <summary>
+            /// The AP of the cheapest shot the actor has from where it stands, with any of its ranged weapons, or -1.
+            /// Not just the selected weapon, and not just guns: a Chiron with its fireworm mortar trained on a soldier
+            /// walked 12.6 m to the Mist at 67% HP and ended its turn without firing. Cached per frame.
+            /// </summary>
+            private static float CheapestShotFromHere(TacticalActor actor)
+            {
+                if (ShotCostByFrame.TryGetValue(actor, out KeyValuePair<int, float> cached) && cached.Key == Time.frameCount)
+                {
+                    return cached.Value;
+                }
+
+                float best = -1f;
+                float ap = actor.CharacterStats.ActionPoints;
+
+                if (actor.Equipments != null)
+                {
+                    foreach (Weapon weapon in actor.Equipments.GetWeapons())
+                    {
+                        if (weapon == null || !weapon.IsUsable || (_meleeTag != null && weapon.WeaponDef.Tags.Contains(_meleeTag)))
+                        {
+                            continue;
+                        }
+
+                        float cost = actor.Equipments.GetAPToUseEquipment(weapon);
+
+                        if (cost > ap || (best >= 0f && cost >= best))
+                        {
+                            continue;
+                        }
+
+                        if (Stances.ShotTargetFromWhereItStands(actor, weapon) != null)
+                        {
+                            best = cost;
+                        }
+                    }
+                }
+
+                ShotCostByFrame[actor] = new KeyValuePair<int, float>(Time.frameCount, best);
+                return best;
             }
 
             private static void LogShotKept(TacticalActor actor, float shotCost)
@@ -549,6 +686,7 @@ namespace TFTV
             internal static void ClearTurn()
             {
                 NearestMistByFrame.Clear();
+                ShotCostByFrame.Clear();
                 TritonMistLogged.Clear();
                 DepthByTile.Clear();
             }

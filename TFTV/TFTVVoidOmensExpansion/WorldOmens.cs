@@ -244,6 +244,40 @@ namespace TFTV.TFTVVoidOmensExpansion
 
         // ---- VO27 ----
 
+        /// <summary>Haven raids (infiltration missions) Phoenix has played this campaign, kept as an event variable.</summary>
+        private const string RaidCountVariable = "TFTV_PhoenixRaidsPlayed";
+        private const int VO27MinRaids = 3;
+
+        /// <summary>VO27 is about raiding, so it only rolls once Phoenix has raided havens a few times.</summary>
+        internal static bool RaidedGate(GeoLevelController controller)
+        {
+            return controller?.EventSystem != null && controller.EventSystem.GetVariable(RaidCountVariable) >= VO27MinRaids;
+        }
+
+        private static bool IsRaid(GeoMission mission)
+        {
+            return mission is GeoStealResourcesFromHavenMission || mission is GeoStealResearchMission
+                || mission is GeoStealAircraftMission || mission is GeoSabotageZoneMission;
+        }
+
+        /// <summary>
+        /// Counts a haven raid when its results are applied, won or lost. Called from the GeoMission.ApplyMissionResults
+        /// postfix, which runs after GeoscapeEventSystem.OnLevelStart has restored the saved variables.
+        /// </summary>
+        internal static void CountRaid(GeoMission mission)
+        {
+            GeoscapeEventSystem events = mission?.Site?.GeoLevel?.EventSystem;
+
+            if (events == null || !IsRaid(mission))
+            {
+                return;
+            }
+
+            int raids = events.GetVariable(RaidCountVariable) + 1;
+            events.SetVariable(RaidCountVariable, raids);
+            TFTVLogger.Always($"[VO27] Phoenix raid #{raids} ({mission.MissionDef?.name}); VO27 can roll from {VO27MinRaids}");
+        }
+
         internal static void ApplyVO27(GeoLevelController controller) => TFTVVoidOmens.SetInfiltrationMultipliers(VO27InfiltrationFactionMultiplier, VO27InfiltrationLeaderMultiplier);
         internal static void RevertVO27(GeoLevelController controller) => TFTVVoidOmens.SetInfiltrationMultipliers(1f, 1.5f);
 

@@ -1,5 +1,7 @@
 ﻿using Base.Entities.Statuses;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
@@ -14,6 +16,60 @@ namespace TFTV.TFTVVanillaFixes.Tactical
 {
     internal class MindControlTacticalVanillaFixes
     {
+        private static GameTagDef _mindfraggerTag;
+
+        internal static bool IsMindfragger(TacticalActorBase actor)
+        {
+            if (actor == null)
+            {
+                return false;
+            }
+
+            if (_mindfraggerTag == null)
+            {
+                _mindfraggerTag = TFTVMain.Main.DefCache.GetDef<GameTagDef>("Facehugger_ClassTagDef");
+            }
+
+            return _mindfraggerTag != null && actor.HasGameTag(_mindfraggerTag);
+        }
+
+        /// <summary>
+        /// A Mindfragger's death acid (TFTV's BC_SwarmerAcidExplosion, 2 m) skips other Mindfraggers. They ride the heads
+        /// of soldiers standing side by side, so one dying used to kill the next and free its soldier, in a chain.
+        /// </summary>
+        [HarmonyPatch(typeof(DamageAccumulation), nameof(DamageAccumulation.AddTarget))]
+        internal static class DamageAccumulation_AddTarget_MindfraggerChain_Patch
+        {
+            private static bool Prefix(DamageAccumulation __instance, IDamageReceiver target)
+            {
+                try
+                {
+                    TacticalActorBase source = __instance.SourceActor ?? TacUtil.GetSourceOfType<TacticalActorBase>(__instance.Source);
+
+                    // Mindfraggers deal no other damage, so anything from one is its death acid.
+                    if (!IsMindfragger(source))
+                    {
+                        return true;
+                    }
+
+                    TacticalActorBase hit = target?.GetActor();
+
+                    if (hit == null || hit == source || !IsMindfragger(hit))
+                    {
+                        return true;
+                    }
+
+                    TFTVLogger.Always($"[Mindfragger] {source.name}'s death acid spares {hit.name}");
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.WillBreakControl))]
         public static class MindControlStatus_WillBreakControl_patch
         {
@@ -21,8 +77,10 @@ namespace TFTV.TFTVVanillaFixes.Tactical
             {
                 try
                 {
-                    if (!shouldApplyControlCost)
+                    if (!shouldApplyControlCost || IsMindfragger(__instance.ControllerActor))
                     {
+                        // Will points are no factor for a Mindfragger (it can't panic either): its control never
+                        // breaks or costs anything for lack of them.
                         __result = false;
                     }
                     else

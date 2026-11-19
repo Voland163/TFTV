@@ -838,6 +838,21 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                 __instance.ListScrollRect.InitVertical(__instance.MarketplaceChoiceButtonPrefab.GetComponent<TheMarketplaceChoiceButton>(), count, delegate (int index, UnityEngine.Component element)
                 {
                     TheMarketplaceChoiceButton component = element.GetComponent<TheMarketplaceChoiceButton>();
+
+                    // Past 7 offers the list gets one extra row so the last offer can scroll clear; it has no offer
+                    // behind it (indexing one threw "Index was out of range" and cut the refresh short), so it is
+                    // kept empty and invisible. Rows are recycled, so a real row is made visible again.
+                    CanvasGroup group = element.GetComponent<CanvasGroup>() ?? element.gameObject.AddComponent<CanvasGroup>();
+                    bool padding = index >= ____geoMarketplace.MarketplaceChoices.Count;
+                    group.alpha = padding ? 0f : 1f;
+                    group.blocksRaycasts = !padding;
+                    group.interactable = !padding;
+
+                    if (padding)
+                    {
+                        return;
+                    }
+
                     setChoiceMethod.Invoke(__instance.TheMarketplaceChoicesController, new object[] { __instance.Context.ViewerFaction, ____geoMarketplace.MarketplaceChoices[index], component, geoEvent.Context });
                     ____marketplaceChoiceButtons.Add(component);
                 });
@@ -1047,6 +1062,120 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
         }
 
 
+
+        // Event stamina loss on the current aircraft (TireCurrentSoldiers): vanilla treats the value as one pool and hands
+        // it out a point at a time to random soldiers aboard, so a "-10 stamina" event took a few points off some of them.
+        // Every soldier aboard now loses the full value. Soldier damage (DamageCurrentSoldiers) stays a pool spread at
+        // random; vanilla never takes anyone below 1 HP with it, and the postfix makes sure of that.
+        [HarmonyPatch(typeof(GeoFactionReward), "AddInjuriesToSoldiers")]
+        public static class TFTV_GeoFactionReward_AddInjuriesToSoldiers
+        {
+            public class InjuryState
+            {
+                public int Tiredness;
+                public Dictionary<GeoCharacter, float> HealthBefore;
+            }
+
+            public static void Prefix(GeoFactionReward __instance, GeoVehicle relatedVehicle, out InjuryState __state)
+            {
+                __state = new InjuryState();
+
+                try
+                {
+                    if (relatedVehicle == null)
+                    {
+                        return;
+                    }
+
+                    if (__instance.AddSoldiersDamage > 0)
+                    {
+                        __state.HealthBefore = relatedVehicle.Soldiers.Where(c => c?.Health != null)
+                            .ToDictionary(c => c, c => (float)c.Health);
+                    }
+
+                    int tiredness = __instance.AddSoldiersTiredness;
+
+                    if (tiredness == 0)
+                    {
+                        return;
+                    }
+
+                    __state.Tiredness = tiredness;
+                    __instance.AddSoldiersTiredness = 0; // vanilla skips its pool; restored in the postfix
+
+                    List<string> applied = new List<string>();
+
+                    foreach (GeoCharacter character in relatedVehicle.Soldiers.ToList())
+                    {
+                        if (character?.Fatigue?.Stamina == null)
+                        {
+                            continue;
+                        }
+
+                        StatusStat stamina = character.Fatigue.Stamina;
+                        float before = stamina;
+                        stamina.AddRestrictedToMax(-tiredness);
+                        int change = (int)Math.Round(before - (float)stamina);
+
+                        if (change == 0)
+                        {
+                            continue;
+                        }
+
+                        __instance.ApplyResult.TiredSoldiers.TryGetValue(character, out int recorded);
+                        __instance.ApplyResult.TiredSoldiers[character] = recorded + change;
+                        applied.Add($"{character.DisplayName} {before}->{(float)stamina}");
+                    }
+
+                    TFTVLogger.Always($"[EventStamina] {tiredness} stamina loss applied to each soldier on {relatedVehicle.Name}: {string.Join(", ", applied)}");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void Postfix(GeoFactionReward __instance, InjuryState __state)
+            {
+                if (__state == null)
+                {
+                    return;
+                }
+
+                if (__state.Tiredness != 0)
+                {
+                    __instance.AddSoldiersTiredness = __state.Tiredness;
+                }
+
+                if (__state.HealthBefore == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    foreach (KeyValuePair<GeoCharacter, float> entry in __state.HealthBefore)
+                    {
+                        float now = entry.Key.Health;
+
+                        if (entry.Value >= 1f && now < 1f)
+                        {
+                            entry.Key.Health.Set(1f);
+                            TFTVLogger.Always($"[EventDamage] {entry.Key.DisplayName} would have dropped to {now} HP; kept at 1");
+                        }
+                    }
+
+                    if (__instance.ApplyResult?.DamagedSoldiers?.Count > 0)
+                    {
+                        TFTVLogger.Always($"[EventDamage] {__instance.AddSoldiersDamage} HP spread over soldiers: {string.Join(", ", __instance.ApplyResult.DamagedSoldiers.Select(kv => $"{kv.Key.DisplayName} -{kv.Value} (now {(float)kv.Key.Health})"))}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         //Prevents multiple instancing of mission briefings when several aircraft arrive simultaneously at the mission site
         // Keyed to the level instance and site: a load creates a new level, so an arrival replayed at the same

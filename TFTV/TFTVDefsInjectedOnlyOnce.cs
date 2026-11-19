@@ -1385,6 +1385,7 @@ namespace TFTV
             {
                 AugmentationEventsDefs();
                 CreateFoodPoisoningEvents();
+                RaiseEventAircraftAndSoldierDamage();
                 CreateIntro();
                 Create_VoidOmen_Events();
                 InjectAlistairAhsbyLines();
@@ -4523,6 +4524,53 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+        }
+
+        // Vanilla events that hurt the soldiers on the current aircraft (a 30 HP pool spread at random over them) or the
+        // aircraft itself (40 HP off the hull). Raised to 120 and 100 (100 = 25% of a reworked aircraft's 400 HP).
+        // The soldier pool never takes anyone below 1 HP (vanilla rule, plus a guard in GeoscapeVanillaFixes).
+        private static readonly string[] EventsDamagingCurrentSoldiers = { "AN25", "EX21", "EX26", "EX54", "EX88", "EX96", "NJ6", "SY4", "SY21" };
+        private static readonly string[] EventsDamagingCurrentAircraft = { "EX77", "NJ23", "NJ24", "SY17", "SY24" };
+        private const int EventCurrentSoldiersDamage = 120;
+        private const int EventCurrentAircraftDamage = 100;
+
+        private static void RaiseEventAircraftAndSoldierDamage()
+        {
+            try
+            {
+                foreach (string id in EventsDamagingCurrentSoldiers.Concat(EventsDamagingCurrentAircraft).Distinct())
+                {
+                    GeoscapeEventDef eventDef = DefCache.GetDef<GeoscapeEventDef>($"{id}_GeoscapeEventDef");
+
+                    if (eventDef?.GeoscapeEventData?.Choices == null)
+                    {
+                        TFTVLogger.Always($"[EventDamage] {id}_GeoscapeEventDef not found");
+                        continue;
+                    }
+
+                    foreach (PhoenixPoint.Geoscape.Events.GeoEventChoice choice in eventDef.GeoscapeEventData.Choices)
+                    {
+                        if (choice?.Outcome == null)
+                        {
+                            continue;
+                        }
+
+                        if (choice.Outcome.DamageCurrentSoldiers > 0)
+                        {
+                            choice.Outcome.DamageCurrentSoldiers = EventCurrentSoldiersDamage;
+                        }
+
+                        if (choice.Outcome.DamageCurrentAircraft > 0)
+                        {
+                            choice.Outcome.DamageCurrentAircraft = EventCurrentAircraftDamage;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         private static void CreateFoodPoisoningEvents()

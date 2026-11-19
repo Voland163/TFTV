@@ -68,6 +68,7 @@ namespace TFTV
             NestAndAmbush.CreateDefs();
             Stalking.CreateDefs();
             FiringLine.CreateDefs();
+            Rescuees.CreateDefs();
             ClassSkillsAI.CreateDefs();
 
             // Last: swaps a consideration in the plain advances, so clones made above keep their own copy.
@@ -1073,6 +1074,12 @@ namespace TFTV
 
             private static float WillPointFactor(TacticalActor controller, TacticalActor enemy, MindControlAbility mindControl)
             {
+                // Mindfraggers: will points are no factor (their control never breaks over them).
+                if (TFTVVanillaFixes.Tactical.MindControlTacticalVanillaFixes.IsMindfragger(controller))
+                {
+                    return 1f;
+                }
+
                 int willpower = (int)(float)controller.CharacterStats.Willpower;
 
                 if (willpower == 0)
@@ -1320,7 +1327,16 @@ namespace TFTV
                     return false;
                 }
 
-                float apAfterShot = actor.CharacterStats.ActionPoints - target.PathLength - actor.Equipments.GetAPToUseEquipment(weapon);
+                // The shot's real cost: Quick Aim makes the next one cheaper than the weapon's own cost.
+                float shotCost = actor.Equipments.GetAPToUseEquipment(weapon);
+                ShootAbility shoot = weapon.DefaultShootAbility;
+
+                if (shoot != null)
+                {
+                    shotCost = Mathf.Min(shotCost, shoot.ActionPointCost);
+                }
+
+                float apAfterShot = actor.CharacterStats.ActionPoints - target.PathLength - shotCost;
 
                 return apAfterShot >= target.PathLength;
             }
@@ -1390,6 +1406,13 @@ namespace TFTV
                 }
             }
 
+            internal static bool HasShotThisTurn(TacticalActor actor) => ShotThisTurn.Contains(actor);
+
+            internal static bool HasFallenBackThisTurn(TacticalActor actor) => FellBackThisTurn.Contains(actor);
+
+            /// <summary>Counts as this turn's fall back, so no other move follows it (Rescuees' return).</summary>
+            internal static void MarkFellBack(TacticalActor actor) => FellBackThisTurn.Add(actor);
+
             internal static void RecordFallBack(TacticalActor actor, TacAITarget target)
             {
                 FellBackThisTurn.Add(actor);
@@ -1409,6 +1432,7 @@ namespace TFTV
                 NestAndAmbush.ClearTurn();
                 Stalking.ClearTurn();
                 FiringLine.ClearTurn();
+                Rescuees.ClearTurn();
                 ClassSkillsAI.ClearTurn();
                 ScyllaGunsAI.ClearTurn();
                 TFTVAIClosestPath.ClearTurn();
@@ -1453,7 +1477,8 @@ namespace TFTV
                         || SuppressAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
                         || BottleTest.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
                         || NestAndAmbush.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
-                        || ClassSkillsAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score))
+                        || ClassSkillsAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || Rescuees.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score))
                     {
                         __result = score;
                         return false;
@@ -1466,6 +1491,63 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Quick Aim made the AI's next shot cheaper, but no shot followed. Stock NumberOfAttacks (on every shot action)
+        /// counts the shots the unit's AP buys at the weapon's full cost (Equipment.ApToUse), so a boss with 6.3 AP and an
+        /// 11 AP rifle, Quick Aim on (next shot 5.5), counted none and set Overwatch instead - every time Quick Aim was used
+        /// after acting, which is when it pays (2026-11-19). With a discount on the next shot (the default shoot ability's
+        /// cost below the weapon's), the first shot is counted at its real cost and the rest at full cost; otherwise stock.
+        /// </summary>
+        internal static class DiscountedAttacks
+        {
+            internal static bool TryScore(TacticalActor actor, TacAITarget target, ref float score)
+            {
+                if (actor == null || target == null || !(target.Equipment is Weapon weapon) || actor.Equipments == null)
+                {
+                    return false;
+                }
+
+                ShootAbility shoot = weapon.DefaultShootAbility;
+
+                if (shoot == null)
+                {
+                    return false;
+                }
+
+                float full = actor.Equipments.GetAPToUseEquipment(weapon);
+                float first = shoot.ActionPointCost;
+
+                if (full <= 0f || first >= full - 0.01f)
+                {
+                    return false;
+                }
+
+                float ap = actor.CharacterStats.ActionPoints;
+                int fromHere = Attacks(ap, first, full);
+                int afterMove = Attacks(ap - target.PathLength, first, full);
+
+                if (shoot.UsesPerTurn > 0)
+                {
+                    int left = shoot.UsesPerTurn - shoot.UsesThisTurn;
+                    fromHere = Mathf.Min(fromHere, left);
+                    afterMove = Mathf.Min(afterMove, left);
+                }
+
+                score = fromHere <= 0 ? 0f : Mathf.Clamp01((float)afterMove / fromHere);
+                return true;
+            }
+
+            private static int Attacks(float ap, float first, float full)
+            {
+                if (ap + 0.01f < first)
+                {
+                    return 0;
+                }
+
+                return 1 + (int)((ap - first + 0.01f) / full);
             }
         }
 
@@ -1482,7 +1564,7 @@ namespace TFTV
                         return false;
                     }
 
-                    return true;
+                    return !DiscountedAttacks.TryScore(actor as TacticalActor, target as TacAITarget, ref __result);
                 }
                 catch (Exception e)
                 {

@@ -347,7 +347,9 @@ namespace TFTV.TFTVVoidOmensExpansion
             List<string> mended = new List<string>();
             bool arthronArm = false;
 
-            foreach (ItemSlot slot in actor.BodyState?.GetHealthSlots()?.Where(s => s != null && !s.Enabled).ToList() ?? new List<ItemSlot>())
+            // Only slots with a part in them: an empty slot (no carapace on a Brute) reads as disabled too, and was
+            // "mended" every turn.
+            foreach (ItemSlot slot in actor.BodyState?.GetHealthSlots()?.Where(s => s != null && !s.Enabled && s.GetAllDirectItems(true).Any()).ToList() ?? new List<ItemSlot>())
             {
                 StatusStat partHealth = slot.GetHealth();
 

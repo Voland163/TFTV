@@ -113,9 +113,14 @@ namespace TFTV
             /// </summary>
             internal Dictionary<TacticalActor, TacticalActor> Commander;
 
+            /// <summary>
+            /// Under a leader's influence (or smart on its own), and alerted: an unalerted unit has no soldier in any
+            /// target list, so it gets no suppress order or focus target. Asked live, so a unit alerted earlier in the
+            /// turn joins at the next replan.
+            /// </summary>
             internal bool IsSmart(TacticalActor actor)
             {
-                return actor != null && Commander.ContainsKey(actor);
+                return actor != null && Commander.ContainsKey(actor) && TFTVAICombatAbilities.AlertState.FightsCombatants(actor);
             }
         }
 

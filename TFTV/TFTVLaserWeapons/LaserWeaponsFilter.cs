@@ -28,9 +28,10 @@ namespace TFTV.TFTVLaserWeapons
                 try
                 {
 
+                    // No TacticalItemDef: an aircraft module, which the Aircraft Rework keeps in the faction storage.
+                    // It never belongs on the soldier equip screen, so it is filtered out without a warning.
                     if (def == null)
                     {
-                        TFTVLogger.Always("NullReferenceException: Possible ItemStorage corruption with items that are not TacticalItemDef! Check coming items from the faction storage.");
                         __result = false;
                         return false;
                     }
