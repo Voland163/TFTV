@@ -70,6 +70,7 @@ namespace TFTV
             FiringLine.CreateDefs();
             Rescuees.CreateDefs();
             ClassSkillsAI.CreateDefs();
+            TFTVAIMindfraggerMove.CreateDefs();
 
             // Last: swaps a consideration in the plain advances, so clones made above keep their own copy.
             TFTVAIClosestPath.CreateDefs();
@@ -1010,7 +1011,7 @@ namespace TFTV
                 float bestScore = 0f;
                 TacticalActorBase bestTarget = null;
 
-                int candidates = 0, outOfReach = 0, lowWill = 0, noScore = 0;
+                int candidates = 0, outOfReach = 0, noWalk = 0, lowWill = 0, noScore = 0;
                 float nearest = float.MaxValue;
 
                 foreach (TacticalActorBase enemyBase in blackboard.GetEnemies(controller.AIActor.GetEnemyMask(ActorType.All)))
@@ -1040,6 +1041,17 @@ namespace TFTV
                         continue;
                     }
 
+                    // In reach by straight line isn't enough: a Mindfragger reserved a soldier it had no walk to, the
+                    // rest of its side left that soldier alone, and its turn offered no mind control at all (2026-11-19).
+                    float walk = WalkTo(controller, enemy);
+
+                    if (walk < 0f || walk > reach)
+                    {
+                        noWalk++;
+                        nearest = Mathf.Min(nearest, walk < 0f ? distance : walk);
+                        continue;
+                    }
+
                     float willFactor = WillPointFactor(controller, enemy, mindControl);
 
                     if (willFactor <= 0f)
@@ -1066,11 +1078,32 @@ namespace TFTV
 
                 why = candidates == 0 ? "no enemy it could take"
                     : $"reach {reach:0.#}m ({(float)controller.CharacterStats.ActionPoints:0.#} AP); of {candidates} enemies {outOfReach} out of reach" +
-                      $"{(outOfReach > 0 ? $" (nearest {nearest:0.#}m)" : "")}, {lowWill} with too many will points " +
+                      $"{(outOfReach + noWalk > 0 ? $" (nearest {nearest:0.#}m)" : "")}, {noWalk} with no walk in reach, {lowWill} with too many will points " +
                       $"(its WP {(float)controller.CharacterStats.WillPoints:0.#}), {noScore} scored 0";
 
                 return bestTarget;
             }
+
+            /// <summary>Distance to the enemy along the AI's walk (to within a step of it), or -1 when there is no complete path.</summary>
+            private static float WalkTo(TacticalActor controller, TacticalActor enemy)
+            {
+                if (controller.AIActor == null || controller.TacticalLevel == null)
+                {
+                    return -1f;
+                }
+
+                TacticalPathRequest request = controller.TacticalLevel.GetAiPathRequest(controller, controller.AIActor.MaxPathLength);
+                request.Src = controller.Pos;
+                request.Dst = enemy.Pos;
+                request.UseAStar = true;
+                request.DestinationRadius = MindControlStepRadius;
+                request.Calculate();
+
+                return request.Status == Base.Levels.PathStatus.Complete ? request.Length : -1f;
+            }
+
+            /// <summary>The leap ends next to the target: a walk that gets this close counts.</summary>
+            private const float MindControlStepRadius = 1.5f;
 
             private static float WillPointFactor(TacticalActor controller, TacticalActor enemy, MindControlAbility mindControl)
             {

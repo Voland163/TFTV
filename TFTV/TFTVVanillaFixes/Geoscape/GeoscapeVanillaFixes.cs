@@ -61,6 +61,50 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         /// <summary>
+        /// Haven leader names can carry a trailing space ("Alyssa Khachatryan " in a 2026-11-19 save). Vanilla's
+        /// [HavenLeaderSurname] is the last word after splitting on single spaces, which is then empty, and an empty
+        /// replacement leaves the tag in the text ("Alyssa [HavenLeaderSurname], the leader of ..."). A leading or double
+        /// space breaks [HavenLeaderForename] the same way. Any of the two tags left over is filled from the trimmed name.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoscapeEventContext), nameof(GeoscapeEventContext.ReplaceEventTokens))]
+        internal static class GeoscapeEventContext_ReplaceEventTokens_LeaderName_Patch
+        {
+            private const string Forename = "[HavenLeaderForename]";
+            private const string Surname = "[HavenLeaderSurname]";
+
+            private static void Postfix(GeoscapeEventContext __instance, ref string __result)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(__result) || (!__result.Contains(Forename) && !__result.Contains(Surname)))
+                    {
+                        return;
+                    }
+
+                    string name = __instance?.Site?.GetComponent<GeoHaven>()?.LeaderName;
+
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        return;
+                    }
+
+                    string[] parts = name.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                    string forename = parts[0];
+                    string surname = parts.Length > 1 ? parts[parts.Length - 1] : "";
+
+                    __result = __result.Replace(Forename, forename);
+
+                    // A one-word name: drop the tag and the space before it rather than repeat the name.
+                    __result = surname.Length > 0 ? __result.Replace(Surname, surname) : __result.Replace(" " + Surname, "").Replace(Surname, "");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        /// <summary>
         /// Fixes not getting SP from Training Facilities
         /// </summary>
 

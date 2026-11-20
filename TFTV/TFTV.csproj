@@ -447,6 +447,7 @@
     <Compile Include="TFTVAINestAndAmbush.cs" />
     <Compile Include="TFTVAIRescuees.cs" />
     <Compile Include="TFTVAIAlert.cs" />
+    <Compile Include="TFTVAIMindfraggerMove.cs" />
     <Compile Include="TFTVAIStalk.cs" />
     <Compile Include="TFTVAIDecisionLog.cs" />
     <Compile Include="TFTVPlayerDeploymentReserve.cs" />

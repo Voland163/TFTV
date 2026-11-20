@@ -249,8 +249,18 @@ namespace TFTV
 
                 TacticalActorBase enemy = entry.Value;
                 float radius = ownRadius + TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy) + def.DestinationRadius;
-                float length = AIUtil.GetPathLength(tacticalActor, from, enemy.Pos, true, radius);
-                _paths++;
+                float length;
+
+                if (TryEstimate(tacticalActor, enemy, entry.Key + radius, radius, out float estimate))
+                {
+                    length = estimate;
+                }
+                else
+                {
+                    length = AIUtil.GetPathLength(tacticalActor, from, enemy.Pos, true, radius);
+                    _paths++;
+                    RecordWalk(tacticalActor, enemy, entry.Key + radius, radius, length);
+                }
 
                 if (length < bound && length != NoPathLength)
                 {
@@ -288,19 +298,104 @@ namespace TFTV
             return true;
         }
 
+        /// <summary>
+        /// Walks worked out for one decision of one unit (its position and AP) before the rest are estimated. A Triton that
+        /// lost its rifle went melee-only and scored its whole 23 AP move zone by walking distance: 1638 spots, 3082
+        /// pathfinds, 36.6 s of thinking (tester 2026-11-19). About 12 ms a walk, so this caps a decision near 3-4 s.
+        /// </summary>
+        private const int MaxWalksPerDecision = 300;
+
+        /// <summary>Detour (walk / straight line) assumed for an enemy before any walk to it was measured.</summary>
+        private const float DefaultDetour = 1.3f;
+
+        private sealed class WalkBudget
+        {
+            internal Vector3 Pos;
+            internal float ActionPoints;
+            internal int Walks;
+            internal int Estimates;
+            internal readonly Dictionary<TacticalActorBase, KeyValuePair<float, int>> Detours = new Dictionary<TacticalActorBase, KeyValuePair<float, int>>();
+        }
+
+        private static readonly Dictionary<TacticalActor, WalkBudget> Budgets = new Dictionary<TacticalActor, WalkBudget>();
+        private static int _estimates;
+
+        /// <summary>The unit's budget for its current decision: a new one when it has moved or spent AP.</summary>
+        private static WalkBudget BudgetFor(TacticalActor actor)
+        {
+            float ap = actor.CharacterStats.ActionPoints;
+
+            if (!Budgets.TryGetValue(actor, out WalkBudget budget) || (budget.Pos - actor.Pos).sqrMagnitude > 0.01f || Mathf.Abs(budget.ActionPoints - ap) > 0.01f)
+            {
+                if (budget != null && budget.Estimates > 0)
+                {
+                    TFTVLogger.Always($"TFTV AI closest path: {actor.DisplayName} hit the cap of {MaxWalksPerDecision} walks in one decision; {budget.Estimates} estimated from measured detours");
+                }
+
+                budget = new WalkBudget { Pos = actor.Pos, ActionPoints = ap };
+                Budgets[actor] = budget;
+            }
+
+            return budget;
+        }
+
+        /// <summary>Over the budget: the straight line times the detour measured to this enemy so far (or a default).</summary>
+        private static bool TryEstimate(TacticalActor actor, TacticalActorBase enemy, float straight, float radius, out float length)
+        {
+            length = 0f;
+            WalkBudget budget = BudgetFor(actor);
+
+            if (budget.Walks < MaxWalksPerDecision)
+            {
+                return false;
+            }
+
+            float detour = budget.Detours.TryGetValue(enemy, out KeyValuePair<float, int> d) && d.Value > 0 ? d.Key / d.Value : DefaultDetour;
+            length = Mathf.Max(0f, straight * detour - radius);
+            budget.Estimates++;
+            _estimates++;
+            return true;
+        }
+
+        private static void RecordWalk(TacticalActor actor, TacticalActorBase enemy, float straight, float radius, float length)
+        {
+            WalkBudget budget = BudgetFor(actor);
+            budget.Walks++;
+
+            if (length == NoPathLength || straight <= 1f)
+            {
+                return;
+            }
+
+            float detour = Mathf.Max(1f, (length + radius) / straight);
+            budget.Detours.TryGetValue(enemy, out KeyValuePair<float, int> d);
+            budget.Detours[enemy] = new KeyValuePair<float, int>(d.Key + detour, d.Value + 1);
+        }
+
         /// <summary>Logs what the last turn saved and starts counting afresh. Called at the start of every faction's turn.</summary>
         internal static void ClearTurn()
         {
             if (_tiles > 0)
             {
                 TFTVLogger.Always($"TFTV AI closest path: {_tiles} positions scored with {_paths} pathfinds instead of {_vanillaPaths}" +
+                    $"{(_estimates > 0 ? $", {_estimates} walks estimated over the cap" : "")}" +
                     $"{(_underBound > 0 ? $"; {_underBound} walks came out shorter than their straight-line bound" : "")}");
             }
 
+            foreach (KeyValuePair<TacticalActor, WalkBudget> entry in Budgets)
+            {
+                if (entry.Value.Estimates > 0 && entry.Key != null)
+                {
+                    TFTVLogger.Always($"TFTV AI closest path: {entry.Key.DisplayName} hit the cap of {MaxWalksPerDecision} walks in one decision; {entry.Value.Estimates} estimated from measured detours");
+                }
+            }
+
+            Budgets.Clear();
             _tiles = 0;
             _paths = 0;
             _vanillaPaths = 0;
             _underBound = 0;
+            _estimates = 0;
             MeleeOnlyByFrame.Clear();
         }
     }

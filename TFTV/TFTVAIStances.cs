@@ -2899,7 +2899,8 @@ namespace TFTV
                         || Stalking.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
                         || FiringLine.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
                         || ClassSkillsAI.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
-                        || Rescuees.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score))
+                        || Rescuees.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score)
+                        || TFTVAIMindfraggerMove.TryScorePosition(__instance.BaseDef, actor as TacticalActor, target as TacAITarget, out score))
                     {
                         __result = score;
                         return false;

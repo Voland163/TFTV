@@ -267,16 +267,40 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                         return;
                     }
 
-                    Vector3 pos = tacAITarget == null || tacAITarget.Pos == Vector3.zero ? tacActor.Pos : tacAITarget.Pos;
+                    // The self target's position is unset: NaN, not zero (TacAITarget.IsPosValid). Read as a
+                    // position it put every distance at NaN, nobody counted as hit, and worms went off next to
+                    // their own mind-controlled Arthrons (playtest 2026-11-19).
+                    Vector3 pos = tacAITarget == null || !tacAITarget.IsPosValid || tacAITarget.Pos == Vector3.zero ? tacActor.Pos : tacAITarget.Pos;
 
                     if (SelfCentredBlastAI.HitsUnlessFriendly(tacActor, pos, ability) == null)
                     {
                         __result = 0f;
+                        LogVeto(tacActor, ability);
                     }
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                }
+            }
+
+            private static readonly HashSet<string> Vetoed = new HashSet<string>();
+            private static int _vetoTurn = -1;
+
+            /// <summary>Once per unit and turn: the AI evaluates the same blast many times.</summary>
+            private static void LogVeto(TacticalActor actor, TacticalAbility ability)
+            {
+                int turn = actor.TacticalFaction?.TurnNumber ?? -1;
+
+                if (turn != _vetoTurn)
+                {
+                    _vetoTurn = turn;
+                    Vetoed.Clear();
+                }
+
+                if (Vetoed.Add(actor.name))
+                {
+                    TFTVLogger.Always($"[SelfBlast] {actor.DisplayName} holds {ability.AbilityDef?.name} at {actor.Pos}: it would catch a friendly or one of its side under mind control");
                 }
             }
         }

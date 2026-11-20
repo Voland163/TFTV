@@ -43,6 +43,11 @@ namespace TFTV
         /// open on turn 1 and fell back to spots with no cover. With no enemy known yet, cover is measured toward the
         /// enemy sides' deploy zones, so defenders take cover on turn 1; every defender falls back only behind low cover
         /// or better.
+        ///
+        /// Haven defenders differ from rescuees in three ways (tester 2026-11-19, they "did nothing"): when no known enemy
+        /// is within their guns' effective range they close in, cover to cover, up to <see cref="CloseInRadius"/> a turn;
+        /// a shot from a spot with little cover counts x<see cref="DefenderOpenShotFactor"/>, so it beats the watch; and
+        /// they move to a spot with no line of fire only to get out of the open.
         /// </summary>
         internal static class Rescuees
         {
@@ -95,6 +100,26 @@ namespace TFTV
             /// down (2026-11-19).
             /// </summary>
             private const float OpenShotFactor = 0.3f;
+
+            /// <summary>
+            /// Haven defenders' shots from a spot with little cover count this much: a New Jericho sniper on a roof set
+            /// Overwatch (3.53) over shooting a Triton 14 m away (3.21 after x0.3), tester 2026-11-19. A covered post
+            /// still comes first, but a shot always beats the watch.
+            /// </summary>
+            private const float DefenderOpenShotFactor = 0.8f;
+
+            /// <summary>
+            /// Haven defenders whose guns can't reach any known enemy move up, cover to cover, this far a turn. Under the
+            /// rescuees' rules Anu defenders 25-36 m from the Purists never moved closer and spent the whole mission ending
+            /// turns or watching with a shotgun (tester 2026-11-19).
+            /// </summary>
+            private const float CloseInRadius = 12f;
+
+            /// <summary>Closing in: how much a spot's cover adds to the ground it gains.</summary>
+            private const float CloseInCoverShare = 0.6f;
+
+            /// <summary>Fallback effective range for a gun whose def gives none.</summary>
+            private const float DefaultEffectiveRange = 20f;
 
             private static readonly Dictionary<KeyValuePair<TacticalActor, Vector3>, KeyValuePair<int, bool>> ExposedByFrame =
                 new Dictionary<KeyValuePair<TacticalActor, Vector3>, KeyValuePair<int, bool>>();
@@ -344,11 +369,11 @@ namespace TFTV
                     }
                     else if (def == _peekFromOpenDef)
                     {
-                        score = IsExposed(actor, Anchor(actor)) ? OpenShotFactor : 1f;
+                        score = IsExposed(actor, Anchor(actor)) ? OpenShotFactorFor(actor) : 1f;
                     }
                     else if (Stances.IsOwnTile(actor, target.Pos))
                     {
-                        score = IsExposed(actor, actor.Pos) ? OpenShotFactor : 1f;
+                        score = IsExposed(actor, actor.Pos) ? OpenShotFactorFor(actor) : 1f;
                     }
                     else
                     {
@@ -364,19 +389,132 @@ namespace TFTV
                 return true;
             }
 
-            /// <summary>Within reach of where the turn began, and no nearer the nearest known enemy than that.</summary>
+            /// <summary>
+            /// Within reach of where the turn began, and no nearer the nearest known enemy than that - except a haven
+            /// defender whose guns reach no known enemy, which may close in up to <see cref="CloseInRadius"/>.
+            /// </summary>
             private static bool WithinTether(TacticalActor actor, Vector3 pos)
             {
                 Vector3 anchor = Anchor(actor);
+                bool closingIn = IsClosingIn(actor);
 
-                if (Stances.FlatDistance(anchor, pos) > DefendRadius)
+                if (Stances.FlatDistance(anchor, pos) > (closingIn ? CloseInRadius : DefendRadius))
                 {
                     return false;
                 }
 
-                TacticalActorBase enemy = Stances.KnownEnemies(actor).OrderBy(e => (e.Pos - anchor).sqrMagnitude).FirstOrDefault();
+                if (closingIn)
+                {
+                    return true;
+                }
+
+                TacticalActorBase enemy = NearestFromAnchor(actor);
 
                 return enemy == null || Stances.FlatDistance(pos, enemy.Pos) >= Stances.FlatDistance(anchor, enemy.Pos) - CloseInMargin;
+            }
+
+            private static TacticalActorBase NearestFromAnchor(TacticalActor actor)
+            {
+                Vector3 anchor = Anchor(actor);
+                return Stances.KnownEnemies(actor).OrderBy(e => (e.Pos - anchor).sqrMagnitude).FirstOrDefault();
+            }
+
+            private static float OpenShotFactorFor(TacticalActor actor)
+            {
+                return IsHavenDefender(actor) ? DefenderOpenShotFactor : OpenShotFactor;
+            }
+
+            /// <summary>A defender that is one of the haven's residents (not a soldier awaiting rescue).</summary>
+            private static bool IsHavenDefender(TacticalActor actor)
+            {
+                return IsDefending(actor) && !AlertState.IsAwaitingRescue(actor.TacticalFaction);
+            }
+
+            /// <summary>Longest effective range among the guns it can fire.</summary>
+            private static float EffectiveRange(TacticalActor actor)
+            {
+                float best = 0f;
+
+                foreach (Weapon weapon in actor.Equipments?.GetWeapons() ?? Enumerable.Empty<Weapon>())
+                {
+                    if (weapon?.WeaponDef != null && SuppressAI.CanFire(weapon))
+                    {
+                        float range = weapon.WeaponDef.EffectiveRange;
+                        best = Mathf.Max(best, range > 0f && !float.IsInfinity(range) ? range : DefaultEffectiveRange);
+                    }
+                }
+
+                return best > 0f ? best : DefaultEffectiveRange;
+            }
+
+            private static readonly Dictionary<TacticalActor, KeyValuePair<int, bool>> ClosingInByFrame = new Dictionary<TacticalActor, KeyValuePair<int, bool>>();
+            private static readonly HashSet<TacticalActor> ClosingInLogged = new HashSet<TacticalActor>();
+
+            /// <summary>A haven defender with a known enemy, none of them within its guns' effective range of where its turn began. Cached per frame.</summary>
+            private static bool IsClosingIn(TacticalActor actor)
+            {
+                int frame = Time.frameCount;
+
+                if (ClosingInByFrame.TryGetValue(actor, out KeyValuePair<int, bool> cached) && cached.Key == frame)
+                {
+                    return cached.Value;
+                }
+
+                bool closing = false;
+
+                if (IsHavenDefender(actor))
+                {
+                    TacticalActorBase enemy = NearestFromAnchor(actor);
+
+                    if (enemy != null)
+                    {
+                        float distance = Stances.FlatDistance(Anchor(actor), enemy.Pos);
+                        float range = EffectiveRange(actor);
+                        closing = distance > range;
+
+                        if (closing && ClosingInLogged.Add(actor))
+                        {
+                            TFTVLogger.Always($"TFTV AI defender: {actor.DisplayName} (haven defender) closes in: nearest known enemy {enemy.DisplayName} " +
+                                $"{distance:0.0}m away, beyond its {range:0}m range; moves up to {CloseInRadius:0}m, cover to cover");
+                        }
+                    }
+                }
+
+                ClosingInByFrame[actor] = new KeyValuePair<int, bool>(frame, closing);
+                return closing;
+            }
+
+            /// <summary>
+            /// Closing in: the ground a spot gains toward the nearest enemy, weighted by its cover; a firing post within
+            /// range of that enemy counts in full.
+            /// </summary>
+            private static float CloseInSpot(TacticalActor actor, Vector3 pos)
+            {
+                TacticalActorBase enemy = NearestFromAnchor(actor);
+
+                if (enemy == null)
+                {
+                    return 0f;
+                }
+
+                float before = Stances.FlatDistance(Anchor(actor), enemy.Pos);
+                float after = Stances.FlatDistance(pos, enemy.Pos);
+                float gain = Mathf.Clamp01((before - after) / CloseInRadius);
+
+                if (gain <= 0f)
+                {
+                    return 0f;
+                }
+
+                float cover = DefenderCover(actor, pos);
+                float score = gain * ((1f - CloseInCoverShare) + CloseInCoverShare * cover);
+
+                if (after <= EffectiveRange(actor))
+                {
+                    score = Mathf.Max(score, Post(actor, pos));
+                }
+
+                return score * MoveAwayFactor;
             }
 
             /// <summary>
@@ -386,9 +524,12 @@ namespace TFTV
             /// </summary>
             private static float DefensiveSpot(TacticalActor actor, Vector3 pos)
             {
+                bool closingIn = IsClosingIn(actor);
+
                 if (Stances.IsOwnTile(actor, pos))
                 {
-                    return Mathf.Max(StayFloor, Mathf.Max(Post(actor, pos), CoverOnlyShare * DefenderCover(actor, pos)));
+                    // Closing in, staying put is the last choice.
+                    return closingIn ? StayFloor : Mathf.Max(StayFloor, Mathf.Max(Post(actor, pos), CoverOnlyShare * DefenderCover(actor, pos)));
                 }
 
                 if (Stances.CrossesOverwatch(actor, pos))
@@ -396,11 +537,23 @@ namespace TFTV
                     return 0f;
                 }
 
+                if (closingIn)
+                {
+                    return CloseInSpot(actor, pos);
+                }
+
                 float post = Post(actor, pos);
 
                 if (post >= MinPost)
                 {
                     return post * MoveAwayFactor;
+                }
+
+                // A spot with cover but no line of fire: for a haven defender, only to get out of the open. Defenders
+                // moved between blind spots behind high cover ("post 0.00") and never fired (tester 2026-11-19).
+                if (IsHavenDefender(actor) && !IsExposed(actor, actor.Pos))
+                {
+                    return 0f;
                 }
 
                 float cover = DefenderCover(actor, pos);
@@ -575,6 +728,12 @@ namespace TFTV
                     return false;
                 }
 
+                // Closing in, a long shot it has from here (a shotgun at 30 m) doesn't hold it back.
+                if (IsClosingIn(actor))
+                {
+                    return true;
+                }
+
                 Weapon weapon = actor.Equipments?.SelectedWeapon;
                 return weapon == null || !Stances.HasShotFromHere(actor, weapon);
             }
@@ -651,6 +810,8 @@ namespace TFTV
                 LoggedThisTurn.Clear();
                 TookPositionThisTurn.Clear();
                 ReturnedThisTurn.Clear();
+                ClosingInByFrame.Clear();
+                ClosingInLogged.Clear();
             }
 
             #endregion

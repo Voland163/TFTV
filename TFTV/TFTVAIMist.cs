@@ -1,5 +1,6 @@
 using Base.AI.Defs;
 using Base.Defs;
+using Base.Levels;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.AI;
@@ -10,6 +11,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
@@ -36,8 +38,22 @@ namespace TFTV
             private const float OutsideMistPerNeed = 0.6f;
             private const float OutsideMistFloor = 0.2f;
 
-            /// <summary>A step toward Mist out of reach this turn scores at most this share of reaching it.</summary>
-            private const float ApproachShare = 0.4f;
+            /// <summary>
+            /// A step toward Mist out of reach this turn scores at most this (times the need to heal), before the
+            /// line-of-sight and spread factors. At 0.4 of Go To Mist's weight it came to 16-62 and beat every attack
+            /// (1.5-9): a Brute Alpha at 71% HP gave up a shot and a strike to walk 11 m, then walked back
+            /// (playtest 2026-11-19). Now a hurt Pandoran with an attack makes it, and walks to the Mist when it has
+            /// nothing better to do than advance. Reaching the Mist this turn still scores as before.
+            /// </summary>
+            private const float ApproachMaxScore = 1.2f;
+            private const float ApproachShare = ApproachMaxScore / GoToMistWeight;
+
+            /// <summary>Mist spots tried, nearest first: floor checks, and walking paths worked out for the ones that pass.</summary>
+            private const int MaxSpotChecks = 60;
+            private const int MaxSpotPaths = 6;
+
+            /// <summary>A path that ends further than this from the spot did not reach it.</summary>
+            private const float SpotReach = 0.6f;
 
             /// <summary>How the need to heal is counted for a disabled body part, and for weapons it can't use.</summary>
             private const float DisabledPartNeed = 0.6f;
@@ -387,6 +403,192 @@ namespace TFTV
                 return nearest;
             }
 
+            /// <summary>A floor spot in the Mist the actor can stand on, and the walk there.</summary>
+            private sealed class MistSpot
+            {
+                internal Vector3 Pos;
+                internal float Length;
+                internal List<KeyValuePair<Vector3, float>> Path;
+            }
+
+            /// <summary>Per actor: where it stood when its spot was worked out, and the spot (null: none it can walk into).</summary>
+            private static readonly Dictionary<TacticalActor, KeyValuePair<Vector3, MistSpot>> SpotByActor = new Dictionary<TacticalActor, KeyValuePair<Vector3, MistSpot>>();
+            private static readonly HashSet<string> NoSpotLogged = new HashSet<string>();
+
+            /// <summary>
+            /// The nearest Mist the actor can walk into: a floor spot where the Mist test the moves use passes, that it
+            /// can stand on, with a complete walking path to it. The nearest Mist voxel was not enough: in a nest the
+            /// Brute Alpha and the Tyrant walked "toward the Mist" 12 times over 4 turns and never got into it - the
+            /// voxel they aimed at had no floor they could reach (playtest 2026-11-19). Worked out once per actor and
+            /// position each turn.
+            /// </summary>
+            private static MistSpot ReachableMist(TacticalActor actor)
+            {
+                if (SpotByActor.TryGetValue(actor, out KeyValuePair<Vector3, MistSpot> cached) && (cached.Key - actor.Pos).sqrMagnitude < 0.01f)
+                {
+                    return cached.Value;
+                }
+
+                MistSpot spot = null;
+
+                try
+                {
+                    spot = FindReachableMist(actor, out int floors, out int paths);
+
+                    if (spot == null && NearestMist(actor) != null && NoSpotLogged.Add(actor.name))
+                    {
+                        TFTVLogger.Always($"TFTV AI mist: {actor.DisplayName} at {actor.Pos} has Mist nearby (nearest at {NearestMist(actor)}) " +
+                            $"but no spot in it to walk to: {floors} spots in the Mist it could stand on, none with a walk there");
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogOnce(e);
+                }
+
+                SpotByActor[actor] = new KeyValuePair<Vector3, MistSpot>(actor.Pos, spot);
+                return spot;
+            }
+
+            private static MistSpot FindReachableMist(TacticalActor actor, out int floors, out int paths)
+            {
+                floors = 0;
+                paths = 0;
+
+                TacticalVoxelMatrix matrix = actor.TacticalLevel?.VoxelMatrix;
+                TacticalMap map = actor.Map;
+                TacticalPerception perception = actor.TacticalPerception;
+                TacticalNavigationComponent nav = actor.TacticalNav;
+
+                if (matrix == null || map == null || perception == null || nav?.INavMesh == null || actor.AIActor == null
+                    || !matrix.IsPositionInBounds(actor.Pos) || matrix.GetVoxel(actor.Pos) == null)
+                {
+                    return null;
+                }
+
+                // One candidate per map tile and Mist layer, nearest first.
+                Dictionary<Vector3Int, Vector3> columns = new Dictionary<Vector3Int, Vector3>();
+
+                foreach (TacticalVoxel voxel in matrix.GetVoxels(actor.Pos, SearchRadius, SearchHeight, false))
+                {
+                    if (voxel == null || voxel.GetVoxelType() != TacticalVoxelType.Mist)
+                    {
+                        continue;
+                    }
+
+                    Vector3 tile = TacticalMap.SnapXZToGrid(voxel.Position);
+                    Vector3Int key = new Vector3Int(Mathf.RoundToInt(tile.x * 2f), Mathf.FloorToInt(voxel.Position.y), Mathf.RoundToInt(tile.z * 2f));
+
+                    if (!columns.TryGetValue(key, out Vector3 lowest) || voxel.Position.y < lowest.y)
+                    {
+                        columns[key] = new Vector3(tile.x, voxel.Position.y, tile.z);
+                    }
+                }
+
+                List<Vector3> candidates = columns.Values
+                    .OrderBy(c => new Vector2(c.x - actor.Pos.x, c.z - actor.Pos.z).sqrMagnitude + (c.y - actor.Pos.y) * (c.y - actor.Pos.y))
+                    .Take(MaxSpotChecks)
+                    .ToList();
+
+                LayerMask walkable = nav.WalkableLayers;
+                HashSet<Vector3Int> tried = new HashSet<Vector3Int>();
+                MistSpot best = null;
+
+                foreach (Vector3 candidate in candidates)
+                {
+                    if (paths >= MaxSpotPaths)
+                    {
+                        break;
+                    }
+
+                    // A walk is never shorter than the straight line: nobody further on can beat the best walk.
+                    if (best != null && Vector3.Distance(actor.Pos, candidate) - 1f >= best.Length)
+                    {
+                        break;
+                    }
+
+                    var floor = map.CastFirstFloorAt(candidate + Vector3.up * 0.3f, walkable, null);
+
+                    if (!floor.IsValid)
+                    {
+                        continue;
+                    }
+
+                    Vector3 point = floor.Point;
+
+                    if (!tried.Add(Vector3Int.RoundToInt(point * 2f)) || candidate.y - point.y > 1.5f || !IsMist(matrix, point)
+                        || !perception.CanStandAt(point, null) || !nav.INavMesh.ValidPosition(point, nav.NavAreas, 0.25f, true))
+                    {
+                        continue;
+                    }
+
+                    floors++;
+                    paths++;
+
+                    TacticalPathRequest request = actor.TacticalLevel.GetAiPathRequest(actor, actor.AIActor.MaxPathLength);
+                    request.Src = actor.Pos;
+                    request.Dst = point;
+                    request.UseAStar = true;
+                    request.DestinationRadius = 0f;
+                    request.Calculate();
+
+                    if (request.Status != PathStatus.Complete || request.Path == null || request.Path.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    Vector3 end = request.Path[request.Path.Count - 1].Position;
+
+                    if (new Vector2(end.x - point.x, end.z - point.z).magnitude > SpotReach || Mathf.Abs(end.y - point.y) > 1f)
+                    {
+                        continue;
+                    }
+
+                    // Distances along the path, measured here rather than trusting the nodes' cached ones.
+                    List<KeyValuePair<Vector3, float>> walk = new List<KeyValuePair<Vector3, float>>(request.Path.Count);
+                    float length = 0f;
+
+                    for (int i = 0; i < request.Path.Count; i++)
+                    {
+                        if (i > 0)
+                        {
+                            length += Vector3.Distance(request.Path[i - 1].Position, request.Path[i].Position);
+                        }
+
+                        walk.Add(new KeyValuePair<Vector3, float>(request.Path[i].Position, length));
+                    }
+
+                    if (best == null || length < best.Length)
+                    {
+                        best = new MistSpot { Pos = point, Length = length, Path = walk };
+                    }
+                }
+
+                return best;
+            }
+
+            /// <summary>
+            /// How far a spot still is from the Mist spot, walking: from the spot to the nearest point of the actor's
+            /// path there, then along the path. Cheap enough for every candidate move, and unlike a straight line it
+            /// does not reward the near side of a wall.
+            /// </summary>
+            private static float RemainingWalk(MistSpot spot, Vector3 from)
+            {
+                float best = float.MaxValue;
+
+                foreach (KeyValuePair<Vector3, float> node in spot.Path)
+                {
+                    float remaining = Vector3.Distance(from, node.Key) + Mathf.Max(0f, spot.Length - node.Value);
+
+                    if (remaining < best)
+                    {
+                        best = remaining;
+                    }
+                }
+
+                return best;
+            }
+
             /// <summary>The early exits are clones of HasGun; returns false for any other def.</summary>
             internal static bool TryScoreGate(BaseDef def, TacticalActor actor, out float score)
             {
@@ -411,11 +613,13 @@ namespace TFTV
                     else if (def == _shouldGoToMistDef)
                     {
                         score = HealingMist && IsPandoran(actor) && actor.IsAlive && !IsTouchingMist(actor)
-                            && Need(actor) > 0f && NearestMist(actor) != null && !HasAdjacentEnemyToAttack(actor) ? 1f : 0f;
+                            && Need(actor) > 0f && NearestMist(actor) != null && !HasAdjacentEnemyToAttack(actor)
+                            && ReachableMist(actor) != null ? 1f : 0f;
                     }
                     else
                     {
-                        bool goesToMist = HealingMist && IsPandoran(actor) && NearestMist(actor) != null;
+                        // Flee as before when there is no Mist it can walk into.
+                        bool goesToMist = HealingMist && IsPandoran(actor) && NearestMist(actor) != null && ReachableMist(actor) != null;
                         score = goesToMist ? 0f : 1f;
                     }
                 }
@@ -542,11 +746,22 @@ namespace TFTV
 
                 float need = Need(actor);
 
+                if (need <= 0f)
+                {
+                    return OutsideMist;
+                }
+
                 // In the Mist and still in need: leaving it, to shoot or to advance, is a last resort (a Triton walked
                 // out to shoot and ended its turn outside, unhealed).
-                if (need > 0f && IsTouchingMist(actor))
+                if (IsTouchingMist(actor))
                 {
                     return OutsideMistFloor;
+                }
+
+                // Nowhere in the Mist it can walk to: being outside it costs nothing.
+                if (ReachableMist(actor) == null)
+                {
+                    return OutsideMist;
                 }
 
                 return Mathf.Max(OutsideMistFloor, OutsideMist - OutsideMistPerNeed * need);
@@ -567,9 +782,15 @@ namespace TFTV
             private static float GoToMistScore(TacticalActor actor, TacAITarget target)
             {
                 float need = Need(actor);
-                Vector3? mist = NearestMist(actor);
 
-                if (need <= 0f || mist == null)
+                if (need <= 0f || NearestMist(actor) == null)
+                {
+                    return 0f;
+                }
+
+                MistSpot spot = ReachableMist(actor);
+
+                if (spot == null)
                 {
                     return 0f;
                 }
@@ -589,11 +810,11 @@ namespace TFTV
                     return need * depth * (1f - 0.3f * Mathf.Clamp01(target.PathLength / ap));
                 }
 
-                Vector2 goal = new Vector2(mist.Value.x, mist.Value.z);
-                float now = Vector2.Distance(new Vector2(actor.Pos.x, actor.Pos.z), goal);
-                float then = Vector2.Distance(new Vector2(target.Pos.x, target.Pos.z), goal);
+                // Out of reach this turn: the walk left to the spot it can reach, along its path there.
+                float now = spot.Length;
+                float then = RemainingWalk(spot, target.Pos);
 
-                if (now <= 0.5f || then >= now)
+                if (now <= 0.5f || then >= now - 0.5f)
                 {
                     return 0f;
                 }
@@ -676,9 +897,11 @@ namespace TFTV
                 }
 
                 bool inMist = IsMist(actor.TacticalLevel.VoxelMatrix, target.Pos);
+                MistSpot spot = inMist ? null : ReachableMist(actor);
                 TFTVLogger.Always($"TFTV AI mist: {actor.DisplayName} (need {Need(actor):0.00}, HP {(float)actor.CharacterStats.Health:0} of {actor.CharacterStats.Health.Max:0}) " +
                     $"moves {Vector3.Distance(actor.Pos, target.Pos):0.0}m " +
-                    $"{(inMist ? $"into the Mist (depth {MistDepth(actor.TacticalLevel.VoxelMatrix, target.Pos):0.00})" : "toward the Mist")} at {target.Pos}");
+                    $"{(inMist ? $"into the Mist (depth {MistDepth(actor.TacticalLevel.VoxelMatrix, target.Pos):0.00})" : "toward the Mist")} at {target.Pos}" +
+                    (spot != null ? $"; heading for {spot.Pos}, {spot.Length:0.0}m walk, {RemainingWalk(spot, target.Pos):0.0}m left after this move" : ""));
 
                 return true;
             }
@@ -686,6 +909,8 @@ namespace TFTV
             internal static void ClearTurn()
             {
                 NearestMistByFrame.Clear();
+                SpotByActor.Clear();
+                NoSpotLogged.Clear();
                 ShotCostByFrame.Clear();
                 TritonMistLogged.Clear();
                 DepthByTile.Clear();

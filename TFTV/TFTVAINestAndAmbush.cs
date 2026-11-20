@@ -581,7 +581,7 @@ namespace TFTV
                 }
                 else if (SpottedBy(actor) is TacticalFaction spotter)
                 {
-                    why = $"{spotter.TacticalFactionDef.name} has spotted it";
+                    why = $"{spotter.TacticalFactionDef.name} has spotted it{LocateSpotter(actor, spotter)}";
                 }
                 else if (CanAttack(actor))
                 {
@@ -627,20 +627,34 @@ namespace TFTV
                 float search = reach + actor.MaxMoveRange * AmbushZoneRange;
                 KeyValuePair<Vector3, string> best = default(KeyValuePair<Vector3, string>);
                 float bestDistance = float.MaxValue;
+                int full = 0;
 
                 foreach (KeyValuePair<Vector3, string> point in ObjectivePoints(actor.TacticalFaction))
                 {
                     float distance = Stances.FlatDistance(actor.Pos, point.Key);
 
-                    if (distance <= search && distance < bestDistance)
+                    if (distance > search || distance >= bestDistance)
                     {
-                        best = point;
-                        bestDistance = distance;
+                        continue;
                     }
+
+                    if (AmbushersAt(actor.TacticalFaction, point.Key) >= MaxAmbushersPerPoint)
+                    {
+                        full++;
+                        continue;
+                    }
+
+                    best = point;
+                    bestDistance = distance;
                 }
 
                 if (best.Value == null)
                 {
+                    if (full > 0)
+                    {
+                        TFTVLogger.Always($"TFTV AI ambush: {actor.DisplayName} doesn't lie in wait: the place it could cover already has {MaxAmbushersPerPoint} ambushers");
+                    }
+
                     return;
                 }
 
@@ -681,6 +695,62 @@ namespace TFTV
 
                 return missionType != null && tag != null
                     && (missionType.MissionTypeTag == tag || (missionType.MissionTags != null && missionType.MissionTags.Contains(tag)));
+            }
+
+            /// <summary>
+            /// At most this many units lie in wait for one place. On Firebird 6 of 9 Pandorans waited around the one
+            /// console, within 3-11 m of it, and spider mines and Scarab rockets caught them together (tester 2026-11-19).
+            /// </summary>
+            private const int MaxAmbushersPerPoint = 2;
+
+            /// <summary>Ambushers keep at least this far apart, so they come at the player from different sides.</summary>
+            private const float MinAmbushSpacing = 5f;
+
+            private static int AmbushersAt(TacticalFaction faction, Vector3 point)
+            {
+                return Ambushes.Count(a => a.Key != null && a.Key.IsAlive && a.Key.TacticalFaction == faction && (a.Value - point).sqrMagnitude < 0.25f);
+            }
+
+            /// <summary>A spot within <see cref="MinAmbushSpacing"/> of another ambusher of its side.</summary>
+            private static bool TooCloseToOtherAmbusher(TacticalActor actor, Vector3 pos)
+            {
+                return Ambushes.Keys.Any(a => a != null && a != actor && a.IsAlive && a.TacticalFaction == actor.TacticalFaction
+                    && Stances.FlatDistance(a.Pos, pos) < MinAmbushSpacing);
+            }
+
+            /// <summary>
+            /// Spotted by a side it knows nothing about (a spider drone found two ambushers on Firebird, and with no known
+            /// enemy they walked to random waypoints): its side learns where the nearest unit that sees it is, so it goes
+            /// for it.
+            /// </summary>
+            private static string LocateSpotter(TacticalActor actor, TacticalFaction spotter)
+            {
+                try
+                {
+                    if (Stances.KnownEnemies(actor).Any() || actor.TacticalFaction?.Vision == null)
+                    {
+                        return "";
+                    }
+
+                    TacticalActor seer = spotter.TacticalActors
+                        .Where(e => e != null && e.IsAlive && !e.IsEvacuated)
+                        .OrderBy(e => Stances.CanSee(e, actor, actor.Pos) ? 0 : 1)
+                        .ThenBy(e => (e.Pos - actor.Pos).sqrMagnitude)
+                        .FirstOrDefault();
+
+                    if (seer == null)
+                    {
+                        return "";
+                    }
+
+                    actor.TacticalFaction.Vision.IncrementKnownCounter(seer, KnownState.Located, 1, true);
+                    return $"; its side now knows where {seer.DisplayName} is ({Vector3.Distance(seer.Pos, actor.Pos):0.0}m)";
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return "";
+                }
             }
 
             /// <summary>
@@ -795,7 +865,7 @@ namespace TFTV
             /// <summary>Hidden from every known enemy, near the objective point, with a line to it for a gun; staying put breaks ties.</summary>
             private static float AmbushScore(TacticalActor actor, Vector3 pos)
             {
-                if (!Ambushes.TryGetValue(actor, out Vector3 point) || Stances.CrossesOverwatch(actor, pos))
+                if (!Ambushes.TryGetValue(actor, out Vector3 point) || Stances.CrossesOverwatch(actor, pos) || TooCloseToOtherAmbusher(actor, pos))
                 {
                     return 0f;
                 }
