@@ -133,10 +133,28 @@ namespace TFTV
             return false;
         }
 
+        /// <summary>Falls that have started (Activate) and not yet looked for their landing spot.</summary>
+        private static readonly HashSet<FallNoSupportAbility> Falling = new HashSet<FallNoSupportAbility>();
+
+        /// <summary>
+        /// Marks a real fall. The fall's coroutine looks for its landing spot in its first step, which runs inside
+        /// PlayAction before the ability's playing action is stored, so IsExecuting is still false there: the rescue
+        /// skipped every fall, and a soldier standing 0.6 m up on a crate the Scarab drove through died at full HP
+        /// (tester 2026-11-20).
+        /// </summary>
+        [HarmonyPatch(typeof(FallNoSupportAbility), nameof(FallNoSupportAbility.Activate))]
+        internal static class FallNoSupportAbility_Activate_Patch
+        {
+            private static void Prefix(FallNoSupportAbility __instance)
+            {
+                Falling.Add(__instance);
+            }
+        }
+
         /// <summary>
         /// Runs at the start of every fall (FallToFreePosition), and also when SpawnActorEffect places a spawned
-        /// actor. Spawns are left alone: vanilla destroys a spawned actor that has no free spot, and the ability is
-        /// only executing during a real fall.
+        /// actor. Spawns are left alone: vanilla destroys a spawned actor that has no free spot, and only a real
+        /// fall goes through Activate first.
         /// </summary>
         [HarmonyPatch(typeof(FallNoSupportAbility), nameof(FallNoSupportAbility.FindFallPosition))]
         internal static class FallNoSupportAbility_FindFallPosition_Patch
@@ -145,7 +163,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (!__instance.IsExecuting)
+                    if (!Falling.Remove(__instance) && !__instance.IsExecuting)
                     {
                         return;
                     }

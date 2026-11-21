@@ -48,6 +48,11 @@ namespace TFTV
         /// is within their guns' effective range they close in, cover to cover, up to <see cref="CloseInRadius"/> a turn;
         /// a shot from a spot with little cover counts x<see cref="DefenderOpenShotFactor"/>, so it beats the watch; and
         /// they move to a spot with no line of fire only to get out of the open.
+        ///
+        /// 2026-11-21: haven defenders move around the haven, not suicidally: up to <see cref="CloseInRadius"/> a turn,
+        /// nearer the enemy only to a spot with low cover or better, never closing in through open ground a known enemy
+        /// can see, and after a shot they step back only to a covered spot (a Priest kept stepping back to the same open
+        /// one).
         /// </summary>
         internal static class Rescuees
         {
@@ -398,7 +403,7 @@ namespace TFTV
                 Vector3 anchor = Anchor(actor);
                 bool closingIn = IsClosingIn(actor);
 
-                if (Stances.FlatDistance(anchor, pos) > (closingIn ? CloseInRadius : DefendRadius))
+                if (Stances.FlatDistance(anchor, pos) > CloseInRadius)
                 {
                     return false;
                 }
@@ -408,9 +413,21 @@ namespace TFTV
                     return true;
                 }
 
-                TacticalActorBase enemy = NearestFromAnchor(actor);
+                // Haven defenders roam the haven: within the wider radius, and nearer the enemy too, as long as they
+                // end behind cover (tester 2026-11-20: "we do want them to move around, just not be suicidal").
+                if (IsHavenDefender(actor))
+                {
+                    return Stances.FlatDistance(anchor, pos) <= CloseInRadius
+                        && (!NearerTheEnemy(actor, pos) || DefenderCover(actor, pos) >= MinCoverToMoveTo);
+                }
 
-                return enemy == null || Stances.FlatDistance(pos, enemy.Pos) >= Stances.FlatDistance(anchor, enemy.Pos) - CloseInMargin;
+                return Stances.FlatDistance(anchor, pos) <= DefendRadius && !NearerTheEnemy(actor, pos);
+            }
+
+            private static bool NearerTheEnemy(TacticalActor actor, Vector3 pos)
+            {
+                TacticalActorBase enemy = NearestFromAnchor(actor);
+                return enemy != null && Stances.FlatDistance(pos, enemy.Pos) < Stances.FlatDistance(Anchor(actor), enemy.Pos) - CloseInMargin;
             }
 
             private static TacticalActorBase NearestFromAnchor(TacticalActor actor)
@@ -507,6 +524,14 @@ namespace TFTV
                 }
 
                 float cover = DefenderCover(actor, pos);
+
+                // In the open where a known enemy can see it: not a step to take (a Berserker closed in to an open
+                // spot, cover 0.00, tester 2026-11-20).
+                if (cover < MinCoverToMoveTo && AlertState.SeenBySide(actor).Any(e => Stances.CanSee(e, actor, pos)))
+                {
+                    return 0f;
+                }
+
                 float score = gain * ((1f - CloseInCoverShare) + CloseInCoverShare * cover);
 
                 if (after <= EffectiveRange(actor))
@@ -597,9 +622,17 @@ namespace TFTV
             /// </summary>
             private static float ReturnSpot(TacticalActor actor, Vector3 pos)
             {
-                if (IsStartSpot(actor, pos) && DefenderCover(actor, pos) >= DefenderCover(actor, actor.Pos) - 0.01f)
+                // A haven defender's start counts only if it has cover: a Priest stepped back to the same open spot
+                // (cover 0.00) after every shot (tester 2026-11-20).
+                if (IsStartSpot(actor, pos) && DefenderCover(actor, pos) >= DefenderCover(actor, actor.Pos) - 0.01f
+                    && (!IsHavenDefender(actor) || DefenderCover(actor, pos) >= MinCoverToMoveTo))
                 {
                     return 1f;
+                }
+
+                if (IsHavenDefender(actor) && DefenderCover(actor, pos) < MinCoverToMoveTo)
+                {
+                    return 0f;
                 }
 
                 if (Stances.CrossesOverwatch(actor, pos))
@@ -657,7 +690,9 @@ namespace TFTV
 
                 if (defending && LoggedThisTurn.Add(actor))
                 {
-                    TFTVLogger.Always($"TFTV AI defender: {actor.DisplayName} ({kind}) defends: no advance, moves within {DefendRadius:0}m of {Anchor(actor)} and no nearer the enemy");
+                    TFTVLogger.Always(kind == "rescuee"
+                        ? $"TFTV AI defender: {actor.DisplayName} ({kind}) defends: no advance, moves within {DefendRadius:0}m of {Anchor(actor)} and no nearer the enemy"
+                        : $"TFTV AI defender: {actor.DisplayName} ({kind}) defends: no advance, moves within {CloseInRadius:0}m of {Anchor(actor)}, nearer the enemy only behind cover");
                 }
 
                 return defending;
