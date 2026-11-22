@@ -394,6 +394,9 @@
     <Compile Include="TFTVHarshAttrition\AlienWeaponRolls.cs" />
     <Compile Include="TFTVHarshAttrition\ArthronClawRegrowth.cs" />
     <Compile Include="TFTVHarshAttrition\DisarmedReturn.cs" />
+    <Compile Include="TFTVHarshAttrition\WillpowerResistance.cs" />
+    <Compile Include="TFTVAbilityLineOfSight.cs" />
+    <Compile Include="TFTVAITargetSelection.cs" />
     <Compile Include="Tactical\Entities\Statuses\DisarmedStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\DisarmedStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\PandoranVarianceStatus.cs" />
@@ -436,6 +439,7 @@
     <Compile Include="TFTVPlayerDeploymentPhase.cs" />
     <Compile Include="TFTVPlayerDeploymentPrompt.cs" />
     <Compile Include="TFTVFallRescue.cs" />
+    <Compile Include="TFTVHiddenBlockers.cs" />
     <Compile Include="TFTVPlayerDeploymentPlacement.cs" />
     <Compile Include="TFTVPlayerDeploymentBaseDefenseCulls.cs" />
     <Compile Include="TFTVEnemySpawnSpots.cs" />

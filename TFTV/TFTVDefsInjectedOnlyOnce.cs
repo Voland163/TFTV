@@ -1483,6 +1483,7 @@ namespace TFTV
                 TFTVUI.Tactical.InfoViewBodyParts.LimbSideLabels.ApplyToSlotDefs();
                 AdjustColorDefs();
                 ReduceMyrmidonDeploymentCost();
+                ReduceChironDeploymentCost();
                 ChangeArchaelogyLab();
                 RemoveReturnFireFromMadmenInNJ0();
 
@@ -1524,6 +1525,45 @@ namespace TFTV
             }
 
 
+        }
+
+        /// <summary>
+        /// Worm and Goo Chirons cost 300-310 in vanilla, far more than they're worth; they now cost about what an
+        /// Acheron Prime does. Mortar, acid mortar and crystal mortar Chirons keep their vanilla costs (350-550).
+        /// How many Chirons (and worm Chirons) a mission gets is capped in TFTVTacticalDeploymentEnemies.
+        /// </summary>
+        private static void ReduceChironDeploymentCost()
+        {
+            try
+            {
+                Dictionary<string, int> costs = new Dictionary<string, int>
+                {
+                    { "Chiron1_FireWormAgile_AlienMutationVariationDef", 150 },
+                    { "Chiron3_PoisonWormAgile_AlienMutationVariationDef", 150 },
+                    { "Chiron5_AcidWormAgile_AlienMutationVariationDef", 150 },
+                    { "Chiron7_GooStomp_AlienMutationVariationDef", 150 },
+                    { "Chiron2_FireWormHeavy_AlienMutationVariationDef", 160 },
+                    { "Chiron4_PoisonWormHeavy_AlienMutationVariationDef", 160 },
+                    { "Chiron6_AcidWormHeavy_AlienMutationVariationDef", 160 },
+                    { "Chiron8_GooHeavy_AlienMutationVariationDef", 160 },
+                };
+
+                foreach (KeyValuePair<string, int> cost in costs)
+                {
+                    TacCharacterDef chiron = DefCache.GetDef<TacCharacterDef>(cost.Key);
+                    if (chiron == null)
+                    {
+                        TFTVLogger.Always($"[DeploymentCost] {cost.Key} not found");
+                        continue;
+                    }
+
+                    chiron.DeploymentCost = cost.Value;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         private static void Create_StarvedAbility()
@@ -7135,12 +7175,8 @@ namespace TFTV
                 TacCharacterDef acheronAchlys = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
                 TacCharacterDef acheronAchlysChampion = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
 
-                acheron.DeploymentCost = 180;
-                acheronPrime.DeploymentCost = 240;
-                acheronAsclepius.DeploymentCost = 310;
-                acheronAchlys.DeploymentCost = 310;
-                acheronAsclepiusChampion.DeploymentCost = 350;
-                acheronAchlysChampion.DeploymentCost = 350;
+                // Deployment costs stay vanilla (120 / 150 / 225 / 275); how many Acherons a mission gets is
+                // capped in TFTVTacticalDeploymentEnemies instead.
 
                 //Adding Harbinger of the Void to Acheron, Acheron Prime and Acheron Asclepius Champion
                 //Adding Co-Delirium To Acheron Prime

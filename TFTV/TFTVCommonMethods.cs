@@ -224,6 +224,7 @@ namespace TFTV
                 TFTVAICombatAbilities.Stances.ClearMission();
                 TFTVAICombatAbilities.BottleTest.ClearMission();
                 TFTVAICombatAbilities.NestAndAmbush.ClearMission();
+                TFTVHiddenBlockers.ClearMission();
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 // the beam defs are process-global: start every mission/load neutral, like the buff tracking above
