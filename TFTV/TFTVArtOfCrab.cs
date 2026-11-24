@@ -40,6 +40,20 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+        private static GameTagDef _explosiveWeaponTag;
+
+        /// <summary>Tagged explosive, or a payload with a blast radius (rockets, grenades).</summary>
+        internal static bool IsExplosive(Weapon weapon)
+        {
+            if (_explosiveWeaponTag == null)
+            {
+                _explosiveWeaponTag = DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef");
+            }
+
+            WeaponDef def = weapon?.WeaponDef;
+            return def != null && ((_explosiveWeaponTag != null && def.Tags.Contains(_explosiveWeaponTag)) || TFTVAITargetSelection.BlastRadius(def) > 0f);
+        }
+
         public static void GetBestWeaponForOWRF(TacticalActor tacticalActor)
         {
             try
@@ -50,7 +64,7 @@ namespace TFTV
                     return;
                 }
 
-                if (tacticalActor.GetAbility<ReturnFireAbility>("ReturnFire_AbilityDef") == null && tacticalActor.GetAbility<ApplyStatusAbility>("ExtremeFocus_AbilityDef") == null)
+                if (tacticalActor.GetAbility<ReturnFireAbility>() == null && tacticalActor.GetAbility<ApplyStatusAbility>("ExtremeFocus_AbilityDef") == null)
                 {
                     return;
                 }
@@ -59,6 +73,15 @@ namespace TFTV
                     w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
                     && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
                     ));
+
+                // Return fire and overwatch want a gun that fires back, not an explosive: a heavy that had just fired its
+                // rocket launcher kept it in hand (the longest effective range), so return fire answered with rockets or
+                // not at all (playtest 2026-11-23). Explosives only when there is nothing else.
+                List<Weapon> nonExplosive = weapons.Where(w => !IsExplosive(w)).ToList();
+                if (nonExplosive.Count > 0)
+                {
+                    weapons = nonExplosive;
+                }
 
                 if (weapons.Count == 0)
                 {

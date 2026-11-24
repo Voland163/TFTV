@@ -113,6 +113,88 @@ namespace TFTV
             return (scored?.Target as TacAITarget)?.Actor;
         }
 
+        /// <summary>Spare distance beyond the blast radius, for scatter and the blast catching the shooter's edge.</summary>
+        private const float OwnBlastMargin = 1f;
+
+        /// <summary>
+        /// The radius of a weapon's blast, 0 if it has none. Only area payloads (Sphere, Parabola) explode: AoeRadius is
+        /// junk on the others (Infinity on laser rifles and shotguns), and WeaponDef.AreaRadius ignores it for Melee and
+        /// DirectLine the same way.
+        /// </summary>
+        internal static float BlastRadius(PhoenixPoint.Tactical.Entities.Weapons.WeaponDef def)
+        {
+            PhoenixPoint.Tactical.Entities.DamagePayload payload = def?.DamagePayload;
+            if (payload == null)
+            {
+                return 0f;
+            }
+
+            if (payload.DamageDeliveryType != PhoenixPoint.Tactical.Entities.DamageDeliveryType.Sphere
+                && payload.DamageDeliveryType != PhoenixPoint.Tactical.Entities.DamageDeliveryType.Parabola)
+            {
+                return 0f;
+            }
+
+            float radius = payload.AoeRadius;
+            return float.IsNaN(radius) || float.IsInfinity(radius) || radius <= 0f ? 0f : radius;
+        }
+
+        private static readonly HashSet<string> OwnBlastLogged = new HashSet<string>();
+        private static int _ownBlastTurn = -1;
+
+        /// <summary>
+        /// A shot with an explosive (rocket, grenade) from a spot inside its own blast scores nothing. A Neu Jericho leader
+        /// moved next to a soldier and fired its rocket launcher at her from 1 m: 37 damage to her, 60 to itself
+        /// (playtest 2026-11-23). Vanilla scores the shot by the damage to the target and never looks at the shooter.
+        /// </summary>
+        [HarmonyPatch(typeof(PhoenixPoint.Tactical.AI.Considerations.AIAttackPositionConsideration), "EvaluateWithShootAbility")]
+        internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_OwnBlast_Patch
+        {
+            public static void Postfix(IAIActor actor, IAITarget target, ref float __result)
+            {
+                try
+                {
+                    if (__result <= 0f || !(actor is TacticalActor shooter) || !(target is TacAITarget tacTarget) || tacTarget.Actor == null
+                        || !(tacTarget.Equipment is PhoenixPoint.Tactical.Entities.Weapons.Weapon weapon))
+                    {
+                        return;
+                    }
+
+                    float radius = BlastRadius(weapon.WeaponDef);
+                    if (radius <= 0f)
+                    {
+                        return;
+                    }
+
+                    UnityEngine.Vector3 from = tacTarget.IsPosValid ? tacTarget.Pos : shooter.Pos;
+                    float distance = UnityEngine.Vector3.Distance(from, tacTarget.Actor.Pos);
+
+                    if (distance >= radius + OwnBlastMargin)
+                    {
+                        return;
+                    }
+
+                    __result = 0f;
+
+                    int turn = shooter.TacticalFaction?.TurnNumber ?? -1;
+                    if (turn != _ownBlastTurn)
+                    {
+                        _ownBlastTurn = turn;
+                        OwnBlastLogged.Clear();
+                    }
+
+                    if (OwnBlastLogged.Add($"{shooter.name}|{weapon.WeaponDef.name}"))
+                    {
+                        TFTVLogger.Always($"TFTV AI own blast: {shooter.DisplayName} won't fire {weapon.WeaponDef.name} (blast {radius:0.#}m) at anyone within {radius + OwnBlastMargin:0.#}m of where it fires from");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
         /// <summary>An action's targets, before its best few are kept: the haven's structures and civilians go if a person is among them.</summary>
         [HarmonyPatch(typeof(AIFaction), nameof(AIFaction.GetTopTargets))]
         internal static class AIFaction_GetTopTargets_HavenAttackers_Patch

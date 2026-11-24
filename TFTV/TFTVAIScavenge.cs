@@ -10,6 +10,7 @@ using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
@@ -358,7 +359,22 @@ namespace TFTV
                 return true;
             }
 
-            /// <summary>Before each of the actor's AI evaluations: takes a useful drop within reach, if it has the AP.</summary>
+            /// <summary>The useful drop within reach of where the actor stands, if any.</summary>
+            internal static KeyValuePair<ItemContainer, TacticalItem> DropAtHand(TacticalActor actor)
+            {
+                if (actor == null || !IsScavenger(actor))
+                {
+                    return default(KeyValuePair<ItemContainer, TacticalItem>);
+                }
+
+                return UsefulDrops(actor).FirstOrDefault(d => Vector3.Distance(actor.Pos, d.Key.Pos) <= PickupReach);
+            }
+
+            /// <summary>
+            /// Before each of the actor's AI evaluations. A human enemy next to a useful drop gets the pick-up ability, and
+            /// TFTV_PickUpGear_AIActionDef plays it (animated, and the AI waits for it). Tritons, which have no such
+            /// animation, and humans if the animated pick-up couldn't be set up, take the drop on the spot.
+            /// </summary>
             internal static void TryPickUp(TacticalActor actor)
             {
                 if (GoForGearActionDef == null || !IsScavenger(actor))
@@ -366,59 +382,212 @@ namespace TFTV
                     return;
                 }
 
-                float cost = PickupCost(actor);
+                if (UsesAnimatedPickUp(actor))
+                {
+                    UpdatePickUpAbility(actor);
+                    return;
+                }
 
-                if (actor.CharacterStats.ActionPoints < cost)
+                if (actor.CharacterStats.ActionPoints < PickupCost(actor))
                 {
                     return;
                 }
 
-                KeyValuePair<ItemContainer, TacticalItem> drop = UsefulDrops(actor).FirstOrDefault(d => Vector3.Distance(actor.Pos, d.Key.Pos) <= PickupReach);
+                KeyValuePair<ItemContainer, TacticalItem> drop = DropAtHand(actor);
 
                 if (drop.Key == null)
                 {
                     return;
                 }
 
-                ItemContainer container = drop.Key;
-                TacticalItem item = drop.Value;
-                string swapped = "";
+                TakeDrop(actor, drop, true);
+            }
 
-                if (item is Weapon weapon)
+            /// <summary>Moves the drop into the actor's hands or backpack; pays the pick-up AP when <paramref name="payCost"/>.</summary>
+            internal static void TakeDrop(TacticalActor actor, KeyValuePair<ItemContainer, TacticalItem> drop, bool payCost)
+            {
+                try
                 {
-                    // Three equipment slots: an unusable or dry weapon goes on the ground to make room.
-                    List<Equipment> equipped = actor.Equipments.Equipments.ToList();
+                    ItemContainer container = drop.Key;
+                    TacticalItem item = drop.Value;
 
-                    if (equipped.Count >= 3)
+                    if (actor == null || container == null || item == null || container.Inventory == null || !container.Inventory.Items.Contains(item))
                     {
-                        Equipment old = equipped.FirstOrDefault(e => e is Weapon w && !CanAttackWith(actor, w)) ?? equipped.FirstOrDefault(e => !(e is Weapon));
-
-                        if (old == null)
-                        {
-                            return;
-                        }
-
-                        actor.Equipments.RemoveItem(old);
-                        container.Inventory.AddItem(old, null);
-                        swapped = $", leaving {old.TacticalItemDef?.name}";
+                        return;
                     }
 
-                    container.Inventory.RemoveItem(item);
-                    actor.Equipments.AddItem(weapon, null);
-                    actor.Equipments.SetSelectedEquipment(weapon);
+                    float cost = PickupCost(actor);
+                    string swapped = "";
+
+                    if (item is Weapon weapon)
+                    {
+                        // Three equipment slots: an unusable or dry weapon goes on the ground to make room.
+                        List<Equipment> equipped = actor.Equipments.Equipments.ToList();
+
+                        if (equipped.Count >= 3)
+                        {
+                            Equipment old = equipped.FirstOrDefault(e => e is Weapon w && !CanAttackWith(actor, w)) ?? equipped.FirstOrDefault(e => !(e is Weapon));
+
+                            if (old == null)
+                            {
+                                return;
+                            }
+
+                            actor.Equipments.RemoveItem(old);
+                            container.Inventory.AddItem(old, null);
+                            swapped = $", leaving {old.TacticalItemDef?.name}";
+                        }
+
+                        container.Inventory.RemoveItem(item);
+                        actor.Equipments.AddItem(weapon, null);
+                        actor.Equipments.SetSelectedEquipment(weapon);
+                    }
+                    else
+                    {
+                        container.Inventory.RemoveItem(item);
+                        actor.Inventory.AddItem(item, null);
+                    }
+
+                    if (payCost)
+                    {
+                        actor.CharacterStats.ActionPoints.Subtract(cost);
+                    }
+
+                    DropsByFrame.Remove(actor);
+                    ReachableByFrame.Remove(actor);
+
+                    TFTVLogger.Always($"TFTV AI gear: {actor.DisplayName} picks up {item.TacticalItemDef?.name} ({item.CommonItemData?.CurrentCharges} charges){swapped} " +
+                        $"for {cost:0.#} AP, {(float)actor.CharacterStats.ActionPoints:0.#} left{(payCost ? "" : " (animated)")}");
+
+                    ShowPickup(actor, item);
                 }
-                else
+                catch (Exception e)
                 {
-                    container.Inventory.RemoveItem(item);
-                    actor.Inventory.AddItem(item, null);
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            #region animated pick-up
+
+            internal static PickUpGearAbilityDef PickUpAbilityDef;
+            internal static AIActionExecuteAbilityDef PickUpActionDef;
+
+            /// <summary>A Technician bending down to take a turret back.</summary>
+            internal static AnimationClip PickUpClip;
+
+            private const string PickUpAnimationName = "E_RetrieveTurret [Soldier_Utka_AnimActionsDef]";
+
+            /// <summary>Above everything a disarmed unit would otherwise do; Flee (9999) is vetoed while a drop is in reach.</summary>
+            private const float PickUpWeight = 5000f;
+
+            /// <summary>After ClassSkillsAI.CreateDefs: uses its self-action helper.</summary>
+            internal static void CreatePickUpDefs()
+            {
+                try
+                {
+                    TacticalAbilityDef selfSource = DefCache.GetDef<TacticalAbilityDef>("BC_QuickAim_AbilityDef");
+                    TacticalAbilityDef inventory = DefCache.GetDef<TacticalAbilityDef>("Inventory_AbilityDef");
+                    TacActorAnimActionBaseDef animation = DefCache.GetDef<TacActorAnimActionBaseDef>(PickUpAnimationName);
+
+                    PickUpClip = animation?.GetAllClips()?.FirstOrDefault(c => c != null);
+
+                    if (selfSource == null || inventory == null || PickUpClip == null)
+                    {
+                        TFTVLogger.Always($"TFTV AI gear: animated pick-up not set up (self ability {selfSource != null}, inventory {inventory != null}, clip {PickUpClip != null}); pick-ups stay instant");
+                        PickUpClip = null;
+                        return;
+                    }
+
+                    PickUpAbilityDef = TFTVMain.Repo.CreateDef<PickUpGearAbilityDef>("d3f1b394-ce4a-4b09-8a46-36c6e2384897");
+                    PRMBetterClasses.Helper.CopyFieldsByReflection(selfSource, PickUpAbilityDef);
+                    PickUpAbilityDef.name = "TFTV_PickUpGear_AbilityDef";
+                    PickUpAbilityDef.ResourcePath = "Defs/Tactical/Actors/_Common/Abilities/TFTV_PickUpGear_AbilityDef";
+                    PickUpAbilityDef.InputAction = "";
+                    PickUpAbilityDef.ActionPointCost = inventory.ActionPointCost;
+                    PickUpAbilityDef.WillPointCost = 0f;
+                    PickUpAbilityDef.UsesPerTurn = -1;
+                    PickUpAbilityDef.ActorTags = new GameTagDef[0];
+                    PickUpAbilityDef.ViewElementDef = inventory.ViewElementDef;
+
+                    PickUpActionDef = ClassSkillsAI.SelfAction("TFTV_PickUpGear_AIActionDef", "7bc52dec-462e-42f4-91f7-dc579f429b01",
+                        "9e202a37-ee7b-4055-b402-eda13bf326ba", "3e1528d5-cf69-4d28-97bd-709fdb0823ff", PickUpAbilityDef, PickUpWeight,
+                        a => CanPickUpNow(a) ? 1f : 0f);
+
+                    TFTVLogger.Always($"TFTV AI gear: animated pick-up for human enemies ({PickUpClip.name}, AP share {PickUpAbilityDef.ActionPointCost})");
+                }
+                catch (Exception e)
+                {
+                    PickUpAbilityDef = null;
+                    PickUpActionDef = null;
+                    PickUpClip = null;
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static bool UsesAnimatedPickUp(TacticalActor actor)
+            {
+                return PickUpAbilityDef != null && PickUpActionDef != null && PickUpClip != null
+                    && _humanTag != null && actor.GameTags.Contains(_humanTag);
+            }
+
+            private static bool CanPickUpNow(TacticalActor actor)
+            {
+                if (actor == null || PickUpAbilityDef == null)
+                {
+                    return false;
                 }
 
-                actor.CharacterStats.ActionPoints.Subtract(cost);
-                DropsByFrame.Remove(actor);
-                ReachableByFrame.Remove(actor);
+                PickUpGearAbility ability = actor.GetAbilityWithDef<PickUpGearAbility>(PickUpAbilityDef);
+                return ability != null && actor.CharacterStats.ActionPoints >= ability.ActionPointCost && DropAtHand(actor).Key != null;
+            }
 
-                TFTVLogger.Always($"TFTV AI gear: {actor.DisplayName} picks up {item.TacticalItemDef?.name} ({item.CommonItemData?.CurrentCharges} charges){swapped} " +
-                    $"for {cost:0.#} AP, {(float)actor.CharacterStats.ActionPoints:0.#} left");
+            /// <summary>Gives the ability to a unit standing at a drop it needs, and takes it back from one that isn't.</summary>
+            private static void UpdatePickUpAbility(TacticalActor actor)
+            {
+                PickUpGearAbility ability = actor.GetAbilityWithDef<PickUpGearAbility>(PickUpAbilityDef);
+                bool needed = DropAtHand(actor).Key != null;
+
+                if (needed && ability == null)
+                {
+                    actor.AddAbility(PickUpAbilityDef, actor);
+                }
+                else if (!needed && ability != null)
+                {
+                    actor.RemoveAbility(ability);
+                }
+            }
+
+            #endregion
+
+            private const string PickedUpKey = "TFTV_AI_PICKED_UP";
+
+            /// <summary>
+            /// The pickup has no animation: without a word, a disarmed enemy seen picking a gun off the floor just has
+            /// one in hand again (playtest 2026-11-22). "PICKED UP GAUSS RIFLE" over it, when the player can see it.
+            /// </summary>
+            private static void ShowPickup(TacticalActor actor, TacticalItem item)
+            {
+                try
+                {
+                    if (actor?.TacticalLevel?.Factions == null
+                        || !actor.TacticalLevel.Factions.Any(f => f != null && f.IsControlledByPlayer && f.Vision != null && f.Vision.IsRevealed(actor)))
+                    {
+                        return;
+                    }
+
+                    string itemName = item.DisplayName;
+                    if (string.IsNullOrEmpty(itemName))
+                    {
+                        itemName = item.TacticalItemDef?.name ?? "";
+                    }
+
+                    string text = string.Format(TFTVCommonMethods.ConvertKeyToString(PickedUpKey), itemName.ToUpper());
+                    TFTVTauntsAndQuips.FloatingTextManager.ShowFloatingText(actor, text, Color.white);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
 
             private static void Log(TacticalActor actor, string key, string line)

@@ -397,6 +397,7 @@
     <Compile Include="TFTVHarshAttrition\WillpowerResistance.cs" />
     <Compile Include="TFTVAbilityLineOfSight.cs" />
     <Compile Include="TFTVAITargetSelection.cs" />
+    <Compile Include="TFTVAIPickUpGearAbility.cs" />
     <Compile Include="Tactical\Entities\Statuses\DisarmedStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\DisarmedStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\PandoranVarianceStatus.cs" />

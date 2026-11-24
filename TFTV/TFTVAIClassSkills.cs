@@ -159,7 +159,7 @@ namespace TFTV
             }
 
             /// <summary>Execute a skill on oneself, scored by <paramref name="value"/> once <paramref name="gate"/> opens.</summary>
-            private static AIActionExecuteAbilityDef SelfAction(string name, string guid, string gateGuid, string valueGuid, TacticalAbilityDef ability,
+            internal static AIActionExecuteAbilityDef SelfAction(string name, string guid, string gateGuid, string valueGuid, TacticalAbilityDef ability,
                 float weight, Func<TacticalActor, float> gate, Func<TacticalActor, TacAITarget, float> value = null)
             {
                 AIActionExecuteAbilityDef source = DefCache.GetDef<AIActionExecuteAbilityDef>("InstilFrenzy_AIActionDef");

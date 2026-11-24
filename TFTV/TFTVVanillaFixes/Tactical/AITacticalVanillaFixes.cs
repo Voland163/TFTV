@@ -5,6 +5,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
@@ -196,6 +197,27 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         /// </summary>
         internal static class SelfCentredBlastAI
         {
+            private static readonly string[] ExpendableClassTagNames =
+            {
+                "Worm_ClassTagDef", "Fireworm_ClassTagDef", "Acidworm_ClassTagDef", "Poisonworm_ClassTagDef", "Egg_ClassTagDef",
+            };
+
+            private static List<GameTagDef> _expendableTags;
+
+            /// <summary>Worms and eggs.</summary>
+            private static bool IsExpendable(TacticalActor actor)
+            {
+                if (_expendableTags == null)
+                {
+                    _expendableTags = ExpendableClassTagNames
+                        .Select(name => (GameTagDef)TFTVMain.Main.DefCache.GetDef<ClassTagDef>(name))
+                        .Where(tag => tag != null)
+                        .ToList();
+                }
+
+                return actor?.GameTags != null && _expendableTags.Any(tag => actor.GameTags.Contains(tag));
+            }
+
             internal static bool IsSelfCentredBlast(TacticalAbility ability)
             {
                 return ability is ApplyDamageEffectAbility applyDamage
@@ -222,6 +244,14 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                     }
 
                     FactionRelation relation = user.RelationTo(hitActor);
+
+                    // Worms and eggs are throwaway: one caught in the blast doesn't hold it back. Two worms that
+                    // landed side by side otherwise each held its explosion for the other and just crawled about
+                    // next to the soldiers (playtest 2026-11-22).
+                    if (relation == FactionRelation.Friend && IsExpendable(hitActor))
+                    {
+                        continue;
+                    }
 
                     if (relation == FactionRelation.Friend)
                     {

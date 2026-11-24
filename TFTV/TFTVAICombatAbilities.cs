@@ -70,6 +70,7 @@ namespace TFTV
             FiringLine.CreateDefs();
             Rescuees.CreateDefs();
             ClassSkillsAI.CreateDefs();
+            Scavenging.CreatePickUpDefs();
             TFTVAIMindfraggerMove.CreateDefs();
 
             // Last: swaps a consideration in the plain advances, so clones made above keep their own copy.
