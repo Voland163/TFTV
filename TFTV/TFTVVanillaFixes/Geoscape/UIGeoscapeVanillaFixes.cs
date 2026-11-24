@@ -18,6 +18,55 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
 {
     internal class UIGeoscapeVanillaFixes
     {
+        /// <summary>
+        /// The short Phoenix base tooltip fills one icon slot per built facility (_facilities[i] for every
+        /// BuiltFacilities[i]) without checking that it has that many slots. A base with more facilities than the
+        /// tooltip's prefab holds threw ArgumentOutOfRange on hover and left the rest of the tooltip (slots text,
+        /// weather, travel time) unset (playtest 2026-11-19, after a base was upgraded). Missing slots are cloned
+        /// from the first one, in the same container.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleShortPhoenixBaseTooltip), "SetTooltipData")]
+        internal static class UIModuleShortPhoenixBaseTooltip_SetTooltipData_FacilitySlots_Patch
+        {
+            private static readonly AccessTools.FieldRef<UIModuleShortPhoenixBaseTooltip, List<PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase.PhoenixFacilityTooltipElementController>> Facilities =
+                AccessTools.FieldRefAccess<UIModuleShortPhoenixBaseTooltip, List<PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase.PhoenixFacilityTooltipElementController>>("_facilities");
+
+            private static bool _logged;
+
+            private static void Prefix(UIModuleShortPhoenixBaseTooltip __instance, PhoenixPoint.Geoscape.View.DataObjects.PhoenixBaseShortInfoData baseData)
+            {
+                try
+                {
+                    var slots = Facilities(__instance);
+                    int needed = baseData?.BuiltFacilities?.Count ?? 0;
+
+                    if (slots == null || slots.Count == 0 || needed <= slots.Count)
+                    {
+                        return;
+                    }
+
+                    var template = slots[0];
+                    int had = slots.Count;
+
+                    while (slots.Count < needed)
+                    {
+                        var clone = UnityEngine.Object.Instantiate(template, template.transform.parent);
+                        clone.gameObject.SetActive(false);
+                        slots.Add(clone);
+                    }
+
+                    if (!_logged)
+                    {
+                        _logged = true;
+                        TFTVLogger.Always($"[BaseTooltip] {baseData.BaseName?.Localize()} has {needed} built facilities; the tooltip had {had} icon slots, added {needed - had}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         //Patch to fix Vanilla perception multipliers application
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "ApplyStatModification")]

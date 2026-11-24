@@ -1401,6 +1401,112 @@ namespace TFTV
             }
         }
 
+        private static Dictionary<string, List<KeyValuePair<int, AbilityDef>>> _classSkillGrants;
+
+        /// <summary>
+        /// Class name fragment -> (level, skill). Built on first use: several of these skills are runtime defs
+        /// that BetterClasses creates while the mod loads.
+        /// </summary>
+        private static Dictionary<string, List<KeyValuePair<int, AbilityDef>>> ClassSkillGrants
+        {
+            get
+            {
+                if (_classSkillGrants != null)
+                {
+                    return _classSkillGrants;
+                }
+
+                KeyValuePair<int, AbilityDef> At(int level, string defName) =>
+                    new KeyValuePair<int, AbilityDef>(level, DefCache.GetDef<AbilityDef>(defName));
+
+                _classSkillGrants = new Dictionary<string, List<KeyValuePair<int, AbilityDef>>>
+                {
+                    { "Assault", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "BC_QuickAim_AbilityDef"), At(3, "KillAndRun_AbilityDef"), At(3, "Pitcher_AbilityDef"),
+                            At(5, "ReadyForAction_AbilityDef"), At(6, "AimedBurst_AbilityDef")
+                        } },
+                    { "Berserker", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "Dash_AbilityDef"), At(3, "CloseQuarters_AbilityDef"), At(3, "GunKata_AbilityDef"),
+                            At(5, "BloodLust_AbilityDef"), At(6, "IgnorePain_AbilityDef"), At(6, "KillerInstinct_AbiltyDef"),
+                            At(7, "AdrenalineRush_AbilityDef")
+                        } },
+                    { "Heavy", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "ReturnFire_AbilityDef"), At(3, "HunkerDown_AbilityDef"), At(3, "JetpackControl_AbilityDef"),
+                            At(5, "Skirmisher_AbilityDef"), At(6, "ShredResistant_DamageMultiplierAbilityDef"), At(6, "BigBooms_AbilityDef"),
+                            At(7, "RageBurst_RageBurstInConeAbilityDef")
+                        } },
+                    { "Infiltrator", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "SurpriseAttack_AbilityDef"), At(3, "Vanish_AbilityDef"),
+                            At(5, "NeuralFeedback_AbilityDef"), At(6, "JammingFiled_AbilityDef")
+                        } },
+                    { "Priest", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "Priest_MindControl_AbilityDef"), At(3, "InducePanic_AbilityDef"), At(3, "BC_Biochemist_AbilityDef"),
+                            At(5, "MindSense_AbilityDef"), At(6, "PsychicWard_AbilityDef"), At(7, "MindCrush_AbilityDef")
+                        } },
+                    { "Sniper", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "ExtremeFocus_AbilityDef"), At(3, "ArmourBreak_AbilityDef"), At(3, "BC_Gunslinger_AbilityDef"),
+                            At(5, "MasterMarksman_AbilityDef"), At(6, "Inspire_AbilityDef"), At(7, "MarkedForDeath_AbilityDef")
+                        } },
+                    { "Technician", new List<KeyValuePair<int, AbilityDef>>
+                        {
+                            At(2, "FastUse_AbilityDef"), At(3, "ElectricReinforcement_AbilityDef"), At(3, "RemoteDeployment_AbilityDef"),
+                            At(5, "Stability_AbilityDef"), At(6, "FieldMedic_AbilityDef"), At(6, "ManualControl_AbilityDef")
+                        } },
+                };
+
+                foreach (var grant in _classSkillGrants)
+                {
+                    foreach (var entry in grant.Value.Where(e => e.Value == null))
+                    {
+                        TFTVLogger.Always($"[ClassSkills] WARNING: a level {entry.Key} {grant.Key} skill def is missing");
+                    }
+                }
+
+                return _classSkillGrants;
+            }
+        }
+
+        private static void GrantClassSkills(TacticalActor tacticalActor, GameTagDef classTagDef, int level)
+        {
+            string className = ClassSkillGrants.Keys.FirstOrDefault(k => classTagDef.name.Contains(k));
+
+            if (className == null)
+            {
+                return;
+            }
+
+            List<string> granted = new List<string>();
+
+            foreach (KeyValuePair<int, AbilityDef> entry in ClassSkillGrants[className])
+            {
+                if (entry.Value == null || level < entry.Key || tacticalActor.GetAbilityWithDef<Ability>(entry.Value) != null)
+                {
+                    continue;
+                }
+
+                // Jetpack Control is the jet jump's better version; without the jet armour there is nothing to control.
+                if (entry.Value is TacticalAbilityDef tacticalAbilityDef && tacticalAbilityDef.AbilitiesRequired != null
+                    && tacticalAbilityDef.AbilitiesRequired.Any(r => r != null && tacticalActor.GetAbilityWithDef<Ability>(r) == null))
+                {
+                    continue;
+                }
+
+                tacticalActor.AddAbility(entry.Value, tacticalActor);
+                granted.Add(entry.Value.name.Replace("_AbilityDef", ""));
+            }
+
+            if (granted.Count > 0)
+            {
+                TFTVLogger.Always($"[ClassSkills] {tacticalActor.DisplayName} ({className} level {level}): {string.Join(", ", granted)}");
+            }
+        }
+
         public static void AdjustStatsAndSkills(TacticalActor tacticalActor)
         {
             int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
@@ -1415,6 +1521,7 @@ namespace TFTV
                 List<AbilityDef> priestAbilities = new List<AbilityDef> { mindControl, inducePanic, mindSense, psychicWard, mindCrush };
                 List<AbilityDef> sniperAbilities = new List<AbilityDef> { extremeFocus, armorBreak, masterMarksman, inspire, markedForDeath };
                 List<AbilityDef> technicianAbilities = new List<AbilityDef> { fastUse, electricReinforcement, stability, fieldMedic, amplifyPain };
+                List<AbilityDef> classPerks = ClassSkillGrants.Values.SelectMany(g => g.Select(e => e.Value)).Where(a => a != null).ToList();
 
                 List<AbilityDef> allAbilities = new List<AbilityDef>();
 
@@ -1425,6 +1532,7 @@ namespace TFTV
                 allAbilities.AddRange(priestAbilities);
                 allAbilities.AddRange(sniperAbilities);
                 allAbilities.AddRange(technicianAbilities);
+                allAbilities.AddRange(classPerks.Where(a => !allAbilities.Contains(a)));
 
                 List<AbilityDef> discardedAbilities = new List<AbilityDef>(allAbilities);
                 //   discardedAbilities.Remove(quickAim);
@@ -1485,152 +1593,11 @@ namespace TFTV
                 AdjustStats(tacticalActor, classTagDef);
 
 
-                if (classTagDef.name.Contains("Assault"))
-                {
-                    if (tacticalActor.GetAbilityWithDef<Ability>(quickAim) != null)
-                    {
-                        tacticalActor.RemoveAbility(quickAim);
-                        tacticalActor.UpdateStats();
-                    }
-                    // }
-                }
-
-
-                if (classTagDef.name.Contains("Berserker"))
-                {
-                    if (level >= 6)
-                    {
-                        tacticalActor.AddAbility(dash, tacticalActor);
-                        tacticalActor.AddAbility(cqc, tacticalActor);
-                        tacticalActor.AddAbility(bloodlust, tacticalActor);
-                        tacticalActor.AddAbility(ignorePain, tacticalActor);
-                    }
-                    else if (level == 5)
-                    {
-                        tacticalActor.AddAbility(dash, tacticalActor);
-                        tacticalActor.AddAbility(cqc, tacticalActor);
-                        tacticalActor.AddAbility(bloodlust, tacticalActor);
-                    }
-                    else if (level >= 3)
-                    {
-                        tacticalActor.AddAbility(dash, tacticalActor);
-                        tacticalActor.AddAbility(cqc, tacticalActor);
-                    }
-                    else if (level == 2)
-                    {
-                        tacticalActor.AddAbility(dash, tacticalActor);
-                    }
-                }
-                if (classTagDef.name.Contains("Heavy"))
-                {
-                    if (level >= 6)
-                    {
-                        tacticalActor.AddAbility(returnFire, tacticalActor);
-                        tacticalActor.AddAbility(shredResistant, tacticalActor);
-                        tacticalActor.AddAbility(skirmisher, tacticalActor);
-                    }
-                    else if (level == 5)
-                    {
-                        tacticalActor.AddAbility(returnFire, tacticalActor);
-                        tacticalActor.AddAbility(skirmisher, tacticalActor);
-
-                    }
-                    else if (level >= 2)
-                    {
-                        tacticalActor.AddAbility(returnFire, tacticalActor);
-                    }
-                }
-                if (classTagDef.name.Contains("Infiltrator"))
-                {
-                    if (level >= 6)
-                    {
-                        tacticalActor.AddAbility(jammingField, tacticalActor);
-                        tacticalActor.AddAbility(neuralFeedback, tacticalActor);
-                        tacticalActor.AddAbility(surpriseAttack, tacticalActor);
-                    }
-                    else if (level >= 5)
-                    {
-                        tacticalActor.AddAbility(neuralFeedback, tacticalActor);
-                        tacticalActor.AddAbility(surpriseAttack, tacticalActor);
-
-                    }
-                    else if (level >= 2)
-                    {
-                        tacticalActor.AddAbility(surpriseAttack, tacticalActor);
-                    }
-                }
-                if (classTagDef.name.Contains("Priest"))
-                {
-                    if (level == 7)
-                    {
-                        tacticalActor.AddAbility(mindCrush, tacticalActor);
-                        tacticalActor.AddAbility(psychicWard, tacticalActor);
-                        tacticalActor.AddAbility(mindSense, tacticalActor);
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-
-                    }
-                    else if (level == 6)
-                    {
-                        tacticalActor.AddAbility(psychicWard, tacticalActor);
-                        tacticalActor.AddAbility(mindSense, tacticalActor);
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-
-                    }
-                    else if (level == 5)
-                    {
-                        tacticalActor.AddAbility(mindSense, tacticalActor);
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-                    }
-                    else if (level >= 2)
-                    {
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-                    }
-                }
-
-                if (classTagDef.name.Contains("Sniper"))
-                {
-                    if (level >= 6)
-                    {
-                        tacticalActor.AddAbility(inspire, tacticalActor);
-                        tacticalActor.AddAbility(masterMarksman, tacticalActor);
-                        tacticalActor.AddAbility(extremeFocus, tacticalActor);
-                    }
-                    else if (level == 5)
-                    {
-                        tacticalActor.AddAbility(masterMarksman, tacticalActor);
-                        tacticalActor.AddAbility(extremeFocus, tacticalActor);
-
-                    }
-                    else if (level >= 2)
-                    {
-                        tacticalActor.AddAbility(extremeFocus, tacticalActor);
-                    }
-                }
-                if (classTagDef.name.Contains("Technician"))
-                {
-                    if (level >= 6)
-                    {
-                        tacticalActor.AddAbility(electricReinforcement, tacticalActor);
-                        tacticalActor.AddAbility(fastUse, tacticalActor);
-                        tacticalActor.AddAbility(stability, tacticalActor);
-                        tacticalActor.AddAbility(fieldMedic, tacticalActor);
-                    }
-                    else if (level == 5)
-                    {
-                        tacticalActor.AddAbility(electricReinforcement, tacticalActor);
-                        tacticalActor.AddAbility(fastUse, tacticalActor);
-                        tacticalActor.AddAbility(stability, tacticalActor);
-                    }
-                    else if (level >= 3)
-                    {
-                        tacticalActor.AddAbility(electricReinforcement, tacticalActor);
-                        tacticalActor.AddAbility(fastUse, tacticalActor);
-                    }
-                    else if (level == 2)
-                    {
-                        tacticalActor.AddAbility(fastUse, tacticalActor);
-                    }
-                }
+                // Class skills by level, at the level the player's tree gives them (main row, plus the class perks
+                // the personal row gives at levels 3 and 6). Skills the AI can't use well, or that are too harsh
+                // on the player (Kill Zone, Lay Waste, Onslaught, Rapid Clearance, Decoy, Parapsychosis, Command
+                // Overlay, Amplify Pain), are not given.
+                GrantClassSkills(tacticalActor, classTagDef, level);
 
                 // Passives such as Extreme Focus apply their status when the actor enters play, which has
                 // already happened by now, so adding them here left them without effect.

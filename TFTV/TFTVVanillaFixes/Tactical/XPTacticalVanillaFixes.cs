@@ -5,6 +5,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.View.ViewModules;
 using PRMBetterClasses.SkillModifications;
 using System;
 using System.Collections.Generic;
@@ -198,6 +199,45 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                 {
                     TFTVLogger.Error(e);
                     throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The mission summary lists every actor Phoenix owns at the end, so a unit Phoenix holds by mind
+        /// control (a civilian, an enemy) got a row with a level bar and earned XP, though it is no operative
+        /// and the XP split above gives it nothing. Units held by mind control are left off the summary, and so is
+        /// any unit with no geoscape character behind it (GeoUnitId 0): an enemy Void Omen 32 kept for good no longer
+        /// has a mind control status, and the Officer Class mod's end-of-mission XP showed on its row.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleBattleSummary), "GetShowTacticalActors")]
+        public static class UIModuleBattleSummary_GetShowTacticalActors_patch
+        {
+            public static void Postfix(ref IList<TacticalActor> __result)
+            {
+                try
+                {
+                    if (__result == null)
+                    {
+                        return;
+                    }
+
+                    List<TacticalActor> controlled = __result
+                        .Where(a => a != null && (a.GeoUnitId == null || a.GeoUnitId == 0
+                            || (a.Status != null && (a.Status.HasStatus<MindControlStatus>() || a.Status.HasStatus<MinionStatus>()))))
+                        .ToList();
+
+                    if (controlled.Count == 0)
+                    {
+                        return;
+                    }
+
+                    __result = __result.Except(controlled).ToList();
+                    TFTVLogger.Always($"Mission summary: left out {string.Join(", ", controlled.Select(a => a.DisplayName))}: not Phoenix operatives (mind controlled, or no geoscape character).");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
         }

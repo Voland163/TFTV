@@ -1,6 +1,7 @@
 using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Tactical;
@@ -27,7 +28,8 @@ namespace TFTV
             #region weapon rolls
 
             /// <summary>
-            /// Every weapon a rolled Pandoran carries - claws, stings, vampire arms, guns, acid - gets its own damage roll:
+            /// Every weapon of its own a rolled Pandoran carries - claws, stings, vampire arms, gun arms, acid - gets its own damage roll
+            /// (human guns it picked up are not rolled, see IsPandoranWeapon):
             /// each damage keyword's value (not Piercing or Shredding, which are about armour) times the roll, rounded,
             /// never below 1. Umbras roll wider. The roll is kept per weapon def on the creature's status and made the
             /// first time the weapon is looked at, so a weapon grown back later gets one too.
@@ -88,12 +90,49 @@ namespace TFTV
                 return false;
             }
 
+            private static readonly Dictionary<WeaponDef, bool> PandoranWeaponCache = new Dictionary<WeaponDef, bool>();
+            private static GameTagDef _alienRaceTag;
+
+            /// <summary>
+            /// A Pandoran's own weapon (claws, stings, gun arms, mortars, spitter heads): tagged Alien_RaceTagDef or kept under
+            /// Defs/.../Aliens/. Human guns a Triton or other mutant picks up (Gauss rifles, shotguns, pistols) are neither,
+            /// and are never rolled.
+            /// </summary>
+            internal static bool IsPandoranWeapon(WeaponDef weaponDef)
+            {
+                if (weaponDef == null)
+                {
+                    return false;
+                }
+
+                if (PandoranWeaponCache.TryGetValue(weaponDef, out bool pandoran))
+                {
+                    return pandoran;
+                }
+
+                if (_alienRaceTag == null)
+                {
+                    _alienRaceTag = TFTVMain.Main.DefCache.GetDef<GameTagDef>("Alien_RaceTagDef");
+                }
+
+                pandoran = (_alienRaceTag != null && weaponDef.Tags != null && weaponDef.Tags.Contains(_alienRaceTag))
+                    || (weaponDef.ResourcePath != null && weaponDef.ResourcePath.Contains("/Aliens/"));
+
+                PandoranWeaponCache[weaponDef] = pandoran;
+                return pandoran;
+            }
+
             /// <summary>This weapon's roll on this creature (1 when it is not rolled), rolling it now if it has none yet.</summary>
             internal static float GetWeaponRoll(TacticalActorBase actor, WeaponDef weaponDef)
             {
+                if (!IsPandoranWeapon(weaponDef))
+                {
+                    return 1f;
+                }
+
                 PandoranVarianceStatus status = WeaponRollStatus(actor);
 
-                if (status == null || weaponDef == null)
+                if (status == null)
                 {
                     return 1f;
                 }
@@ -111,11 +150,11 @@ namespace TFTV
             /// <summary>Rolls every weapon the creature carries now, for the log: "Crabman_RightHand_Pincer_WeaponDef x1.08".</summary>
             private static string RollAllWeapons(TacticalActor actor)
             {
-                List<Weapon> weapons = actor.Equipments?.GetWeapons()?.Where(w => w?.WeaponDef != null).ToList();
+                List<Weapon> weapons = actor.Equipments?.GetWeapons()?.Where(w => w?.WeaponDef != null && IsPandoranWeapon(w.WeaponDef)).ToList();
 
                 if (weapons == null || weapons.Count == 0)
                 {
-                    return "no weapons";
+                    return "no Pandoran weapons";
                 }
 
                 return string.Join(", ", weapons.Select(w => $"{w.WeaponDef.name} x{GetWeaponRoll(actor, w.WeaponDef):0.00}"));
@@ -240,7 +279,7 @@ namespace TFTV
             {
                 PandoranVarianceStatus status = WeaponRollStatus(actor);
 
-                if (status == null || weapon?.WeaponDef == null || status.RevealedWeapons.Contains(weapon.WeaponDef.name))
+                if (status == null || weapon?.WeaponDef == null || !IsPandoranWeapon(weapon.WeaponDef) || status.RevealedWeapons.Contains(weapon.WeaponDef.name))
                 {
                     return;
                 }
@@ -276,6 +315,11 @@ namespace TFTV
                 Insight insight = GetInsight(item?.TacticalActorBase);
                 Weapon weapon = item as Weapon;
                 PandoranVarianceStatus status = WeaponRollStatus(item?.TacticalActorBase);
+
+                if (weapon?.WeaponDef != null && !IsPandoranWeapon(weapon.WeaponDef))
+                {
+                    return true; // a human gun: not rolled, its values are no secret
+                }
 
                 if (weapon?.WeaponDef == null || status == null)
                 {

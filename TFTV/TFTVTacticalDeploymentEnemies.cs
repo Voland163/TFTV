@@ -45,6 +45,63 @@ namespace TFTV
             }
         }
 
+        private const string MistAcheronsKey = "group:MistAcherons";
+        private const string WormChironsKey = "group:WormChirons";
+
+        /// <summary>
+        /// Caps keyed by a group name instead of a def GUID: a template belongs to the group when it carries any
+        /// of the listed items (body parts or equipment). Items are looked up by def name on first use.
+        /// </summary>
+        private static readonly Dictionary<string, string[]> _groupItemNames = new Dictionary<string, string[]>();
+        private static readonly Dictionary<string, HashSet<ItemDef>> _groupItems = new Dictionary<string, HashSet<ItemDef>>();
+
+        private static void AddGroupLimit(string groupKey, string[] itemDefNames, EnemyLimit limit)
+        {
+            _groupItemNames[groupKey] = itemDefNames;
+            AddUndesirableLimit(groupKey, limit);
+        }
+
+        private static HashSet<ItemDef> GetGroupItems(string groupKey)
+        {
+            if (_groupItems.TryGetValue(groupKey, out HashSet<ItemDef> items))
+            {
+                return items;
+            }
+
+            items = new HashSet<ItemDef>();
+            foreach (string name in _groupItemNames[groupKey])
+            {
+                ItemDef itemDef = DefCache.GetDef<ItemDef>(name);
+                if (itemDef != null)
+                {
+                    items.Add(itemDef);
+                }
+                else
+                {
+                    TFTVLogger.Always($"[DeploymentCaps] {groupKey}: item {name} not found");
+                }
+            }
+
+            _groupItems[groupKey] = items;
+            return items;
+        }
+
+        private static string DescribeCap(string objectGuid)
+        {
+            if (_groupItemNames.ContainsKey(objectGuid))
+            {
+                return objectGuid;
+            }
+
+            return Repo.GetDef(objectGuid)?.name ?? objectGuid;
+        }
+
+        private static bool CheckCharacterDefForGroup(TacCharacterDef tacCharacterDef, string groupKey)
+        {
+            HashSet<ItemDef> items = GetGroupItems(groupKey);
+            return tacCharacterDef.Data.EquipmentItems.Any(i => items.Contains(i)) || tacCharacterDef.Data.BodypartItems.Any(i => items.Contains(i));
+        }
+
         private static void AddUndesirableLimit(string objectGuid, EnemyLimit limit)
         {
             if (!_undesirablesLimits.TryGetValue(objectGuid, out List<EnemyLimit> limits))
@@ -101,8 +158,12 @@ namespace TFTV
             try
             {
                 AddUndesirableLimit("0b8be047-fa18-3ec4-3be6-7dc3462fb07d", new EnemyLimit(1, -1, -1)); //AN_Berserker_Shooter_Torso_BodyPartDef
-                AddUndesirableLimit("9ac7ada0-bdec-a9b4-d982-1debc04d8fff", new EnemyLimit(3, -1, -1)); //Acheron_ClassTagDef
+                // Big Pandorans, per mission (reinforcements included): at most 2 Acherons, only 1 of them
+                // a Mist thrower (Acheron, Acheron Prime); at most 3 Chirons, only 2 of them worm throwers.
+                AddUndesirableLimit("9ac7ada0-bdec-a9b4-d982-1debc04d8fff", new EnemyLimit(2, -1, -1)); //Acheron_ClassTagDef
                 AddUndesirableLimit("4eab7f81-c27d-eef4-6a80-300960fb5160", new EnemyLimit(3, -1, -1)); //Chiron_ClassTagDef
+                AddGroupLimit(MistAcheronsKey, new[] { "Acheron_Arms_WeaponDef", "AcheronPrime_Arms_WeaponDef" }, new EnemyLimit(1, -1, -1));
+                AddGroupLimit(WormChironsKey, new[] { "Chiron_Abdomen_FireWorm_Launcher_WeaponDef", "Chiron_Abdomen_PoisonWorm_Launcher_WeaponDef", "Chiron_Abdomen_AcidWorm_Launcher_WeaponDef" }, new EnemyLimit(2, -1, -1));
 
                 // Raiders with grenades: global cap 2, but cap 1 on difficulties <= 2.
                 AddUndesirableLimit("9ed5b03f-120b-d0c4-0ac4-4b30b5312af8", new EnemyLimit(2, 2, -1));
@@ -140,7 +201,7 @@ namespace TFTV
         {
             try
             {
-                return tacCharacterDef.ClassTag == gameTagDef;
+                return gameTagDef is ClassTagDef classTagDef && tacCharacterDef.ClassTags.Contains(classTagDef);
             }
             catch (Exception e)
             {
@@ -215,21 +276,30 @@ namespace TFTV
                     return false;
                 }
 
-                string undesirableObjectGuid = null;
-                EnemyLimit applicableLimit = null;
+                // A template can fall under several caps (a worm Chiron counts as a Chiron and as a worm
+                // thrower): every matching cap is counted, and the template is blocked if any one is full.
+                bool blocked = false;
 
                 foreach (string objectGuid in _undesirablesLimits.Keys)
                 {
-                    var def = Repo.GetDef(objectGuid);
-
                     bool isMatch = false;
-                    if (def is ItemDef itemDef)
+
+                    if (_groupItemNames.ContainsKey(objectGuid))
                     {
-                        isMatch = CheckCharacterDefForItemDef(tacCharacterDef, itemDef);
+                        isMatch = CheckCharacterDefForGroup(tacCharacterDef, objectGuid);
                     }
-                    else if (def is GameTagDef gameTagDef)
+                    else
                     {
-                        isMatch = CheckCharacterDefForGameTagDef(tacCharacterDef, gameTagDef);
+                        var def = Repo.GetDef(objectGuid);
+
+                        if (def is ItemDef itemDef)
+                        {
+                            isMatch = CheckCharacterDefForItemDef(tacCharacterDef, itemDef);
+                        }
+                        else if (def is GameTagDef gameTagDef)
+                        {
+                            isMatch = CheckCharacterDefForGameTagDef(tacCharacterDef, gameTagDef);
+                        }
                     }
 
                     if (!isMatch)
@@ -237,45 +307,30 @@ namespace TFTV
                         continue;
                     }
 
-                    EnemyLimit limit = GetApplicableLimit(objectGuid, tacticalFaction);
-                    if (limit == null)
+                    // No limit at this difficulty: this cap doesn't restrict the template.
+                    EnemyLimit applicableLimit = GetApplicableLimit(objectGuid, tacticalFaction);
+                    if (applicableLimit == null)
                     {
-                        // No limit applies at this difficulty -> treat as not undesirable for limiting purposes.
-                        // (Actor remains eligible.)
-                        return false;
+                        continue;
                     }
 
-                    undesirableObjectGuid = objectGuid;
-                    applicableLimit = limit;
-                    break;
-                }
-
-                if (undesirableObjectGuid == null)
-                {
-                    return false;
-                }
-
-                if (spawned)
-                {
-                    if (UndesirablesSpawned.ContainsKey(undesirableObjectGuid))
+                    if (spawned)
                     {
-                        UndesirablesSpawned[undesirableObjectGuid] += 1;
+                        UndesirablesSpawned.TryGetValue(objectGuid, out int spawnedSoFar);
+                        UndesirablesSpawned[objectGuid] = spawnedSoFar + 1;
                     }
-                    else
+
+                    int count = CountUndesirables(objectGuid, tacticalFaction, turnNumber, applicableLimit);
+                    int limitValue = GetLimitForUndesirable(applicableLimit, turnNumber);
+
+                    if (limitValue >= 0 && count >= limitValue)
                     {
-                        UndesirablesSpawned.Add(undesirableObjectGuid, 1);
+                        TFTVLogger.Always($"{tacCharacterDef.name} reached limit of allowed spawns ({DescribeCap(objectGuid)}: {count} of {limitValue})");
+                        blocked = true;
                     }
                 }
 
-                int count = CountUndesirables(undesirableObjectGuid, tacticalFaction, turnNumber, applicableLimit);
-                int limitValue = GetLimitForUndesirable(applicableLimit, turnNumber);
-
-                if (count >= limitValue)
-                {
-                    TFTVLogger.Always($"{tacCharacterDef.name} reached limit of allowed spawns!");
-                }
-
-                return count >= limitValue;
+                return blocked;
             }
             catch (Exception e)
             {

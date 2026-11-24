@@ -133,15 +133,17 @@ namespace TFTV.TFTVVanillaFixes.Tactical
 
                         foreach (TacticalActor enemy in enemies)
                         {
-                            Vector3 toEnemy = enemy.Pos - pos;
-                            toEnemy.y = 0f;
+                            Vector3 offset = enemy.Pos - pos;
+                            Vector3 toEnemy = new Vector3(offset.x, 0f, offset.z);
 
                             if (Vector3.Angle(gridDirection, toEnemy) > halfFov)
                             {
                                 continue;
                             }
 
-                            float enemyWeight = 1f / Mathf.Max(toEnemy.sqrMagnitude, 1f);
+                            // Distance in 3D: a soldier one floor up, 1 m across, counted as close as a berserker
+                            // 1 m away on the same floor, and the shield turned to face upstairs.
+                            float enemyWeight = 1f / Mathf.Max(offset.sqrMagnitude, 1f);
                             weight += enemyWeight;
                             direction += toEnemy.normalized * enemyWeight;
                         }

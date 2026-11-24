@@ -33,7 +33,24 @@ namespace TFTV
             public void Plan(SquadContext context, SquadPlan plan)
             {
                 TFTVAICombatAbilities.MindControlReservations.PredictMindControlTargets(context.Actors);
+                AddHoldWeights(plan);
+            }
 
+            /// <summary>
+            /// Before each actor of the side starts acting: redo the prediction with the board as it is now and, if a
+            /// reservation changed, rewrite the hold weights before that actor scores its attacks.
+            /// </summary>
+            internal static void Refresh(SquadPlan plan)
+            {
+                if (plan != null && TFTVAICombatAbilities.MindControlReservations.Refresh())
+                {
+                    plan.RemoveWeights(Source);
+                    AddHoldWeights(plan);
+                }
+            }
+
+            private static void AddHoldWeights(SquadPlan plan)
+            {
                 foreach (KeyValuePair<TacticalActor, TacticalActorBase> reservation in TFTVAICombatAbilities.MindControlReservations.Pending())
                 {
                     TacticalActor controller = reservation.Key;
@@ -54,6 +71,12 @@ namespace TFTV
         // the files of a partial class is not guaranteed.
         private static FocusFirePass _focusPass;
         private static FocusFirePass FocusPass => _focusPass ?? (_focusPass = new FocusFirePass());
+
+        /// <summary>Some attacker is assigned to this target this turn.</summary>
+        internal static bool IsFocusTarget(TacticalActorBase target)
+        {
+            return target != null && FocusPass.Assignment.Values.Contains(target);
+        }
 
         internal static bool IsFocusAssignment(TacticalActor attacker, TacticalActorBase target)
         {
@@ -97,9 +120,6 @@ namespace TFTV
             private const float GunHitChanceBeyondRange = 0.4f;
             private const float MeleeHitChance = 0.9f;
             private const float MeleeReach = 1.5f;
-
-            /// <summary>Paths aren't straight: a melee attacker is counted as reaching this share of its move in a line.</summary>
-            private const float MeleePathFactor = 0.8f;
 
             /// <summary>A holder strikes only what is (nearly) next to it already.</summary>
             private const float HolderMeleeReach = MeleeReach + 1f;
@@ -175,7 +195,7 @@ namespace TFTV
 
                 Dictionary<TacticalActor, float> health = targets.ToDictionary(t => t, t => Mathf.Max(1f, (float)t.CharacterStats.Health));
                 Dictionary<TacticalActor, float> worth = targets.ToDictionary(t => t, t => Mathf.Max(0.1f,
-                    AIUtil.GetEnemyWeight(context.Faction.AIBlackboard, t)));
+                    AIUtil.GetEnemyWeight(context.Faction.AIBlackboard, t)) * (plan.TargetWorth.TryGetValue(t, out float extra) ? extra : 1f));
 
                 // Options per attacker: targets it can do meaningful damage to.
                 Dictionary<TacticalActor, List<KeyValuePair<TacticalActor, float>>> options = new Dictionary<TacticalActor, List<KeyValuePair<TacticalActor, float>>>();
@@ -363,7 +383,7 @@ namespace TFTV
                 float actionPoints = attacker.CharacterStats.ActionPoints;
 
                 // Stance holders (TFTVAIStances) don't walk out to attack: only shots from here, only strikes next to them.
-                bool holding = TFTVAICombatAbilities.Stances.HoldsPosition(attacker);
+                bool holding = TFTVAICombatAbilities.Stances.HoldsPosition(attacker) || TFTVAICombatAbilities.NestAndAmbush.IsNested(attacker);
 
                 foreach (Weapon weapon in attacker.Equipments.GetWeapons())
                 {
@@ -399,19 +419,27 @@ namespace TFTV
                             continue;
                         }
                     }
-                    else
+                    else if (holding)
                     {
-                        if (distance > (holding ? HolderMeleeReach : attacker.MaxMoveRange * MeleePathFactor + MeleeReach))
+                        if (distance > HolderMeleeReach)
                         {
                             continue;
                         }
 
                         hitChance = MeleeHitChance;
+                    }
+                    else
+                    {
+                        // By the real path and the AP left after it, not a straight line: berserkers planned on a
+                        // civilian 17 m away couldn't get there and ran into the open instead.
+                        attacks = TFTVAICombatAbilities.MeleeReach.StrikesThisTurn(attacker, weapon, target, actionPoints);
 
-                        if (distance > MeleeReach)
+                        if (attacks <= 0)
                         {
-                            attacks = Mathf.Max(1, attacks - 1);
+                            continue;
                         }
+
+                        hitChance = MeleeHitChance;
                     }
 
                     if (attacks <= 0)

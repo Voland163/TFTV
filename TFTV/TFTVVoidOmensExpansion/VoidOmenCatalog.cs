@@ -106,7 +106,7 @@ namespace TFTV.TFTVVoidOmensExpansion
                 new VoidOmenEntry { Id = 24, Gate = GeoscapeOmens.ContainmentGate },
                 new VoidOmenEntry { Id = 25 },
                 new VoidOmenEntry { Id = 26, Gate = WorldOmens.AtWarGate },
-                new VoidOmenEntry { Id = 27, ExcludedWith = new[] { 2 }, Apply = WorldOmens.ApplyVO27, Revert = WorldOmens.RevertVO27 },
+                new VoidOmenEntry { Id = 27, Gate = WorldOmens.RaidedGate, ExcludedWith = new[] { 2 }, Apply = WorldOmens.ApplyVO27, Revert = WorldOmens.RevertVO27 },
                 new VoidOmenEntry { Id = 28, TacticalScope = VoidOmenTacticalScope.PandoransPresent },
                 new VoidOmenEntry { Id = 29, Gate = WorldOmens.AlignedGate },
                 new VoidOmenEntry { Id = 30, Gate = _ => TFTVRevenant.DeadSoldiersDelirium.Keys.Count >= 2, TacticalScope = VoidOmenTacticalScope.PandoransPresent },

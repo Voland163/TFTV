@@ -285,18 +285,17 @@ namespace TFTV
                 AIActionMoveAndExecuteAbilityDef NeuralDisruptAI = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndDoSilence_AIActionDef");
                 NeuralDisruptAI.Weight = 32.5f;
 
-                //Reduce healing, increase dash and strike, remove stomp, add mindcrush and electric reinforcement
+                //Reduce healing, increase dash and strike, add mindcrush and electric reinforcement.
+                //Stomp stays: AITacticalVanillaFixes keeps the AI from stomping where it would hit a friendly.
                 AIActionsTemplateDef soldierAI = DefCache.GetDef<AIActionsTemplateDef>("AIActionsTemplateDef");
 
                 AIActionMoveAndHealDef healAIAction = DefCache.GetDef<AIActionMoveAndHealDef>("MoveAndHeal_AIActionDef");
                 AIActionMoveAndAttackDef dashaAndStikeAIAction = DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndStrike_AIActionDef");
-                AIActionMoveAndExecuteAbilityDef moveAndStompAIAction = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndStomp_AIActionDef");
 
                 healAIAction.Weight = 2;
                 dashaAndStikeAIAction.Weight = 300;
 
                 List<AIActionDef> soldierAIActionDefs = new List<AIActionDef>(soldierAI.ActionDefs.ToList());
-                soldierAIActionDefs.Remove(moveAndStompAIAction);
                 soldierAIActionDefs.Add(DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndDoMindCrush_AIActionDef"));
                 soldierAIActionDefs.Add(DefCache.GetDef<AIActionExecuteAbilityDef>("ElectricReinforcement_AIActionDef"));
 

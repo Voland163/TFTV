@@ -1385,6 +1385,7 @@ namespace TFTV
             {
                 AugmentationEventsDefs();
                 CreateFoodPoisoningEvents();
+                RaiseEventAircraftAndSoldierDamage();
                 CreateIntro();
                 Create_VoidOmen_Events();
                 InjectAlistairAhsbyLines();
@@ -1482,6 +1483,7 @@ namespace TFTV
                 TFTVUI.Tactical.InfoViewBodyParts.LimbSideLabels.ApplyToSlotDefs();
                 AdjustColorDefs();
                 ReduceMyrmidonDeploymentCost();
+                ReduceChironDeploymentCost();
                 ChangeArchaelogyLab();
                 RemoveReturnFireFromMadmenInNJ0();
 
@@ -1523,6 +1525,45 @@ namespace TFTV
             }
 
 
+        }
+
+        /// <summary>
+        /// Worm and Goo Chirons cost 300-310 in vanilla, far more than they're worth; they now cost about what an
+        /// Acheron Prime does. Mortar, acid mortar and crystal mortar Chirons keep their vanilla costs (350-550).
+        /// How many Chirons (and worm Chirons) a mission gets is capped in TFTVTacticalDeploymentEnemies.
+        /// </summary>
+        private static void ReduceChironDeploymentCost()
+        {
+            try
+            {
+                Dictionary<string, int> costs = new Dictionary<string, int>
+                {
+                    { "Chiron1_FireWormAgile_AlienMutationVariationDef", 150 },
+                    { "Chiron3_PoisonWormAgile_AlienMutationVariationDef", 150 },
+                    { "Chiron5_AcidWormAgile_AlienMutationVariationDef", 150 },
+                    { "Chiron7_GooStomp_AlienMutationVariationDef", 150 },
+                    { "Chiron2_FireWormHeavy_AlienMutationVariationDef", 160 },
+                    { "Chiron4_PoisonWormHeavy_AlienMutationVariationDef", 160 },
+                    { "Chiron6_AcidWormHeavy_AlienMutationVariationDef", 160 },
+                    { "Chiron8_GooHeavy_AlienMutationVariationDef", 160 },
+                };
+
+                foreach (KeyValuePair<string, int> cost in costs)
+                {
+                    TacCharacterDef chiron = DefCache.GetDef<TacCharacterDef>(cost.Key);
+                    if (chiron == null)
+                    {
+                        TFTVLogger.Always($"[DeploymentCost] {cost.Key} not found");
+                        continue;
+                    }
+
+                    chiron.DeploymentCost = cost.Value;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         private static void Create_StarvedAbility()
@@ -4525,6 +4566,53 @@ namespace TFTV
 
         }
 
+        // Vanilla events that hurt the soldiers on the current aircraft (a 30 HP pool spread at random over them) or the
+        // aircraft itself (40 HP off the hull). Raised to 120 and 100 (100 = 25% of a reworked aircraft's 400 HP).
+        // The soldier pool never takes anyone below 1 HP (vanilla rule, plus a guard in GeoscapeVanillaFixes).
+        private static readonly string[] EventsDamagingCurrentSoldiers = { "AN25", "EX21", "EX26", "EX54", "EX88", "EX96", "NJ6", "SY4", "SY21" };
+        private static readonly string[] EventsDamagingCurrentAircraft = { "EX77", "NJ23", "NJ24", "SY17", "SY24" };
+        private const int EventCurrentSoldiersDamage = 120;
+        private const int EventCurrentAircraftDamage = 100;
+
+        private static void RaiseEventAircraftAndSoldierDamage()
+        {
+            try
+            {
+                foreach (string id in EventsDamagingCurrentSoldiers.Concat(EventsDamagingCurrentAircraft).Distinct())
+                {
+                    GeoscapeEventDef eventDef = DefCache.GetDef<GeoscapeEventDef>($"{id}_GeoscapeEventDef");
+
+                    if (eventDef?.GeoscapeEventData?.Choices == null)
+                    {
+                        TFTVLogger.Always($"[EventDamage] {id}_GeoscapeEventDef not found");
+                        continue;
+                    }
+
+                    foreach (PhoenixPoint.Geoscape.Events.GeoEventChoice choice in eventDef.GeoscapeEventData.Choices)
+                    {
+                        if (choice?.Outcome == null)
+                        {
+                            continue;
+                        }
+
+                        if (choice.Outcome.DamageCurrentSoldiers > 0)
+                        {
+                            choice.Outcome.DamageCurrentSoldiers = EventCurrentSoldiersDamage;
+                        }
+
+                        if (choice.Outcome.DamageCurrentAircraft > 0)
+                        {
+                            choice.Outcome.DamageCurrentAircraft = EventCurrentAircraftDamage;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         private static void CreateFoodPoisoningEvents()
         {
             try
@@ -7087,12 +7175,8 @@ namespace TFTV
                 TacCharacterDef acheronAchlys = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
                 TacCharacterDef acheronAchlysChampion = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
 
-                acheron.DeploymentCost = 180;
-                acheronPrime.DeploymentCost = 240;
-                acheronAsclepius.DeploymentCost = 310;
-                acheronAchlys.DeploymentCost = 310;
-                acheronAsclepiusChampion.DeploymentCost = 350;
-                acheronAchlysChampion.DeploymentCost = 350;
+                // Deployment costs stay vanilla (120 / 150 / 225 / 275); how many Acherons a mission gets is
+                // capped in TFTVTacticalDeploymentEnemies instead.
 
                 //Adding Harbinger of the Void to Acheron, Acheron Prime and Acheron Asclepius Champion
                 //Adding Co-Delirium To Acheron Prime

@@ -40,6 +40,20 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+        private static GameTagDef _explosiveWeaponTag;
+
+        /// <summary>Tagged explosive, or a payload with a blast radius (rockets, grenades).</summary>
+        internal static bool IsExplosive(Weapon weapon)
+        {
+            if (_explosiveWeaponTag == null)
+            {
+                _explosiveWeaponTag = DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef");
+            }
+
+            WeaponDef def = weapon?.WeaponDef;
+            return def != null && ((_explosiveWeaponTag != null && def.Tags.Contains(_explosiveWeaponTag)) || TFTVAITargetSelection.BlastRadius(def) > 0f);
+        }
+
         public static void GetBestWeaponForOWRF(TacticalActor tacticalActor)
         {
             try
@@ -50,7 +64,7 @@ namespace TFTV
                     return;
                 }
 
-                if (tacticalActor.GetAbility<ReturnFireAbility>("ReturnFire_AbilityDef") == null && tacticalActor.GetAbility<ApplyStatusAbility>("ExtremeFocus_AbilityDef") == null)
+                if (tacticalActor.GetAbility<ReturnFireAbility>() == null && tacticalActor.GetAbility<ApplyStatusAbility>("ExtremeFocus_AbilityDef") == null)
                 {
                     return;
                 }
@@ -59,6 +73,15 @@ namespace TFTV
                     w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
                     && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
                     ));
+
+                // Return fire and overwatch want a gun that fires back, not an explosive: a heavy that had just fired its
+                // rocket launcher kept it in hand (the longest effective range), so return fire answered with rockets or
+                // not at all (playtest 2026-11-23). Explosives only when there is nothing else.
+                List<Weapon> nonExplosive = weapons.Where(w => !IsExplosive(w)).ToList();
+                if (nonExplosive.Count > 0)
+                {
+                    weapons = nonExplosive;
+                }
 
                 if (weapons.Count == 0)
                 {
@@ -172,7 +195,8 @@ namespace TFTV
                         TacAITarget target = (TacAITarget)aiTarget.Target;
 
                         //falling back moves to spots no enemy can see on purpose, which Cover() would cancel
-                        if (__instance.ActionDef == TFTVAICombatAbilities.PeekAndFallBackAI.FallBackActionDef)
+                        if (__instance.ActionDef == TFTVAICombatAbilities.PeekAndFallBackAI.FallBackActionDef
+                            || TFTVAICombatAbilities.ClassSkillsAI.IsCoverMove(__instance.ActionDef))
                         {
                             TFTVAICombatAbilities.PeekAndFallBackAI.RecordFallBack(actor, target);
                             return;
@@ -181,7 +205,9 @@ namespace TFTV
                         //so do holding and scouting, and going into the Mist
                         if (TFTVAICombatAbilities.Stances.RecordMove(__instance.ActionDef, actor, target)
                             || TFTVAICombatAbilities.MistSeeking.RecordMove(__instance.ActionDef, actor, target)
-                            || TFTVAICombatAbilities.Scavenging.RecordMove(__instance.ActionDef, actor, target))
+                            || TFTVAICombatAbilities.Scavenging.RecordMove(__instance.ActionDef, actor, target)
+                            || TFTVAICombatAbilities.NestAndAmbush.RecordMove(__instance.ActionDef, actor, target)
+                            || TFTVAICombatAbilities.Rescuees.RecordMove(__instance.ActionDef, actor, target))
                         {
                             return;
                         }
@@ -1141,7 +1167,12 @@ namespace TFTV
                         //    TFTVLogger.Always("");
                         StartPreparingShootAbility startPreparingShootAbility = actor.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
 
-                        startPreparingShootAbility?.Activate(parameter);
+                        // Not when a friendly (other than a small critter) stands in the guns' cone.
+                        if (startPreparingShootAbility != null
+                            && TFTVAICombatAbilities.ScyllaGunsAI.ClearToFire(actor, startPreparingShootAbility, parameter))
+                        {
+                            startPreparingShootAbility.Activate(parameter);
+                        }
                     }
 
 
@@ -1435,6 +1466,12 @@ namespace TFTV
                             return false;
                         }
 
+                        // Path distance by A*, but only to the enemies that could still be nearest (Dash, worms).
+                        if (TFTVAIClosestPath.TryScore(__instance, actor, target, ref __result))
+                        {
+                            return false;
+                        }
+
                         return true;
                     }
                     catch (Exception e)
@@ -1673,20 +1710,23 @@ namespace TFTV
 
                             TacticalActor obj = (TacticalActor)actor;
                             TacAITarget tacAITarget = (TacAITarget)target;
-                            HealAbility healAbility = obj.GetAbilities<HealAbility>().FirstOrDefault();
-                            if (healAbility == null)
+
+                            // Every heal the unit has (medkit, stimpack, Field Medic, the technician's arms), not just the
+                            // first one: each patient is matched with the heal that does most for it, disabled limbs included.
+                            List<HealAbility> healAbilities = TFTVAICombatAbilities.ClassSkillsAI.UsableHeals(obj).ToList();
+                            if (healAbilities.Count == 0)
                             {
                                 __result = 0f;
                                 return false;
                             }
 
-                            IEnumerable<TacticalAbilityTarget> targetsAt = healAbility.GetTargetsAt(tacAITarget.Pos);
                             TacticalAbilityTarget tacticalAbilityTarget = null;
+                            HealAbility bestHeal = null;
                             float num = 0f;
-                            foreach (TacticalAbilityTarget item in targetsAt)
+                            foreach (HealAbility healAbility in healAbilities)
+                            foreach (TacticalAbilityTarget item in healAbility.GetTargetsAt(tacAITarget.Pos))
                             {
-                                float num2 = item.Actor.Health.Value;
-                                float num3 = (float)item.Actor.Health.Max - num2;
+                                float num3 = TFTVAICombatAbilities.ClassSkillsAI.HealValue(healAbility, item.Actor);
 
                                 // A healing item puts out burning, so it is worth what the fire would still take,
                                 // weighted by its value and the parts it burns on.
@@ -1704,6 +1744,7 @@ namespace TFTV
                                 if (num3 > num)
                                 {
                                     tacticalAbilityTarget = item;
+                                    bestHeal = healAbility;
                                     num = num3;
                                 }
                             }
@@ -1711,6 +1752,7 @@ namespace TFTV
                             if (num > 0f)
                             {
                                 tacAITarget.Actor = tacticalAbilityTarget.Actor;
+                                TFTVAICombatAbilities.ClassSkillsAI.RememberHeal(tacAITarget, bestHeal);
                                 __result = Mathf.Min(1f, num / (float)tacAITarget.Actor.Health.Max);
                                 return false;
                             }

@@ -196,6 +196,7 @@ namespace TFTV
                     AircraftReworkMaintenance.AfterLosingAmbushGeoMissionApplyMissionResults(__instance, result, squad);
                     TFTVIncidents.AffinityGeoscapeEffects.ApplyPostMissionRecovery(__instance, result, squad);
                     TFTV.TFTVIncidents.AffinityInheritance.ProcessMissionResults(__instance, result, squad);
+                    TFTVVoidOmensExpansion.WorldOmens.CountRaid(__instance);
                 }
                 catch (Exception e)
                 {

@@ -64,7 +64,10 @@ namespace TFTV
         public static Dictionary<int, int> PhoenixBasesUnderAttackSchedule = new Dictionary<int, int>(); //actually not only breaches, but any time other than 18 hours
         public static Dictionary<int, bool> ContainmentBreachSchedule = new Dictionary<int, bool>();
         public static Dictionary<int, List<string>> PandoransThatCanEscape = new Dictionary<int, List<string>>();
+        /// <summary>Bases the Occult affinity has given an early warning for (attack expected, not scheduled yet).</summary>
         private static readonly HashSet<int> OccultAttackWarningTriggered = new HashSet<int>();
+        /// <summary>Bases the Occult affinity has given the confirmed (scheduled) attack time for.</summary>
+        private static readonly HashSet<int> OccultScheduledWarningTriggered = new HashSet<int>();
 
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static List<int> PhoenixBasesInfested = new List<int>();
@@ -558,50 +561,131 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoAlienFaction), "PhoenixBaseAttackCheck")]
         public static class GeoAlienFaction_PhoenixBaseAttackCheck_patch
         {
-            private static void TryShowOccultAttackWarning(GeoLevelController controller, SiteAttackSchedule schedule, int pointsPerDay, int currentCounter)
+            /// <summary>GeoAlienFaction.CalculateSiteAttackTime(site, attackers, min, max): how long the attackers take to arrive once an attack is launched.</summary>
+            private static readonly System.Reflection.MethodInfo CalculateSiteAttackTimeMethod =
+                AccessTools.Method(typeof(GeoAlienFaction), "CalculateSiteAttackTime");
+
+            private static void ShowOccultWarning(GeoSite site, int hours)
+            {
+                string warningTemplate = TFTVCommonMethods.ConvertKeyToString("KEY_AFFINITY_OCCULT_BASE_ATTACK_WARNING");
+                string warningMessage = string.IsNullOrEmpty(warningTemplate)
+                    ? $"Occult warning: attack expected at {site.LocalizedSiteName} in ~{hours} hours."
+                    : string.Format(warningTemplate, site.LocalizedSiteName, hours);
+
+                GameUtl.GetMessageBox().ShowSimplePrompt(warningMessage, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+            }
+
+            /// <summary>
+            /// Hours the attackers need to reach the base once the attack is launched, exactly as AttackPhoenixBase works it
+            /// out (distance of the colonies in range over their speed, clamped to the base's warning times). -1 if unknown.
+            /// </summary>
+            private static double TravelHours(GeoAlienFaction aliens, GeoSite pxBase, List<GeoSite> attackers)
+            {
+                GeoPhoenixBase phoenixBase = pxBase.GetComponent<GeoPhoenixBase>();
+
+                if (CalculateSiteAttackTimeMethod == null || phoenixBase?.Stats == null || attackers.Count == 0)
+                {
+                    return -1d;
+                }
+
+                TimeUnit travel = (TimeUnit)CalculateSiteAttackTimeMethod.Invoke(aliens, new object[]
+                {
+                    pxBase, attackers, phoenixBase.Stats.MinAttackWarningTime, phoenixBase.Stats.BaseAttackWarningTime
+                });
+
+                return travel.TimeSpan.TotalHours;
+            }
+
+            /// <summary>
+            /// Occult early warning, given at the daily check before the attack is launched.
+            ///
+            /// The attack counter only grows here, once a day, and an attack is launched at the first daily check that
+            /// takes it to the threshold; the attackers then need their travel time to arrive. So the expected attack is
+            /// (whole days until that check) x 24 h + travel time. It is only announced if nothing would stop the launch:
+            /// the game launches one base attack at a time, never against a base under attack protection or with a
+            /// mission on it, and not before the Pandorans have researched Lairs.
+            /// </summary>
+            private static void TryShowOccultEarlyWarning(GeoAlienFaction aliens, SiteAttackSchedule schedule, int pointsPerDay, List<GeoSite> attackers)
             {
                 try
                 {
-                    if (controller == null || schedule?.Site == null || pointsPerDay <= 0)
+                    GeoLevelController controller = aliens.GeoLevel;
+                    GeoSite pxBase = schedule?.Site;
+
+                    if (controller == null || pxBase == null || pointsPerDay <= 0)
                     {
                         return;
                     }
 
                     int warningLeadHours = AffinityGeoscapeEffects.GetOccultAttackWarningLeadHours(controller);
-                    if (warningLeadHours <= 0)
+                    if (warningLeadHours <= 0 || OccultAttackWarningTriggered.Contains(pxBase.SiteId))
                     {
                         return;
                     }
 
-                    int siteId = schedule.Site.SiteId;
-                    if (OccultAttackWarningTriggered.Contains(siteId))
-                    {
-                        return;
-                    }
-
-                    int requiredCounter = controller.AlienFaction.FactionDef.PhoenixBaseAttackMissionCounter;
-                    int remainingCounter = requiredCounter - currentCounter;
+                    int remainingCounter = aliens.FactionDef.PhoenixBaseAttackMissionCounter - schedule.Counter;
                     if (remainingCounter <= 0)
                     {
                         return;
                     }
 
-                    double estimatedHoursToAttack = (remainingCounter / (double)pointsPerDay) * 24d;
+                    if (!aliens.Research.HasCompleted("ALN_Lair_ResearchDef")
+                        || aliens.PhoenixBaseAttackSchedule.Any(s => s.HasAttackScheduled)
+                        || pxBase.HasActiveMission
+                        || pxBase.GetComponent<GeoPhoenixBase>()?.CanBeAssaulted != true)
+                    {
+                        return;
+                    }
+
+                    double travelHours = TravelHours(aliens, pxBase, attackers);
+                    if (travelHours < 0d)
+                    {
+                        return;
+                    }
+
+                    int daysToLaunch = (int)Math.Ceiling(remainingCounter / (double)pointsPerDay);
+                    double estimatedHoursToAttack = daysToLaunch * 24d + travelHours;
+
                     if (estimatedHoursToAttack > warningLeadHours)
                     {
                         return;
                     }
 
                     int roundedEta = Math.Max(1, (int)Math.Round(estimatedHoursToAttack));
-                    string warningTemplate = TFTVCommonMethods.ConvertKeyToString("KEY_AFFINITY_OCCULT_BASE_ATTACK_WARNING");
-                    string warningMessage = string.IsNullOrEmpty(warningTemplate)
-                        ? $"Occult warning: attack expected at {schedule.Site.LocalizedSiteName} in ~{roundedEta} hours."
-                        : string.Format(warningTemplate, schedule.Site.LocalizedSiteName, roundedEta);
+                    ShowOccultWarning(pxBase, roundedEta);
+                    OccultAttackWarningTriggered.Add(pxBase.SiteId);
 
-                    GameUtl.GetMessageBox().ShowSimplePrompt(warningMessage, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                    OccultAttackWarningTriggered.Add(siteId);
+                    TFTVLogger.Always($"[OccultAffinity] Early warning for {pxBase.LocalizedSiteName}: launch in {daysToLaunch} day(s) " +
+                        $"({remainingCounter} points to go at {pointsPerDay}/day), then {travelHours:0.#}h travel; ETA ~{roundedEta}h, lead window {warningLeadHours}h");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
 
-                    TFTVLogger.Always($"[OccultAffinity] Warning issued for {schedule.Site.LocalizedSiteName}. ETA ~{roundedEta}h, lead window {warningLeadHours}h, points/day={pointsPerDay}, remaining points={remainingCounter}");
+            /// <summary>The attack has just been launched: the Occult warning gives the time it actually arrives.</summary>
+            private static void TryShowOccultScheduledWarning(GeoAlienFaction aliens, SiteAttackSchedule schedule)
+            {
+                try
+                {
+                    GeoLevelController controller = aliens.GeoLevel;
+                    GeoSite pxBase = schedule?.Site;
+
+                    if (controller == null || pxBase == null || !schedule.HasAttackScheduled
+                        || OccultScheduledWarningTriggered.Contains(pxBase.SiteId)
+                        || AffinityGeoscapeEffects.GetOccultAttackWarningLeadHours(controller) <= 0)
+                    {
+                        return;
+                    }
+
+                    double hours = schedule.GetRemainingTime(controller.Timing).TimeSpan.TotalHours;
+                    int roundedEta = Math.Max(1, (int)Math.Round(hours));
+
+                    ShowOccultWarning(pxBase, roundedEta);
+                    OccultScheduledWarningTriggered.Add(pxBase.SiteId);
+
+                    TFTVLogger.Always($"[OccultAffinity] Attack on {pxBase.LocalizedSiteName} launched: arrives in {hours:0.#}h");
                 }
                 catch (Exception e)
                 {
@@ -615,8 +699,9 @@ namespace TFTV
                 try
                 {
                     OccultAttackWarningTriggered.RemoveWhere(siteId => !__instance.PhoenixBaseAttackSchedule.Any(s => s.Site?.SiteId == siteId));
+                    OccultScheduledWarningTriggered.RemoveWhere(siteId => !__instance.PhoenixBaseAttackSchedule.Any(s => s.Site?.SiteId == siteId && s.HasAttackScheduled));
 
-                    foreach (SiteAttackSchedule item in __instance.PhoenixBaseAttackSchedule)
+                    foreach (SiteAttackSchedule item in __instance.PhoenixBaseAttackSchedule.ToList())
                     {
                         if (item.HasAttackScheduled)
                         {
@@ -638,13 +723,14 @@ namespace TFTV
                             continue;
                         }
 
-                        int counterBeforeAccrual = item.Counter;
                         int totalCounterPerDayForBase = 0;
+                        List<GeoSite> attackers = new List<GeoSite>();
 
                         foreach (GeoAlienBase colony in __instance.Bases)
                         {
                             if (colony.SitesInRange.Contains(pxBase))
                             {
+                                attackers.Add(colony.Site);
                                 GeoLevelController controller = __instance.GeoLevel;
                                 GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
 
@@ -708,16 +794,18 @@ namespace TFTV
                             }
                         }
 
-                        TryShowOccultAttackWarning(__instance.GeoLevel, item, totalCounterPerDayForBase, counterBeforeAccrual);
-
-
                         if (item.Counter >= __instance.FactionDef.PhoenixBaseAttackMissionCounter && !item.Site.HasActiveMission && __instance.Research.HasCompleted("ALN_Lair_ResearchDef"))
                         {
                             OccultAttackWarningTriggered.Remove(pxBase.SiteId);
-                            (from b in __instance.Bases
-                             where b.SitesInRange.Contains(pxBase)
-                             select b.Site).ToList();
                             __instance.AttackPhoenixBase(pxBase);
+
+                            // AttackPhoenixBase may decline (another base attack is under way, attack protection): then
+                            // nothing is scheduled and no warning is given.
+                            TryShowOccultScheduledWarning(__instance, item);
+                        }
+                        else
+                        {
+                            TryShowOccultEarlyWarning(__instance, item, totalCounterPerDayForBase, attackers);
                         }
                     }
 

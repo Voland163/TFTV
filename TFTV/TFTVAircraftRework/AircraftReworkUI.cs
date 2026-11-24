@@ -624,7 +624,11 @@ namespace TFTV
                         var tacticalItemDef = item.ItemDef as TacticalItemDef;
                         if (tacticalItemDef == null)
                         {
-                            TFTVLogger.Always($"ItemDef is null or not a TacticalItemDef. Item: {item} {item.GetType()}");
+                            // Aircraft modules live in the faction storage with the Aircraft Rework: expected, removed below.
+                            if (!(item.ItemDef is GeoVehicleModuleDef))
+                            {
+                                TFTVLogger.Always($"ItemDef is null or not a TacticalItemDef. Item: {item} {item.GetType()}");
+                            }
 
                             continue;
                         }

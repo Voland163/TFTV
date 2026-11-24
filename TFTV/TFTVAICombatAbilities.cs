@@ -43,7 +43,7 @@ namespace TFTV
     ///    instead of standing in the open or walking further in.
     ///
     /// 5. Stances (TFTVAIStances.cs). Human factions the player has to wipe out scout with one or two
-    ///    soldiers and hold positions until they have the upper hand.
+    ///    soldiers and hold positions until they have the upper hand. Switched off (Stances.Enabled).
     ///
     /// See TFTVArtOfCrab for the rest of the AI work; this file only holds the five features above.
     /// </summary>
@@ -64,6 +64,17 @@ namespace TFTV
             MistSeeking.CreateDefs();
             Scavenging.CreateDefs();
             SuppressAI.CreateDefs();
+            BottleTest.CreateDefs();
+            NestAndAmbush.CreateDefs();
+            Stalking.CreateDefs();
+            FiringLine.CreateDefs();
+            Rescuees.CreateDefs();
+            ClassSkillsAI.CreateDefs();
+            Scavenging.CreatePickUpDefs();
+            TFTVAIMindfraggerMove.CreateDefs();
+
+            // Last: swaps a consideration in the plain advances, so clones made above keep their own copy.
+            TFTVAIClosestPath.CreateDefs();
         }
 
         #region shared def surgery helpers
@@ -812,9 +823,17 @@ namespace TFTV
 
             private static readonly List<Reservation> _reservations = new List<Reservation>();
 
+            /// <summary>This turn's actors in acting order, kept so the prediction can be redone before each one acts.</summary>
+            private static List<TacticalActor> _turnActors = new List<TacticalActor>();
+
+            /// <summary>Why a controller got no reservation, logged once per controller and reason each turn.</summary>
+            private static readonly HashSet<string> _explained = new HashSet<string>();
+
             internal static void Clear()
             {
                 _reservations.Clear();
+                _turnActors.Clear();
+                _explained.Clear();
             }
 
             /// <summary>Whether <paramref name="controller"/> is still due to mind control <paramref name="target"/> this turn.</summary>
@@ -848,37 +867,15 @@ namespace TFTV
                 try
                 {
                     _reservations.Clear();
+                    _explained.Clear();
+                    _turnActors = sortedAIActors?.Where(a => a != null).ToList() ?? new List<TacticalActor>();
 
-                    if (sortedAIActors == null || sortedAIActors.Count == 0)
+                    Predict();
+
+                    foreach (Reservation reservation in _reservations)
                     {
-                        return;
-                    }
-
-                    AIBlackboard blackboard = sortedAIActors[0].TacticalFaction.AIBlackboard;
-                    HashSet<TacticalActorBase> alreadyReserved = new HashSet<TacticalActorBase>();
-
-                    foreach (TacticalActor controller in sortedAIActors)
-                    {
-                        MindControlAbility mindControl = controller.GetAbility<MindControlAbility>();
-
-                        if (mindControl == null
-                            || !mindControl.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
-                        {
-                            continue;
-                        }
-
-                        TacticalActorBase predictedTarget = PredictTarget(controller, mindControl, blackboard, alreadyReserved);
-
-                        if (predictedTarget == null)
-                        {
-                            continue;
-                        }
-
-                        alreadyReserved.Add(predictedTarget);
-                        _reservations.Add(new Reservation { Controller = controller, Target = predictedTarget });
-
-                        TFTVLogger.Always($"TFTV AI: {controller.DisplayName} is expected to mind control " +
-                            $"{predictedTarget.DisplayName}; the rest of the faction will leave it alone until then");
+                        TFTVLogger.Always($"TFTV AI: {reservation.Controller.DisplayName} is expected to mind control " +
+                            $"{reservation.Target.DisplayName}; the rest of the faction will leave it alone until then");
                     }
                 }
                 catch (Exception e)
@@ -888,16 +885,135 @@ namespace TFTV
             }
 
             /// <summary>
+            /// Redoes the prediction for the controllers still due to act, with the board as it is now: called each time
+            /// another actor of the side starts acting. The turn-start prediction can miss, because the turn's action
+            /// points may not be in yet when it runs (a controller that ended last turn on overwatch then looks unable to
+            /// move or act) and because shots earlier in the turn change will points, health and positions. Returns
+            /// whether any reservation changed, so the hold weights can be rewritten.
+            /// </summary>
+            internal static bool Refresh()
+            {
+                try
+                {
+                    if (_turnActors.Count == 0)
+                    {
+                        return false;
+                    }
+
+                    List<Reservation> before = _reservations.Where(IsStillPending).ToList();
+
+                    Predict();
+
+                    List<Reservation> after = _reservations.ToList();
+                    bool changed = false;
+
+                    foreach (Reservation now in after)
+                    {
+                        Reservation was = before.FirstOrDefault(r => r.Controller == now.Controller);
+
+                        if (was == null || was.Target != now.Target)
+                        {
+                            changed = true;
+                            TFTVLogger.Always($"TFTV AI: {now.Controller.DisplayName} is now expected to mind control {now.Target.DisplayName}" +
+                                $"{(was != null ? $" (instead of {was.Target.DisplayName})" : "")}; the rest of the faction will leave it alone until then");
+                        }
+                    }
+
+                    foreach (Reservation was in before)
+                    {
+                        if (!after.Any(r => r.Controller == was.Controller))
+                        {
+                            changed = true;
+                            TFTVLogger.Always($"TFTV AI: {was.Controller.DisplayName} is no longer expected to mind control {was.Target.DisplayName}");
+                        }
+                    }
+
+                    return changed;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return false;
+                }
+            }
+
+            private static void Predict()
+            {
+                _reservations.Clear();
+
+                AIBlackboard blackboard = _turnActors.FirstOrDefault()?.TacticalFaction?.AIBlackboard;
+
+                if (blackboard == null)
+                {
+                    return;
+                }
+
+                HashSet<TacticalActorBase> alreadyReserved = new HashSet<TacticalActorBase>();
+
+                foreach (TacticalActor controller in _turnActors)
+                {
+                    MindControlAbility mindControl = controller.GetAbility<MindControlAbility>();
+
+                    if (mindControl == null || !IsDue(controller, mindControl))
+                    {
+                        continue;
+                    }
+
+                    if (!mindControl.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                    {
+                        Explain(controller, $"its mind control can't be used now (AP {(float)controller.CharacterStats.ActionPoints:0.#}/" +
+                            $"{controller.CharacterStats.ActionPoints.Max:0}, WP {(float)controller.CharacterStats.WillPoints:0.#})");
+                        continue;
+                    }
+
+                    TacticalActorBase predictedTarget = PredictTarget(controller, mindControl, blackboard, alreadyReserved, out string why);
+
+                    if (predictedTarget == null)
+                    {
+                        Explain(controller, why);
+                        continue;
+                    }
+
+                    alreadyReserved.Add(predictedTarget);
+                    _reservations.Add(new Reservation { Controller = controller, Target = predictedTarget });
+                }
+            }
+
+            /// <summary>Still to take its turn, with its mind control unspent.</summary>
+            private static bool IsDue(TacticalActor controller, MindControlAbility mindControl)
+            {
+                if (!controller.IsAlive || controller.IsDisabled || !controller.IsActive || mindControl.UsesThisTurn > 0)
+                {
+                    return false;
+                }
+
+                EndTurnAbility endTurn = controller.GetAbility<EndTurnAbility>();
+
+                return endTurn == null || endTurn.UsesThisTurn == 0;
+            }
+
+            private static void Explain(TacticalActor controller, string why)
+            {
+                if (_explained.Add($"{controller.GetHashCode()}|{why}"))
+                {
+                    TFTVLogger.Always($"TFTV AI: {controller.DisplayName} has mind control but no reserved target: {why}");
+                }
+            }
+
+            /// <summary>
             /// Mirrors the target the (TFTV-patched) AIMindControlPickAvailableTargetConsideration would
             /// settle on: highest enemy weight, scaled by the will point margin and by how battered the
             /// target's arms and legs are.
             /// </summary>
             private static TacticalActorBase PredictTarget(TacticalActor controller, MindControlAbility mindControl,
-                AIBlackboard blackboard, HashSet<TacticalActorBase> alreadyReserved)
+                AIBlackboard blackboard, HashSet<TacticalActorBase> alreadyReserved, out string why)
             {
                 float reach = controller.GetMaxMoveAndActRange(mindControl);
                 float bestScore = 0f;
                 TacticalActorBase bestTarget = null;
+
+                int candidates = 0, outOfReach = 0, noWalk = 0, lowWill = 0, noScore = 0;
+                float nearest = float.MaxValue;
 
                 foreach (TacticalActorBase enemyBase in blackboard.GetEnemies(controller.AIActor.GetEnemyMask(ActorType.All)))
                 {
@@ -916,8 +1032,24 @@ namespace TFTV
                         continue;
                     }
 
-                    if ((enemy.Pos - controller.Pos).magnitude > reach)
+                    candidates++;
+                    float distance = (enemy.Pos - controller.Pos).magnitude;
+
+                    if (distance > reach)
                     {
+                        outOfReach++;
+                        nearest = Mathf.Min(nearest, distance);
+                        continue;
+                    }
+
+                    // In reach by straight line isn't enough: a Mindfragger reserved a soldier it had no walk to, the
+                    // rest of its side left that soldier alone, and its turn offered no mind control at all (2026-11-19).
+                    float walk = WalkTo(controller, enemy);
+
+                    if (walk < 0f || walk > reach)
+                    {
+                        noWalk++;
+                        nearest = Mathf.Min(nearest, walk < 0f ? distance : walk);
                         continue;
                     }
 
@@ -925,12 +1057,18 @@ namespace TFTV
 
                     if (willFactor <= 0f)
                     {
+                        lowWill++;
                         continue;
                     }
 
                     float score = AIUtil.GetEnemyWeight(blackboard, enemy)
                         * willFactor
                         * TFTVArtOfCrab.TargetCulling.MindControl.AIMindControlPickAvailableTargetConsideration_Evaluate_patch.CheckActorSuitability(enemy);
+
+                    if (score <= 0f)
+                    {
+                        noScore++;
+                    }
 
                     if (score > bestScore)
                     {
@@ -939,11 +1077,43 @@ namespace TFTV
                     }
                 }
 
+                why = candidates == 0 ? "no enemy it could take"
+                    : $"reach {reach:0.#}m ({(float)controller.CharacterStats.ActionPoints:0.#} AP); of {candidates} enemies {outOfReach} out of reach" +
+                      $"{(outOfReach + noWalk > 0 ? $" (nearest {nearest:0.#}m)" : "")}, {noWalk} with no walk in reach, {lowWill} with too many will points " +
+                      $"(its WP {(float)controller.CharacterStats.WillPoints:0.#}), {noScore} scored 0";
+
                 return bestTarget;
             }
 
+            /// <summary>Distance to the enemy along the AI's walk (to within a step of it), or -1 when there is no complete path.</summary>
+            private static float WalkTo(TacticalActor controller, TacticalActor enemy)
+            {
+                if (controller.AIActor == null || controller.TacticalLevel == null)
+                {
+                    return -1f;
+                }
+
+                TacticalPathRequest request = controller.TacticalLevel.GetAiPathRequest(controller, controller.AIActor.MaxPathLength);
+                request.Src = controller.Pos;
+                request.Dst = enemy.Pos;
+                request.UseAStar = true;
+                request.DestinationRadius = MindControlStepRadius;
+                request.Calculate();
+
+                return request.Status == Base.Levels.PathStatus.Complete ? request.Length : -1f;
+            }
+
+            /// <summary>The leap ends next to the target: a walk that gets this close counts.</summary>
+            private const float MindControlStepRadius = 1.5f;
+
             private static float WillPointFactor(TacticalActor controller, TacticalActor enemy, MindControlAbility mindControl)
             {
+                // Mindfraggers: will points are no factor (their control never breaks over them).
+                if (TFTVVanillaFixes.Tactical.MindControlTacticalVanillaFixes.IsMindfragger(controller))
+                {
+                    return 1f;
+                }
+
                 int willpower = (int)(float)controller.CharacterStats.Willpower;
 
                 if (willpower == 0)
@@ -1191,7 +1361,16 @@ namespace TFTV
                     return false;
                 }
 
-                float apAfterShot = actor.CharacterStats.ActionPoints - target.PathLength - actor.Equipments.GetAPToUseEquipment(weapon);
+                // The shot's real cost: Quick Aim makes the next one cheaper than the weapon's own cost.
+                float shotCost = actor.Equipments.GetAPToUseEquipment(weapon);
+                ShootAbility shoot = weapon.DefaultShootAbility;
+
+                if (shoot != null)
+                {
+                    shotCost = Mathf.Min(shotCost, shoot.ActionPointCost);
+                }
+
+                float apAfterShot = actor.CharacterStats.ActionPoints - target.PathLength - shotCost;
 
                 return apAfterShot >= target.PathLength;
             }
@@ -1261,6 +1440,13 @@ namespace TFTV
                 }
             }
 
+            internal static bool HasShotThisTurn(TacticalActor actor) => ShotThisTurn.Contains(actor);
+
+            internal static bool HasFallenBackThisTurn(TacticalActor actor) => FellBackThisTurn.Contains(actor);
+
+            /// <summary>Counts as this turn's fall back, so no other move follows it (Rescuees' return).</summary>
+            internal static void MarkFellBack(TacticalActor actor) => FellBackThisTurn.Add(actor);
+
             internal static void RecordFallBack(TacticalActor actor, TacAITarget target)
             {
                 FellBackThisTurn.Add(actor);
@@ -1277,6 +1463,14 @@ namespace TFTV
                 Stances.ClearTurn();
                 MistSeeking.ClearTurn();
                 Scavenging.ClearTurn();
+                NestAndAmbush.ClearTurn();
+                Stalking.ClearTurn();
+                FiringLine.ClearTurn();
+                Rescuees.ClearTurn();
+                ClassSkillsAI.ClearTurn();
+                ScyllaGunsAI.ClearTurn();
+                TFTVAIClosestPath.ClearTurn();
+                TFTVAIVehicleTargets.ClearTurn();
             }
         }
 
@@ -1314,7 +1508,11 @@ namespace TFTV
                         || Stances.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
                         || MistSeeking.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
                         || Scavenging.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
-                        || SuppressAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score))
+                        || SuppressAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || BottleTest.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || NestAndAmbush.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || ClassSkillsAI.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score)
+                        || Rescuees.TryScoreGate(__instance.BaseDef, actor as TacticalActor, out score))
                     {
                         __result = score;
                         return false;
@@ -1327,6 +1525,63 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Quick Aim made the AI's next shot cheaper, but no shot followed. Stock NumberOfAttacks (on every shot action)
+        /// counts the shots the unit's AP buys at the weapon's full cost (Equipment.ApToUse), so a boss with 6.3 AP and an
+        /// 11 AP rifle, Quick Aim on (next shot 5.5), counted none and set Overwatch instead - every time Quick Aim was used
+        /// after acting, which is when it pays (2026-11-19). With a discount on the next shot (the default shoot ability's
+        /// cost below the weapon's), the first shot is counted at its real cost and the rest at full cost; otherwise stock.
+        /// </summary>
+        internal static class DiscountedAttacks
+        {
+            internal static bool TryScore(TacticalActor actor, TacAITarget target, ref float score)
+            {
+                if (actor == null || target == null || !(target.Equipment is Weapon weapon) || actor.Equipments == null)
+                {
+                    return false;
+                }
+
+                ShootAbility shoot = weapon.DefaultShootAbility;
+
+                if (shoot == null)
+                {
+                    return false;
+                }
+
+                float full = actor.Equipments.GetAPToUseEquipment(weapon);
+                float first = shoot.ActionPointCost;
+
+                if (full <= 0f || first >= full - 0.01f)
+                {
+                    return false;
+                }
+
+                float ap = actor.CharacterStats.ActionPoints;
+                int fromHere = Attacks(ap, first, full);
+                int afterMove = Attacks(ap - target.PathLength, first, full);
+
+                if (shoot.UsesPerTurn > 0)
+                {
+                    int left = shoot.UsesPerTurn - shoot.UsesThisTurn;
+                    fromHere = Mathf.Min(fromHere, left);
+                    afterMove = Mathf.Min(afterMove, left);
+                }
+
+                score = fromHere <= 0 ? 0f : Mathf.Clamp01((float)afterMove / fromHere);
+                return true;
+            }
+
+            private static int Attacks(float ap, float first, float full)
+            {
+                if (ap + 0.01f < first)
+                {
+                    return 0;
+                }
+
+                return 1 + (int)((ap - first + 0.01f) / full);
             }
         }
 
@@ -1343,7 +1598,7 @@ namespace TFTV
                         return false;
                     }
 
-                    return true;
+                    return !DiscountedAttacks.TryScore(actor as TacticalActor, target as TacAITarget, ref __result);
                 }
                 catch (Exception e)
                 {

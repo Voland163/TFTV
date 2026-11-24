@@ -4,11 +4,15 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,13 +83,36 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                         enumerable = enumerable.Where((TacticalAbilityTarget x) => enemies.Contains(x.Actor));
                     }
 
+                    // A blast around the user (Stomp, Chiron's area stun, a spider drone going off) is never
+                    // made where it would catch a friendly. Stomp's targeting doesn't target self, so the
+                    // loop below would centre it on the enemy: it gets the hits around the user instead.
+                    List<TacticalActorBase> stompHits = null;
+                    if (SelfCentredBlastAI.IsSelfCentredBlast(abilityWithDef))
+                    {
+                        List<TacticalActorBase> hits = SelfCentredBlastAI.HitsUnlessFriendly(tacActor, tacAITarget.Pos, abilityWithDef);
+                        if (hits == null)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        if (!abilityWithDef.OriginTargetData.TargetSelf)
+                        {
+                            stompHits = hits;
+                        }
+                    }
+
                     List<TacticalActorBase> list = new List<TacticalActorBase>(10);
                     float num = 0f;
                     foreach (TacticalAbilityTarget item in enumerable)
                     {
                         float num2 = 1f;
                         list.Clear();
-                        if (abilityWithDef.OriginTargetData.TargetSelf)
+                        if (stompHits != null)
+                        {
+                            list.AddRange(stompHits);
+                        }
+                        else if (abilityWithDef.OriginTargetData.TargetSelf)
                         {
                             list.AddRange(AIUtil.GetAffectedTargetsByDamageAbility(tacActor, tacAITarget.Pos, abilityWithDef as IDamageDealer));
                         }
@@ -161,8 +188,216 @@ namespace TFTV.TFTVVanillaFixes.Tactical
             }
         }
 
+        /// <summary>
+        /// Abilities that go off as a blast around their user and don't spare its allies: Stomp, the Chiron's
+        /// area stun, spider drone and worm explosions (ApplyDamageEffectAbility with a sphere payload and
+        /// IgnoreFriendlies off). The damage is applied around the user and spares only the user itself.
+        /// The AI never uses one where it would catch a friendly, or one of its own units under the player's
+        /// Mind Control.
+        /// </summary>
+        internal static class SelfCentredBlastAI
+        {
+            private static readonly string[] ExpendableClassTagNames =
+            {
+                "Worm_ClassTagDef", "Fireworm_ClassTagDef", "Acidworm_ClassTagDef", "Poisonworm_ClassTagDef", "Egg_ClassTagDef",
+            };
 
+            private static List<GameTagDef> _expendableTags;
 
+            /// <summary>Worms and eggs.</summary>
+            private static bool IsExpendable(TacticalActor actor)
+            {
+                if (_expendableTags == null)
+                {
+                    _expendableTags = ExpendableClassTagNames
+                        .Select(name => (GameTagDef)TFTVMain.Main.DefCache.GetDef<ClassTagDef>(name))
+                        .Where(tag => tag != null)
+                        .ToList();
+                }
 
+                return actor?.GameTags != null && _expendableTags.Any(tag => actor.GameTags.Contains(tag));
+            }
+
+            internal static bool IsSelfCentredBlast(TacticalAbility ability)
+            {
+                return ability is ApplyDamageEffectAbility applyDamage
+                    && !applyDamage.ApplyDamageEffectAbilityDef.IgnoreFriendlies
+                    && applyDamage.GetDamagePayload()?.DamageDeliveryType == DamageDeliveryType.Sphere;
+            }
+
+            /// <summary>
+            /// Who the blast would hit if the user set it off at <paramref name="pos"/>, or null when that
+            /// includes a friendly. The user is left out. The prediction ignores walls, so it can only
+            /// overcount victims.
+            /// </summary>
+            internal static List<TacticalActorBase> HitsUnlessFriendly(TacticalActor user, Vector3 pos, TacticalAbility ability)
+            {
+                pos += ((ApplyDamageEffectAbility)ability).ApplyDamageEffectAbilityDef.EffectPositionOffset;
+
+                List<TacticalActorBase> hits = new List<TacticalActorBase>();
+
+                foreach (TacticalActorBase hit in AIUtil.GetAffectedTargetsByDamageAbility(user, pos, ability as IDamageDealer))
+                {
+                    if (hit == user || !(hit is TacticalActor hitActor))
+                    {
+                        continue;
+                    }
+
+                    FactionRelation relation = user.RelationTo(hitActor);
+
+                    // Worms and eggs are throwaway: one caught in the blast doesn't hold it back. Two worms that
+                    // landed side by side otherwise each held its explosion for the other and just crawled about
+                    // next to the soldiers (playtest 2026-11-22).
+                    if (relation == FactionRelation.Friend && IsExpendable(hitActor))
+                    {
+                        continue;
+                    }
+
+                    if (relation == FactionRelation.Friend)
+                    {
+                        return null;
+                    }
+
+                    if (relation == FactionRelation.Enemy && hitActor.Status != null && hitActor.Status.HasStatus<MindControlStatus>()
+                        && hitActor.Status.GetStatus<MindControlStatus>().OriginalFaction == user.TacticalFaction.TacticalFactionDef)
+                    {
+                        return null;
+                    }
+
+                    hits.Add(hitActor);
+                }
+
+                return hits;
+            }
+        }
+
+        /// <summary>
+        /// Worm explosions (and the Chiron's area stun when scored this way) are rated by how many enemies
+        /// they catch, which never looks at friendlies. A worm set off next to other Pandorans burned,
+        /// poisoned or dissolved them. Here such a blast scores 0. Worms explode where they stand: the self
+        /// target carries no position, so the actor's own is used.
+        /// </summary>
+        [HarmonyPatch(typeof(AIAbilityNumberOfTargetsConsideration), nameof(AIAbilityNumberOfTargetsConsideration.Evaluate))]
+        public static class AIAbilityNumberOfTargetsConsideration_Evaluate_FriendlyBlast_Patch
+        {
+            public static void Postfix(AIAbilityNumberOfTargetsConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+            {
+                try
+                {
+                    if (__result <= 0f || !(actor is TacticalActor tacActor))
+                    {
+                        return;
+                    }
+
+                    TacAITarget tacAITarget = target as TacAITarget;
+                    TacticalAbility ability = __instance.Def.GetAbility(tacActor, tacAITarget);
+
+                    if (ability == null || !SelfCentredBlastAI.IsSelfCentredBlast(ability))
+                    {
+                        return;
+                    }
+
+                    // The self target's position is unset: NaN, not zero (TacAITarget.IsPosValid). Read as a
+                    // position it put every distance at NaN, nobody counted as hit, and worms went off next to
+                    // their own mind-controlled Arthrons (playtest 2026-11-19).
+                    Vector3 pos = tacAITarget == null || !tacAITarget.IsPosValid || tacAITarget.Pos == Vector3.zero ? tacActor.Pos : tacAITarget.Pos;
+
+                    if (SelfCentredBlastAI.HitsUnlessFriendly(tacActor, pos, ability) == null)
+                    {
+                        __result = 0f;
+                        LogVeto(tacActor, ability);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static readonly HashSet<string> Vetoed = new HashSet<string>();
+            private static int _vetoTurn = -1;
+
+            /// <summary>Once per unit and turn: the AI evaluates the same blast many times.</summary>
+            private static void LogVeto(TacticalActor actor, TacticalAbility ability)
+            {
+                int turn = actor.TacticalFaction?.TurnNumber ?? -1;
+
+                if (turn != _vetoTurn)
+                {
+                    _vetoTurn = turn;
+                    Vetoed.Clear();
+                }
+
+                if (Vetoed.Add(actor.name))
+                {
+                    TFTVLogger.Always($"[SelfBlast] {actor.DisplayName} holds {ability.AbilityDef?.name} at {actor.Pos}: it would catch a friendly or one of its side under mind control");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parts a shot should never be aimed at: ones the player can't pick either (WillNotHighlight, e.g. the
+        /// Armadillo's front lights). Not "no hit points": human armour pieces have 0 in their defs and take
+        /// their hit points from the body slot. Every AI shot choice (AIUtil's
+        /// best target and scored list, the attack position scoring, MoveAndAttack's aim) and the shoot screen's
+        /// damage preview get their parts from Weapon.GetShootTargets, and the AI takes whichever part promises the
+        /// most health plus armour damage. The Armadillo's lights have 0 armour and 0 hit points, so the AI put
+        /// nearly every shot into them: shots that did nothing at all, or hit the 60-armour front plate behind.
+        /// They are dropped only when the weapon has another part to aim at, so a target is never lost.
+        /// </summary>
+        [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetShootTargets))]
+        public static class Weapon_GetShootTargets_SkipUntargetableParts_Patch
+        {
+            private static GameTagDef _willNotHighlightTag;
+            private static bool _tagLooked;
+
+            public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result)
+            {
+                try
+                {
+                    if (__result == null)
+                    {
+                        return;
+                    }
+
+                    List<TacticalAbilityTarget> targets = __result.ToList();
+                    __result = targets;
+
+                    if (targets.Count < 2 || !targets.Any(IsUntargetable))
+                    {
+                        return;
+                    }
+
+                    List<TacticalAbilityTarget> kept = targets.Where(t => !IsUntargetable(t)).ToList();
+
+                    if (kept.Count > 0)
+                    {
+                        __result = kept;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static bool IsUntargetable(TacticalAbilityTarget target)
+            {
+                TacticalItemDef def = target?.TacticalItem?.TacticalItemDef;
+
+                if (def == null)
+                {
+                    return false;
+                }
+
+                if (!_tagLooked)
+                {
+                    _tagLooked = true;
+                    _willNotHighlightTag = TFTVMain.Main.DefCache.GetDef<GameTagDef>("WillNotHighlight_TagDef");
+                }
+
+                return _willNotHighlightTag != null && def.Tags != null && def.Tags.Contains(_willNotHighlightTag);
+            }
+        }
     }
 }

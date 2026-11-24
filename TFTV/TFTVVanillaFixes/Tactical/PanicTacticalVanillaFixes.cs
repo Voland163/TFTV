@@ -1,11 +1,65 @@
+using Base.Core;
 using HarmonyLib;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
+using System.Collections.Generic;
 
 namespace TFTV.TFTVVanillaFixes.Tactical
 {
     internal class PanicTacticalVanillaFixes
     {
+        /// <summary>
+        /// A panicked unit could show AP it can't use. Vanilla PanicAbility.Move halves the unit's AP and
+        /// then runs it to the safest spot it finds; whatever the run doesn't spend (all of it when there is
+        /// nowhere to run) stays on the unit, shown in its AP bar, though Panic lets it do nothing more that
+        /// turn. When the run is over and the unit is left panicked, its AP goes to 0.
+        /// </summary>
+        [HarmonyPatch(typeof(PanicAbility), "Move")]
+        internal static class PanicAbility_Move_SpendLeftoverAP_Patch
+        {
+            private static void Postfix(PanicAbility __instance, ref IEnumerator<NextUpdate> __result)
+            {
+                __result = ThenSpendLeftoverAP(__result, __instance?.TacticalActor);
+            }
+
+            private static IEnumerator<NextUpdate> ThenSpendLeftoverAP(IEnumerator<NextUpdate> move, TacticalActor actor)
+            {
+                while (move.MoveNext())
+                {
+                    yield return move.Current;
+                }
+
+                SpendLeftoverAP(actor);
+            }
+
+            private static void SpendLeftoverAP(TacticalActor actor)
+            {
+                try
+                {
+                    PanicStatus panic = actor?.Status?.GetStatus<PanicStatus>();
+
+                    if (actor == null || !actor.IsAlive || panic == null || panic.State != PanicStatus.PanicState.Moved)
+                    {
+                        return;
+                    }
+
+                    float left = (float)actor.CharacterStats.ActionPoints;
+
+                    if (left > 0f)
+                    {
+                        actor.CharacterStats.ActionPoints.Set(0f);
+                        TFTVLogger.Always($"[Panic] {actor.DisplayName} ran in panic with {left:0.#} AP to spare; AP set to 0.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
         /// <summary>
         /// A unit could lose two whole turns to one panic.
         ///

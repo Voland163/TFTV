@@ -1183,6 +1183,41 @@ namespace TFTV
             /// <summary>Health bars removed for an unknown specimen, to switch back on when the element shows someone else.</summary>
             private static readonly HashSet<ValueBarElement> HiddenHealthBars = new HashSet<ValueBarElement>();
 
+            /// <summary>Alpha a bar's own CanvasGroup had before it was hidden (none: one was added here, back to 1).</summary>
+            private static readonly Dictionary<ValueBarElement, float> HiddenBarAlpha = new Dictionary<ValueBarElement, float>();
+
+            /// <summary>
+            /// Hides or shows a health bar without switching it off. Switched off, it dropped out of the healthbar's layout and
+            /// the rest collapsed into its place: status icons blown up to the bar's size and the body-part doll floating
+            /// beside an empty spot. A transparent bar keeps its place.
+            /// </summary>
+            private static void SetBarShown(ValueBarElement healthBar, bool shown)
+            {
+                CanvasGroup group = healthBar.GetComponent<CanvasGroup>();
+
+                if (shown)
+                {
+                    if (group != null)
+                    {
+                        group.alpha = HiddenBarAlpha.TryGetValue(healthBar, out float alpha) ? alpha : 1f;
+                    }
+
+                    HiddenBarAlpha.Remove(healthBar);
+                    return;
+                }
+
+                if (group == null)
+                {
+                    group = healthBar.gameObject.AddComponent<CanvasGroup>();
+                }
+                else if (!HiddenBarAlpha.ContainsKey(healthBar))
+                {
+                    HiddenBarAlpha[healthBar] = group.alpha;
+                }
+
+                group.alpha = 0f;
+            }
+
             private static readonly AccessTools.FieldRef<HealthbarUIActorElement, StatusStat> HealthStatField =
                 AccessTools.FieldRefAccess<HealthbarUIActorElement, StatusStat>("_healthStat");
 
@@ -1212,7 +1247,7 @@ namespace TFTV
                 // Healthbars are pooled: one that hid its bar for an unknown specimen may now show anyone.
                 if (bar?.HealthBar != null && known && HiddenHealthBars.Remove(bar.HealthBar))
                 {
-                    bar.HealthBar.gameObject.SetActive(true);
+                    SetBarShown(bar.HealthBar, true);
                 }
 
                 if (bar == null || real)
@@ -1229,10 +1264,9 @@ namespace TFTV
 
                 if (!known)
                 {
-                    if (bar.HealthBar != null && bar.HealthBar.gameObject.activeSelf)
+                    if (bar.HealthBar != null && HiddenHealthBars.Add(bar.HealthBar))
                     {
-                        bar.HealthBar.gameObject.SetActive(false);
-                        HiddenHealthBars.Add(bar.HealthBar);
+                        SetBarShown(bar.HealthBar, false);
                     }
 
                     if (bar.HealthAmountText != null)
@@ -1312,7 +1346,19 @@ namespace TFTV
             /// <summary>The same for what free aim is pointing at: a body part, or the creature itself.</summary>
             private static bool IsReceiverArmourRevealed(IDamageReceiver receiver)
             {
-                if (!(receiver?.GetActor() is TacticalActor actor))
+                TacticalActorBase owner;
+
+                try
+                {
+                    owner = receiver?.GetActor();
+                }
+                catch (Exception)
+                {
+                    // Still pointed at a body part of a creature destroyed this frame: GetActor throws on its rig.
+                    return false;
+                }
+
+                if (!(owner is TacticalActor actor))
                 {
                     return false;
                 }
@@ -1789,6 +1835,64 @@ namespace TFTV
             /// info screen and the hover tooltip from GetCharacterStatusActorStatuses, the info screen's body-part rows from
             /// GetCharacterStatusBodypartStatuses, the healthbar from GetHealthbarStatuses.
             /// </summary>
+            /// <summary>
+            /// Stands in for a status limit the player may not see. Every screen that prints a limit turns it into "?":
+            /// the healthbar (<see cref="HealthbarStatusElement_SetStatus_PandoranVariance_Patch"/>) and the hover
+            /// tooltip (<see cref="GateTooltip"/>). NaN can't be used: it already means "no limit" everywhere.
+            /// </summary>
+            internal const float UnknownLimit = -999999f;
+            private static readonly string UnknownLimitText = "/" + UnknownLimit.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            private static readonly string UnknownLimitCurrentCultureText = "/" + string.Format("{0}", UnknownLimit);
+
+            /// <summary>
+            /// A damage-over-time limit is one of the target's own stats: paralysis sets in when it reaches the creature's
+            /// Hit Points. Showing it gives the Hit Points away, so it reads "?" until they are known for real (autopsy
+            /// and study); a limit on Will Points waits for vivisection and study.
+            /// </summary>
+            private static void HideUnknownLimits(Insight insight, List<TacticalActorViewBase.StatusInfo> infos)
+            {
+                if (!insight.Gated)
+                {
+                    return;
+                }
+
+                foreach (TacticalActorViewBase.StatusInfo info in infos)
+                {
+                    if (info == null || float.IsNaN(info.Limit) || !(info.Def is DamageOverTimeStatusDef dot))
+                    {
+                        continue;
+                    }
+
+                    bool known = dot.TargetStatForLimit == PhoenixPoint.Common.Entities.StatModificationTarget.WillPoints
+                        ? insight.Stats && insight.Studied
+                        : insight.RealHealth;
+
+                    if (!known)
+                    {
+                        info.Limit = UnknownLimit;
+                    }
+                }
+            }
+
+            /// <summary>"12/-999999" (the <see cref="UnknownLimit"/> printed by a tooltip) becomes "12/?".</summary>
+            internal static string MaskUnknownLimit(string value)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return value;
+                }
+
+                foreach (string text in new[] { UnknownLimitText, UnknownLimitCurrentCultureText })
+                {
+                    if (value.EndsWith(text))
+                    {
+                        return value.Substring(0, value.Length - text.Length) + "/?";
+                    }
+                }
+
+                return value;
+            }
+
             private static void FilterHiddenStatuses(TacticalActorViewBase view, ref List<TacticalActorViewBase.StatusInfo> infos)
             {
                 if (infos == null || infos.Count == 0 || view == null)
@@ -1798,6 +1902,8 @@ namespace TFTV
 
                 TacticalActorBase actor = view.ActorBase;
                 Insight insight = GetInsight(actor);
+
+                HideUnknownLimits(insight, infos);
 
                 if (!insight.Autopsied || !insight.Studied)
                 {
@@ -1942,6 +2048,15 @@ namespace TFTV
                     if (entries == null || entries.Count < 7 || !insight.Gated)
                     {
                         return;
+                    }
+
+                    for (int i = 7; i < entries.Count; i++)
+                    {
+                        string masked = MaskUnknownLimit(entries[i].ValueContent);
+                        if (masked != entries[i].ValueContent)
+                        {
+                            SetValue(entries, i, masked);
+                        }
                     }
 
                     if (!insight.Identified)
@@ -2322,6 +2437,26 @@ namespace TFTV
                     try
                     {
                         FilterHiddenStatuses(__instance, ref __result);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            /// <summary>The healthbar's status icon prints "value/limit"; a hidden limit (<see cref="UnknownLimit"/>) reads "?".</summary>
+            [HarmonyPatch(typeof(HealthbarStatusElement), nameof(HealthbarStatusElement.SetStatus))]
+            internal static class HealthbarStatusElement_SetStatus_PandoranVariance_Patch
+            {
+                private static void Postfix(HealthbarStatusElement __instance, float value, float limit)
+                {
+                    try
+                    {
+                        if (limit == UnknownLimit && __instance.StatusValue != null)
+                        {
+                            __instance.StatusValue.text = $"{Mathf.RoundToInt(value).ToString(System.Globalization.CultureInfo.InvariantCulture)}/?";
+                        }
                     }
                     catch (Exception e)
                     {
