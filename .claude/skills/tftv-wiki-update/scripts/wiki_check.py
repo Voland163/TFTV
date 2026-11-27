@@ -71,8 +71,11 @@ def local_issues(text):
             issues["Markdown link [text](url) — use [url text]"].append(n)
         if re.search(r"(?<!^)(?<![*])\*\*[^*\n]+\*\*", line) and not s.startswith("*"):
             issues["Markdown bold **text** — use <b>text</b> or '''text'''"].append(n)
-        if re.match(r"#{1,6} \S", line) and re.match(r"#{2,} ", line):
-            issues["line starts with '## ' (Markdown heading? In wikitext this is a nested numbered list)"].append(n)
+        # "## item" right under a list line is a nested numbered list; anywhere else it is
+        # almost certainly a Markdown heading.
+        prev = lines[n - 2] if n > 1 else ""
+        if re.match(r"#{2,6} \S", line) and not re.match(r"[#*:;]", prev):
+            issues["'## ' line not under a list item: a Markdown heading? (use ==Heading==)"].append(n)
     for n in stack:
         issues["table opened with {| but never closed"].append(n)
 
