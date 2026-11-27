@@ -29,6 +29,9 @@ follows. This file covers what you, a person, need to set up.
 
 ## What to expect
 
+- Claude checks each change against the release's code and English localization, not just the
+  changelog text. Every change it makes to the page is recorded in `wiki/LEDGER.md` with the code lines or
+  localization key behind it, and a script verifies those citations before the work counts as done.
 - It is a long job: about 2.5 years of patches against a 250 KB page. It will probably take several
   sessions. Progress is saved in `wiki/LEDGER.md` and `wiki/STATE.json` on the branch. To pick it up
   again, start a new session on that branch and say "continue the wiki update". Two people can work on

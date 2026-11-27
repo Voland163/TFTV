@@ -39,8 +39,9 @@ not use them unless the user has explicitly chosen a beta target.
 | `TFTV_Events_Localization.csv`, `TFTV_NJStoryMissions_Localization.csv`, `TFTV_MissionObjectives_Localization.csv` | story, events and objectives (spoilers) |
 | `PR_BC_Localization.csv` | Better Classes texts |
 
-Parse them with the `csv` module (fields contain newlines and commas), e.g.
-`python3 -I -c "import csv,sys;[print(r['Key'],'|',r['English'][:200]) for r in csv.DictReader(open(sys.argv[1],encoding='utf-8')) if sys.argv[2].lower() in (r['Key']+r['English']).lower()]" FILE TERM`.
+Search them with `scripts/loc_find.py "$WORK/src" <terms>` (or `--key <regex>`), which prints each hit
+as a ledger citation `[loc: FILE:KEY]` with its English text. They are CSV with newlines and commas
+inside fields, so do not grep them line by line for anything longer than a word.
 `Dist/Assets/Presets/AbilityDefToNameDict.json` maps ability def names to display names, which helps
 connect code to the texts players see.
 
